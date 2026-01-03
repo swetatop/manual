@@ -49,16 +49,15 @@
             background-color: var(--bg-card);
             border-right: 1px solid var(--border);
             transform: translateX(-100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
             overflow-y: auto;
             padding-top: 70px;
-            /* Убираем скроллбар */
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
         
         .sidebar::-webkit-scrollbar {
-            display: none; /* Chrome, Safari, Opera */
+            display: none;
         }
         
         .sidebar.active {
@@ -74,10 +73,13 @@
             background-color: rgba(0, 0, 0, 0.5);
             z-index: 999;
             display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .sidebar-overlay.active {
             display: block;
+            opacity: 1;
         }
         
         .sidebar-header {
@@ -97,7 +99,7 @@
         
         .sidebar-header h2 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--primary);
             text-transform: uppercase;
@@ -113,27 +115,28 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 18px 25px;
-            color: var(--text-light); /* БЕЛЫЙ текст */
+            padding: 16px 25px;
+            color: var(--text-light);
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             border-left: 4px solid transparent;
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
         .nav-item:hover, .nav-item.active {
             background-color: rgba(59, 130, 246, 0.1);
             color: var(--text-light);
             border-left-color: var(--primary);
+            transform: translateX(5px);
         }
         
         .nav-item i {
             width: 24px;
             text-align: center;
-            font-size: 1.2rem;
-            color: var(--primary); /* СИНИЕ иконки */
+            font-size: 1.1rem;
+            color: var(--primary);
         }
         
         /* Кнопка меню */
@@ -145,51 +148,49 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             border-radius: 10px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .menu-toggle:hover {
             background-color: var(--primary-dark);
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
         }
         
         /* Основной контент с отступами */
         .main-content {
             padding: 30px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             width: 100%;
-            /* Отступы чтобы меню не перекрывало */
             padding-left: max(30px, 5%);
             padding-right: max(30px, 5%);
         }
         
-        /* Хедер с пользователем - БЕЗ КАРТОЧКИ, просто текст */
+        /* Хедер с пользователем */
         .user-header {
-            text-align: center;
-            margin: 40px 0 80px 0;
+            margin: 30px 0 60px 0;
             padding: 0;
             background: transparent;
             border: none;
-            position: relative;
         }
         
         .user-info h1 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 800;
-            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
             color: var(--text-light);
-            line-height: 1.2;
+            line-height: 1.3;
         }
         
         .user-info h1 span {
@@ -200,51 +201,36 @@
         
         .user-info p {
             color: var(--text-gray);
-            font-size: 1.4rem;
-            max-width: 900px;
-            margin: 0 auto;
-            line-height: 1.8;
+            font-size: 1.1rem;
+            max-width: 800px;
+            line-height: 1.7;
         }
         
         /* Блок возможностей */
         .capabilities {
-            margin: 80px 0;
+            margin: 60px 0;
         }
         
         .capabilities h2 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 60px;
-            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 40px;
             color: var(--text-light);
-            position: relative;
         }
         
-        .capabilities h2:after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 4px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            border-radius: 2px;
-        }
-        
-        /* КАРТОЧКИ с иконками СВЕРХУ и всем текстом ПО ЦЕНТРУ */
+        /* КАРТОЧКИ - все 4 в одну линию */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 40px;
-            margin-top: 60px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            margin-top: 40px;
         }
         
         .card {
             background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 40px 30px;
-            transition: all 0.3s;
+            border-radius: 12px;
+            padding: 30px 25px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid var(--border);
             overflow: hidden;
             cursor: pointer;
@@ -252,28 +238,33 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            min-height: 350px;
             position: relative;
         }
         
         .card:hover {
-            transform: translateY(-8px);
+            transform: translateY(-10px) scale(1.02);
             border-color: var(--primary);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card:hover .card-icon {
+            transform: translateY(-5px) scale(1.1);
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.4);
         }
         
         .card-icon {
-            width: 90px;
-            height: 90px;
+            width: 70px;
+            height: 70px;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: white;
-            margin-bottom: 30px;
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+            margin-bottom: 25px;
+            box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .card-content {
@@ -286,31 +277,30 @@
         
         .card h3 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.6rem;
-            margin-bottom: 15px;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
             color: var(--text-light);
         }
         
         .card p {
             color: var(--text-gray);
-            margin-bottom: 30px;
-            font-size: 1.05rem;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
             line-height: 1.6;
-            max-width: 100%;
         }
         
-        /* ПРЯМОУГОЛЬНАЯ КНОПКА "Детальніше" */
+        /* Кнопка "Детальніше" */
         .card-btn {
             display: inline-block;
             background-color: rgba(59, 130, 246, 0.1);
             color: var(--primary);
             border: 2px solid var(--primary);
-            padding: 12px 30px;
-            border-radius: 8px;
+            padding: 10px 24px;
+            border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            font-size: 1rem;
-            transition: all 0.3s;
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Montserrat', sans-serif;
             letter-spacing: 0.5px;
             margin-top: auto;
@@ -324,18 +314,18 @@
         }
         
         .card-btn i {
-            margin-left: 8px;
-            transition: transform 0.3s;
+            margin-left: 6px;
+            transition: transform 0.3s ease;
         }
         
         .card-btn:hover i {
-            transform: translateX(5px);
+            transform: translateX(4px);
         }
         
         /* Контент страниц */
         .page-content {
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .page-content.active {
@@ -344,50 +334,49 @@
         
         .page-title {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.8rem;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
             border-bottom: 2px solid var(--border);
             color: var(--text-light);
-            text-align: center;
         }
         
         .page-subtitle {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.8rem;
-            margin: 40px 0 25px;
+            font-size: 1.5rem;
+            margin: 30px 0 20px;
             color: var(--primary);
-            text-align: center;
         }
         
         .content-block {
             background-color: var(--bg-card);
-            border-radius: 16px;
-            padding: 40px;
-            margin-bottom: 40px;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
             border: 1px solid var(--border);
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .content-block p {
-            margin-bottom: 25px;
-            font-size: 1.15rem;
+            margin-bottom: 20px;
+            font-size: 1rem;
             line-height: 1.7;
-            text-align: center;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 30px 0;
+            margin: 25px 0;
             background-color: rgba(20, 26, 36, 0.7);
-            border-radius: 10px;
+            border-radius: 8px;
             overflow: hidden;
             border: 1px solid var(--border);
+            animation: fadeIn 0.6s ease;
         }
         
         th, td {
-            padding: 20px;
-            text-align: center;
+            padding: 16px;
+            text-align: left;
             border-bottom: 1px solid var(--border);
         }
         
@@ -396,7 +385,11 @@
             color: var(--primary);
             font-weight: 600;
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.1rem;
+            font-size: 1rem;
+        }
+        
+        tr {
+            transition: background-color 0.2s ease;
         }
         
         tr:hover {
@@ -405,33 +398,31 @@
         
         .link-list {
             list-style: none;
-            margin: 30px 0;
-            text-align: center;
+            margin: 25px 0;
         }
         
         .link-list li {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            padding-left: 25px;
             position: relative;
-            display: inline-block;
-            width: 100%;
         }
         
         .link-list li:before {
             content: '→';
             position: absolute;
-            left: calc(50% - 200px);
+            left: 0;
             color: var(--primary);
             font-weight: bold;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
         
         .link-list a {
             color: var(--primary);
             text-decoration: none;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             border-bottom: 1px solid transparent;
             font-weight: 500;
-            font-size: 1.1rem;
+            font-size: 1rem;
         }
         
         .link-list a:hover {
@@ -441,26 +432,28 @@
         /* Кнопка выхода */
         .logout-btn {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 25px;
+            right: 25px;
             background-color: rgba(239, 68, 68, 0.1);
             color: var(--danger);
             border: 1px solid var(--danger);
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 10px 20px;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             font-weight: 500;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 800;
             font-family: 'Montserrat', sans-serif;
+            font-size: 0.95rem;
         }
         
         .logout-btn:hover {
             background-color: rgba(239, 68, 68, 0.2);
-            transform: translateY(-2px);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
         }
         
         /* Заглушка авторизации */
@@ -477,46 +470,49 @@
             z-index: 2000;
             flex-direction: column;
             padding: 20px;
+            animation: fadeIn 0.5s ease;
         }
         
         .auth-box {
             background-color: var(--bg-card);
             border-radius: 16px;
-            padding: 50px;
-            max-width: 500px;
+            padding: 40px;
+            max-width: 450px;
             width: 100%;
             text-align: center;
             border: 1px solid var(--border);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .auth-icon {
-            font-size: 4rem;
+            font-size: 3.5rem;
             color: var(--primary);
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
         }
         
         .auth-btn {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: white;
             border: none;
-            padding: 18px 35px;
-            border-radius: 10px;
-            font-size: 1.2rem;
+            padding: 16px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 12px;
+            margin-top: 25px;
             width: 100%;
-            transition: all 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             font-family: 'Montserrat', sans-serif;
         }
         
         .auth-btn:hover {
-            transform: translateY(-3px);
+            transform: translateY(-3px) scale(1.02);
             box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
         }
         
@@ -526,27 +522,28 @@
         
         /* Анимации */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
         
         /* Адаптивность */
         @media (max-width: 1200px) {
-            .main-content {
-                padding-left: max(30px, 10%);
-                padding-right: max(30px, 10%);
-            }
-        }
-        
-        @media (max-width: 1024px) {
             .cards-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 30px;
-            }
-            
-            .main-content {
-                padding-left: max(20px, 8%);
-                padding-right: max(20px, 8%);
+                max-width: 900px;
+                margin-left: auto;
+                margin-right: auto;
             }
         }
         
@@ -554,16 +551,14 @@
             .cards-grid {
                 grid-template-columns: 1fr;
                 max-width: 500px;
-                margin-left: auto;
-                margin-right: auto;
             }
             
             .user-info h1 {
-                font-size: 2.8rem;
+                font-size: 2rem;
             }
             
             .user-info p {
-                font-size: 1.2rem;
+                font-size: 1rem;
             }
             
             .main-content {
@@ -575,6 +570,9 @@
             .menu-toggle {
                 top: 15px;
                 left: 15px;
+                width: 44px;
+                height: 44px;
+                font-size: 1.2rem;
             }
             
             .sidebar {
@@ -586,32 +584,38 @@
             }
             
             .capabilities h2 {
-                font-size: 2.2rem;
+                font-size: 1.8rem;
+            }
+            
+            .page-title {
+                font-size: 1.9rem;
             }
         }
         
         @media (max-width: 480px) {
             .user-info h1 {
-                font-size: 2.3rem;
-            }
-            
-            .user-info p {
-                font-size: 1.1rem;
+                font-size: 1.8rem;
             }
             
             .card {
-                padding: 30px 20px;
-                min-height: 320px;
+                padding: 25px 20px;
             }
             
             .card-icon {
-                width: 80px;
-                height: 80px;
-                font-size: 2.2rem;
+                width: 60px;
+                height: 60px;
+                font-size: 1.8rem;
             }
             
             .card h3 {
-                font-size: 1.5rem;
+                font-size: 1.2rem;
+            }
+            
+            .logout-btn {
+                bottom: 20px;
+                right: 20px;
+                padding: 8px 16px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -623,12 +627,12 @@
             <div class="auth-icon">
                 <i class="fab fa-telegram"></i>
             </div>
-            <h2 style="font-family: 'Montserrat', sans-serif; font-size: 2rem; margin-bottom: 15px;">Вхід до системи модератора</h2>
-            <p style="color: var(--text-gray); font-size: 1.1rem; margin-bottom: 10px;">Для доступу до посібника необхідно авторизуватися через Telegram. Доступ мають лише підтверджені модератори сервера.</p>
+            <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.8rem; margin-bottom: 15px;">Вхід до системи модератора</h2>
+            <p style="color: var(--text-gray); font-size: 1rem; margin-bottom: 10px;">Для доступу до посібника необхідно авторизуватися через Telegram. Доступ мають лише підтверджені модератори сервера.</p>
             <button id="telegramLogin" class="auth-btn">
                 <i class="fab fa-telegram"></i> Увійти через Telegram
             </button>
-            <p style="margin-top: 20px; color: var(--text-gray); font-size: 0.9rem;">Після авторизації ваш Telegram username буде відображено на головній сторінці</p>
+            <p style="margin-top: 20px; color: var(--text-gray); font-size: 0.85rem;">Після авторизації ваш Telegram username буде відображено на головній сторінці</p>
         </div>
     </div>
 
@@ -640,7 +644,7 @@
         <i class="fas fa-bars"></i>
     </button>
 
-    <!-- Сайдбар БЕЗ КРЕСТИКА -->
+    <!-- Сайдбар -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>Ukraine GTA 5</h2>
@@ -792,7 +796,7 @@
                 </ul>
                 
                 <h2 class="page-subtitle">Рекомендації щодо онлайн змін</h2>
-                <ol style="padding-left: 25px; margin: 20px 0; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <ol style="padding-left: 25px; margin: 20px 0;">
                     <li style="margin-bottom: 10px;">Плануйте свої зміни заздалегідь, враховуючи ваш особистий графік.</li>
                     <li style="margin-bottom: 10px;">Якщо ви не встигаєте на зміну, обов'язково повідомте про це Пм Лідера.</li>
                     <li style="margin-bottom: 10px;">Нічні зміни не є обов'язкованим, але вітаються та можуть враховуватись при оцінці вашої активності.</li>
@@ -813,7 +817,7 @@
                 <p>Цей статут визначає права, обов'язки та правила поведінки для модераторів сервера Ukraine GTA 5 RolePlay.</p>
                 
                 <h2 class="page-subtitle">Обов'язки модератора</h2>
-                <ol style="padding-left: 25px; margin: 20px 0; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <ol style="padding-left: 25px; margin: 20px 0;">
                     <li style="margin-bottom: 10px;">Дотримання та контроль виконання правил сервера</li>
                     <li style="margin-bottom: 10px;">Проведення онлайн-змін згідно з графіком</li>
                     <li style="margin-bottom: 10px;">Ведення звітності про проведені адміністративні дії</li>
@@ -822,7 +826,7 @@
                 </ol>
                 
                 <h2 class="page-subtitle">Права модератора</h2>
-                <ul style="padding-left: 25px; margin: 20px 0; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <ul style="padding-left: 25px; margin: 20px 0;">
                     <li style="margin-bottom: 10px;">Право видавати попередження гравцям за порушення правил</li>
                     <li style="margin-bottom: 10px;">Право видавати тимчасові бани згідно з регламентом</li>
                     <li style="margin-bottom: 10px;">Право звертатися до вищого керівництва за роз'ясненнями</li>
@@ -936,10 +940,12 @@
             greetingSpan.textContent = currentUser.firstName;
         }
         
-        // Открытие сайдбара
+        // Открытие сайдбара с анимацией
         menuToggle.addEventListener('click', function() {
             sidebar.classList.add('active');
-            sidebarOverlay.classList.add('active');
+            setTimeout(() => {
+                sidebarOverlay.classList.add('active');
+            }, 10);
             document.body.style.overflow = 'hidden';
         });
         
@@ -959,31 +965,52 @@
             }
         });
         
-        // Переключение страниц
+        // Переключение страниц с анимацией
         function switchPage(pageId) {
-            // Скрываем все страницы
-            pageContents.forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            // Показываем выбранную страницу
-            document.getElementById(pageId).classList.add('active');
-            
-            // Обновляем активный пункт меню
-            navItems.forEach(item => {
-                item.classList.remove('active');
-                if (item.getAttribute('data-page') === pageId.replace('Page', '')) {
-                    item.classList.add('active');
-                }
-            });
-            
-            // Закрываем сайдбар
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            
-            // Скроллим наверх
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Плавное скрытие текущей страницы
+            const activePage = document.querySelector('.page-content.active');
+            if (activePage) {
+                activePage.style.opacity = '0';
+                activePage.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    // Скрываем все страницы
+                    pageContents.forEach(page => {
+                        page.classList.remove('active');
+                        page.style.opacity = '';
+                        page.style.transform = '';
+                    });
+                    
+                    // Показываем выбранную страницу
+                    const newPage = document.getElementById(pageId);
+                    newPage.classList.add('active');
+                    newPage.style.opacity = '0';
+                    newPage.style.transform = 'translateY(10px)';
+                    
+                    // Плавное появление
+                    setTimeout(() => {
+                        newPage.style.opacity = '1';
+                        newPage.style.transform = 'translateY(0)';
+                    }, 20);
+                    
+                    // Обновляем активный пункт меню
+                    navItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.getAttribute('data-page') === pageId.replace('Page', '')) {
+                            item.classList.add('active');
+                        }
+                    });
+                    
+                    // Закрываем сайдбар
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    
+                    // Скроллим наверх
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                }, 300);
+            }
         }
         
         // Обработчики для навигации
@@ -1031,17 +1058,6 @@
             // Скрываем основной контент до авторизации
             document.getElementById('mainContent').style.display = 'none';
             logoutBtn.style.display = 'none';
-        });
-        
-        // Анимация для карточек при наведении
-        cards.forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-8px)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
         });
     </script>
 </body>
