@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ModHub | Ukraine GTA V</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --dark: #0f172a;
+            --dark-card: #1e293b;
+            --darker: #020617;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --gray-light: #cbd5e1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --cyan: #06b6d4;
+            --pink: #ec4899;
+            
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.2);
+            --shadow-sm: 0 5px 15px rgba(0, 0, 0, 0.1);
+            
+            --gradient-primary: linear-gradient(135deg, var(--primary), var(--secondary));
+            --gradient-dark: linear-gradient(135deg, var(--dark), var(--darker));
+            --gradient-card: linear-gradient(145deg, #1e293b, #172033);
+            
+            --glass: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            
+            --radius-lg: 20px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--gradient-dark);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.1) 0%, transparent 20%);
+            z-index: -1;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Modern Header */
+        header {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            transform: rotate(30deg);
+            transition: var(--transition);
+        }
+
+        .logo-icon:hover::after {
+            transform: rotate(30deg) translateX(100%);
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text p {
+            font-size: 13px;
+            color: var(--gray-light);
+            font-weight: 400;
+        }
+
+        /* User Profile - Modern */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 10px 20px;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .user-profile:hover {
+            background: rgba(30, 41, 59, 0.9);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .user-info {
+            line-height: 1.4;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: var(--cyan);
+            font-weight: 500;
+        }
+
+        .user-status {
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            border: 2px solid var(--dark-card);
+        }
+
+        /* Modern Navigation */
+        .main-nav {
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .nav-container {
+            display: flex;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 8px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 16px 10px;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            font-weight: 500;
+            font-size: 14px;
+            color: var(--gray-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+            min-width: 120px;
+        }
+
+        .nav-item:hover {
+            color: var(--light);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .nav-item.active {
+            color: var(--light);
+            background: rgba(99, 102, 241, 0.2);
+            box-shadow: inset 0 2px 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-icon {
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-icon {
+            transform: scale(1.2);
+        }
+
+        .nav-indicator {
+            position: absolute;
+            bottom: 8px;
+            height: 3px;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 2;
+        }
+
+        /* Modern Content Sections */
+        .content-section {
+            background: var(--gradient-card);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-top: 25px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+        }
+
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .section-header h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-header h2::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            margin-left: 20px;
+        }
+
+        /* Modern Welcome Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .welcome-banner h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-banner p {
+            font-size: 16px;
+            color: var(--gray-light);
+            max-width: 800px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Modern Cards Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 25px;
+            margin: 35px 0;
+        }
+
+        .feature-card {
+            background: var(--gradient-card);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            border: 1px solid var(--glass-border);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 24px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: var(--transition);
+        }
+
+        .feature-card:hover .card-icon {
+            background: rgba(99, 102, 241, 0.2);
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--light);
+            line-height: 1.3;
+        }
+
+        .card-description {
+            color: var(--gray-light);
+            font-size: 15px;
+            margin-bottom: 25px;
+            line-height: 1.7;
+            flex-grow: 1;
+        }
+
+        .card-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            width: fit-content;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .card-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Modern Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 25px 0;
+            background: var(--dark-card);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            padding: 18px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--light);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .data-table td {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            font-size: 14px;
+            color: var(--gray-light);
+            transition: var(--transition);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover td {
+            background: rgba(99, 102, 241, 0.05);
+            color: var(--light);
+        }
+
+        /* Modern Status Badges */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-badge.warning {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Modern Alert Boxes */
+        .alert-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+            border-left: 4px solid var(--warning);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            margin: 25px 0;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .alert-box::before {
+            content: '⚠️';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            opacity: 0.2;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.05));
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            margin: 25px 0;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        /* Modern Discord Link */
+        .discord-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #5865F2, #4752c4);
+            color: white;
+            padding: 14px 28px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            margin: 20px 0;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(88, 101, 242, 0.3);
+        }
+
+        .discord-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(88, 101, 242, 0.4);
+        }
+
+        /* Modern Code Blocks */
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: var(--cyan);
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        /* Modern Footer */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 30px 0;
+            border-top: 1px solid var(--glass-border);
+            color: var(--gray);
+            font-size: 13px;
+        }
+
+        /* Glowing Elements */
+        .glow {
+            position: relative;
+        }
+
+        .glow::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: var(--gradient-primary);
+            border-radius: inherit;
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow:hover::after {
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .features-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .nav-container {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .nav-item {
+                min-width: 140px;
+                flex: none;
+                width: calc(25% - 10px);
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .nav-item {
+                width: calc(50% - 10px);
+                min-width: auto;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .content-section {
+                padding: 25px;
+            }
+            
+            .section-header h2 {
+                font-size: 26px;
+            }
+            
+            .welcome-banner {
+                padding: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-item {
+                width: 100%;
+            }
+            
+            .feature-card {
+                padding: 25px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+
+    <!-- Modern Header -->
+    <header>
+        <div class="container header-container">
+            <div class="logo">
+                <div class="logo-icon glow">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="logo-text">
+                    <h1>MODHUB</h1>
+                    <p>Ukraine GTA V • Модераційна система</p>
+                </div>
+            </div>
+            
+            <div class="user-profile glow">
+                <div class="user-avatar">P</div>
+                <div class="user-info">
+                    <div class="user-name">Perets</div>
+                    <div class="user-role">Senior Moderator</div>
+                </div>
+                <div class="user-status"></div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Modern Navigation -->
+        <nav class="main-nav">
+            <div class="nav-container">
+                <div class="nav-indicator" id="navIndicator"></div>
+                <div class="nav-item active" data-target="home">
+                    <i class="fas fa-home nav-icon"></i>
+                    <span>Головна</span>
+                </div>
+                <div class="nav-item" data-target="statute">
+                    <i class="fas fa-book nav-icon"></i>
+                    <span>Статут</span>
+                </div>
+                <div class="nav-item" data-target="shifts">
+                    <i class="fas fa-calendar-alt nav-icon"></i>
+                    <span>Зміни</span>
+                </div>
+                <div class="nav-item" data-target="penalties">
+                    <i class="fas fa-gavel nav-icon"></i>
+                    <span>Покарання</span>
+                </div>
+                <div class="nav-item" data-target="inactive">
+                    <i class="fas fa-bed nav-icon"></i>
+                    <span>Неактив</span>
+                </div>
+                <div class="nav-item" data-target="staff">
+                    <i class="fas fa-users nav-icon"></i>
+                    <span>Команда</span>
+                </div>
+                <div class="nav-item" data-target="commands">
+                    <i class="fas fa-terminal nav-icon"></i>
+                    <span>Команди</span>
+                </div>
+                <div class="nav-item" data-target="fractions">
+                    <i class="fas fa-sitemap nav-icon"></i>
+                    <span>Фракції</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Modern Content -->
+        <main>
+            <!-- Home Section -->
+            <section id="home" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fas fa-star"></i> Модераційний Хаб</h2>
+                </div>
+                
+                <div class="welcome-banner">
+                    <h3>Вітаємо, Perets! 👋</h3>
+                    <p>Цей сучасний портал створений для максимально ефективної роботи модераторів. Отримайте доступ до всіх інструментів, правил та оновлень в одному місці.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card glow">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <h3 class="card-title">Документація та правила</h3>
+                        </div>
+                        <p class="card-description">Повний гайдлайн модератора з усіма оновленнями. Структурована інформація про правила, обов'язки та стандарти роботи.</p>
+                        <button class="card-button" data-target="statute">
+                            <i class="fas fa-arrow-right"></i> Детальніше
+                        </button>
+                    </div>
+
+                    <div class="feature-card glow">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                            <h3 class="card-title">Розклад змін</h3>
+                        </div>
+                        <p class="card-description">Інтелектуальна система планування змін. Моніторинг активності, статистика та автоматичні нагадування про зміни.</p>
+                        <button class="card-button" data-target="shifts">
+                            <i class="fas fa-arrow-right"></i> Дивитись графік
+                        </button>
+                    </div>
+
+                    <div class="feature-card glow">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h3 class="card-title">Інструменти модерації</h3>
+                        </div>
+                        <p class="card-description">Сучасні команди, скрипти та інструменти для швидкої та ефективної модерації. Автоматизація рутинних завдань.</p>
+                        <button class="card-button" data-target="commands">
+                            <i class="fas fa-arrow-right"></i> Переглянути
+                        </button>
+                    </div>
+
+                    <div class="feature-card glow">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h3 class="card-title">Аналітика та статистика</h3>
+                        </div>
+                        <p class="card-description">Детальна статистика активності, ефективності роботи команди. Аналітика порушень та результатів модерації.</p>
+                        <button class="card-button" onclick="showComingSoon()">
+                            <i class="fas fa-arrow-right"></i> Переглянути звіти
+                        </button>
+                    </div>
+
+                    <div class="feature-card glow">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-users-cog"></i>
+                            </div>
+                            <h3 class="card-title">Управління командою</h3>
+                        </div>
+                        <p class="card-description">Інформація про всіх модераторів, їх контакти, графіки роботи. Онлайн-статуси та швидкий доступ до команди.</p>
+                        <button class="card-button" data-target="staff">
+                            <i class="fas fa-arrow-right"></i> Переглянути команду
+                        </button>
+                    </div>
+
+                    <div class="feature-card glow">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-network-wired"></i>
+                            </div>
+                            <h3 class="card-title">Структура сервера</h3>
+                        </div>
+                        <p class="card-description">Повна мапа фракцій та організацій сервера. Правила взаємодії, контакти та специфіка кожної структури.</p>
+                        <button class="card-button" data-target="fractions">
+                            <i class="fas fa-arrow-right"></i> Дослідити
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Shifts Section - Modern -->
+            <section id="shifts" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-star"></i> Система змін</h2>
+                </div>
+                
+                <div class="welcome-banner">
+                    <h3>Планувальник змін 🗓️</h3>
+                    <p>Інтелектуальна система управління онлайн-змінами з аналітикою, нагадуваннями та автоматичним відстеженням активності.</p>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3 class="card-title">Основні вимоги</h3>
+                        <div style="margin: 20px 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <span style="color: var(--gray-light);">Мінімальний час:</span>
+                                <span style="font-weight: 600; color: var(--primary);">1 година</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span style="color: var(--gray-light);">Графік змін:</span>
+                                <span style="font-weight: 600; color: var(--primary);">7:00 - 00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3 class="card-title">Нічні зміни</h3>
+                        <div style="margin: 20px 0; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 800; color: var(--cyan); margin-bottom: 10px;">
+                                00:01 - 06:59
+                            </div>
+                            <p style="color: var(--gray-light); font-size: 14px;">
+                                Додаткові зміни для підвищення активності
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-box">
+                    <h4 style="color: var(--warning); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-exclamation-triangle"></i> Важливо!
+                    </h4>
+                    <p>Модератор має встигнути відбути онлайн зміну <strong>з 7:00 до 00:00</strong>.</p>
+                    <p style="margin-top: 10px;">Несповіщення про пропуск зміни призводить до штрафу <strong>2% до ЗП</strong>.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4 style="margin-bottom: 15px; color: var(--light);">Рекомендації для ефективних змін</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div style="display: flex; gap: 10px;">
+                            <div style="color: var(--primary); font-size: 20px;">①</div>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">Планування</div>
+                                <div style="color: var(--gray-light); font-size: 13px;">Плануйте зміни заздалегідь</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div style="color: var(--primary); font-size: 20px;">②</div>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">Комунікація</div>
+                                <div style="color: var(--gray-light); font-size: 13px;">Повідомляйте про зміни</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div style="color: var(--primary); font-size: 20px;">③</div>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">Дотримання</div>
+                                <div style="color: var(--gray-light); font-size: 13px;">Слідкуйте за правилами</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div style="color: var(--primary); font-size: 20px;">④</div>
+                            <div>
+                                <div style="font-weight: 600; margin-bottom: 5px;">Звітність</div>
+                                <div style="color: var(--gray-light); font-size: 13px;">Ведіть детальні звіти</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Penalties Section - Modern -->
+            <section id="penalties" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-scale-balanced"></i> Система оцінки</h2>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card" style="border-color: rgba(239, 68, 68, 0.3);">
+                        <div class="card-header">
+                            <div class="card-icon" style="color: var(--danger);">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                            <h3 class="card-title">Еміт на 30 днів</h3>
+                        </div>
+                        <ul style="color: var(--gray-light); padding-left: 20px;">
+                            <li style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></i>
+                                <span>30 відповідей у "Питання до модерації"</span>
+                            </li>
+                            <li style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></i>
+                                <span>40 покарань з доказами</span>
+                            </li>
+                            <li style="margin-bottom: 10px; display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></i>
+                                <span>7 днів по 3 години онлайн</span>
+                            </li>
+                            <li style="display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="fas fa-check-circle" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></i>
+                                <span>10 попереджень</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card" style="border-color: rgba(245, 158, 11, 0.3);">
+                        <div class="card-header">
+                            <div class="card-icon" style="color: var(--warning);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <h3 class="card-title">Знати попередження</h3>
+                        </div>
+                        <ul style="color: var(--gray-light); padding-left: 20px;">
+                            <li style="margin-bottom: 10px;">15 відповідей у каналі запитань</li>
+                            <li style="margin-bottom: 10px;">30 покарань з доказами</li>
+                            <li style="margin-bottom: 10px;">4 дні по 2.5 години онлайн</li>
+                            <li>7 попереджень</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="feature-card" style="border-color: rgba(99, 102, 241, 0.3);">
+                        <div class="card-header">
+                            <div class="card-icon" style="color: var(--primary);">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <h3 class="card-title">Знати -5%</h3>
+                        </div>
+                        <ul style="color: var(--gray-light); padding-left: 20px;">
+                            <li style="margin-bottom: 10px;">5 відповідей у каналі запитань</li>
+                            <li style="margin-bottom: 10px;">10 покарань з доказами</li>
+                            <li style="margin-bottom: 10px;">2 дні по 2 години онлайн</li>
+                            <li>4 попередження</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Staff Section - Modern -->
+            <section id="staff" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-users-gear"></i> Наша команда</h2>
+                </div>
+                
+                <div class="welcome-banner">
+                    <h3>Команда професіоналів ✨</h3>
+                    <p>Наші модератори забезпечують якісну роботу сервера та гарну атмосферу для всіх гравців.</p>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                            <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">MC</div>
+                            <div>
+                                <h3 style="font-size: 20px; margin-bottom: 5px;">Mashyla Clark</h3>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="status-badge">
+                                        <i class="fas fa-circle" style="font-size: 8px;"></i> Онлайн
+                                    </span>
+                                    <span style="color: var(--gray-light); font-size: 13px;">Discord Moderator</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="color: var(--gray-light); font-size: 14px;">
+                            <div style="margin-bottom: 8px;"><i class="fas fa-clock" style="margin-right: 8px;"></i> Графік: Пн-Пт, 15:00-22:00</div>
+                            <div><i class="fas fa-calendar" style="margin-right: 8px;"></i> На сервері: 1 рік 3 місяці</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                            <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--cyan), var(--primary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">AC</div>
+                            <div>
+                                <h3 style="font-size: 20px; margin-bottom: 5px;">Alisha Clark</h3>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="status-badge offline">
+                                        <i class="fas fa-circle" style="font-size: 8px;"></i> Офлайн
+                                    </span>
+                                    <span style="color: var(--gray-light); font-size: 13px;">Discord Moderator</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="color: var(--gray-light); font-size: 14px;">
+                            <div style="margin-bottom: 8px;"><i class="fas fa-clock" style="margin-right: 8px;"></i> Графік: Вт-Сб, 18:00-01:00</div>
+                            <div><i class="fas fa-calendar" style="margin-right: 8px;"></i> На сервері: 8 місяців</div>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div style="display: flex; align-items: center; gap: 20px; margin-bottom: 20px;">
+                            <div style="width: 70px; height: 70px; background: linear-gradient(135deg, var(--pink), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold;">DP</div>
+                            <div>
+                                <h3 style="font-size: 20px; margin-bottom: 5px;">Danil Perets</h3>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span class="status-badge">
+                                        <i class="fas fa-circle" style="font-size: 8px;"></i> Онлайн
+                                    </span>
+                                    <span style="color: var(--gray-light); font-size: 13px;">Senior Moderator</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="color: var(--gray-light); font-size: 14px;">
+                            <div style="margin-bottom: 8px;"><i class="fas fa-clock" style="margin-right: 8px;"></i> Графік: Щодня, 10:00-18:00</div>
+                            <div><i class="fas fa-calendar" style="margin-right: 8px;"></i> На сервері: 2 роки 1 місяць</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Commands Section - Modern -->
+            <section id="commands" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-terminal"></i> Командний центр</h2>
+                </div>
+                
+                <div class="info-box">
+                    <h4 style="margin-bottom: 15px; color: var(--light);">Формат команд</h4>
+                    <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: var(--radius-sm);">
+                            <div style="font-size: 12px; color: var(--gray-light); margin-bottom: 5px;">Хвилини</div>
+                            <code style="font-size: 18px; font-weight: bold;">!команда user 30m</code>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: var(--radius-sm);">
+                            <div style="font-size: 12px; color: var(--gray-light); margin-bottom: 5px;">Години</div>
+                            <code style="font-size: 18px; font-weight: bold;">!команда user 2h</code>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: var(--radius-sm);">
+                            <div style="font-size: 12px; color: var(--gray-light); margin-bottom: 5px;">Дні</div>
+                            <code style="font-size: 18px; font-weight: bold;">!команда user 7d</code>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Команда</th>
+                            <th>Призначення</th>
+                            <th>Приклад</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>!мут</code></td>
+                            <td>Обмежити голосовий чат</td>
+                            <td><code>!мут UserName 30m Р.2</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>!бан</code></td>
+                            <td>Заблокувати користувача</td>
+                            <td><code>!бан UserName 7d Р.11</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>!варн</code></td>
+                            <td>Видати попередження</td>
+                            <td><code>!варн UserName Р.3</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>!кік</code></td>
+                            <td>Вигнати з сервера</td>
+                            <td><code>!кік UserName Р.5</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Fractions Section - Modern -->
+            <section id="fractions" class="content-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-sitemap"></i> Екосистема сервера</h2>
+                </div>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <h3 class="card-title" style="color: #f97316;">Монтаж</h3>
+                        <p class="card-description">Кримінальна організація з чіткою ієрархією. Контролює нелегальні операції міста.</p>
+                        <div style="margin-top: 15px;">
+                            <span style="display: inline-block; background: rgba(249, 115, 22, 0.1); color: #f97316; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Тибенець</span>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3 class="card-title" style="color: #3b82f6;">LSPD</h3>
+                        <p class="card-description">Департамент поліції Лос-Сантоса. Основна правоохоронна структура міста.</p>
+                        <div style="margin-top: 15px;">
+                            <span style="display: inline-block; background: rgba(59, 130, 246, 0.1); color: #3b82f6; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Правоохорона</span>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3 class="card-title" style="color: #8b5cf6;">FIB</h3>
+                        <p class="card-description">Федеральне бюро розслідувань. Займається особливо важливими справами.</p>
+                        <div style="margin-top: 15px;">
+                            <span style="display: inline-block; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Федерали</span>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3 class="card-title" style="color: #10b981;">EMS</h3>
+                        <p class="card-description">Екстрена медична служба. Забезпечує медичну допомогу громадянам.</p>
+                        <div style="margin-top: 15px;">
+                            <span style="display: inline-block; background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Медики</span>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <h3 class="card-title" style="color: #ef4444;">U.S Army</h3>
+                        <p class="card-description">Військові сили США в регіоні. Забезпечують безпеку особливо важливих об'єктів.</p>
+                        <div style="margin-top: 15px;">
+                            <span style="display: inline-block; background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Армія</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 ModHub | Ukraine GTA V Модераційна система</p>
+            <p style="margin-top: 10px; font-size: 12px; color: var(--gray);">
+                <i class="fas fa-lock"></i> Приватний доступ • Версія 2.1 • 
+                <span style="color: var(--primary);">UI/UX: Modern Design</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Modern Navigation System
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.content-section');
+            const navIndicator = document.getElementById('navIndicator');
+            const cardButtons = document.querySelectorAll('.card-button');
+            
+            // Set initial indicator position
+            updateNavIndicator();
+            
+            // Navigation click handler
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    
+                    // Update active nav item with animation
+                    navItems.forEach(nav => {
+                        nav.classList.remove('active');
+                        nav.style.transform = 'scale(1)';
+                    });
+                    
+                    this.classList.add('active');
+                    this.style.transform = 'scale(1.05)';
+                    
+                    // Show target section with animation
+                    sections.forEach(section => {
+                        if (section.classList.contains('active')) {
+                            section.style.animation = 'slideIn 0.5s ease reverse';
+                            setTimeout(() => {
+                                section.classList.remove('active');
+                            }, 250);
+                        }
+                        
+                        if (section.id === targetId) {
+                            setTimeout(() => {
+                                section.classList.add('active');
+                            }, 250);
+                        }
+                    });
+                    
+                    // Update indicator position
+                    updateNavIndicator();
+                    
+                    // Smooth scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+            
+            // Card button click handler
+            cardButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    
+                    if (targetId) {
+                        // Find and click corresponding nav item
+                        const targetNav = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+                        if (targetNav) {
+                            targetNav.click();
+                        }
+                    }
+                });
+            });
+            
+            // Update navigation indicator position
+            function updateNavIndicator() {
+                const activeNav = document.querySelector('.nav-item.active');
+                if (activeNav && navIndicator) {
+                    const navRect = activeNav.getBoundingClientRect();
+                    const containerRect = document.querySelector('.nav-container').getBoundingClientRect();
+                    
+                    navIndicator.style.width = `${navRect.width - 20}px`;
+                    navIndicator.style.left = `${navRect.left - containerRect.left + 10}px`;
+                }
+            }
+            
+            // Update indicator on window resize
+            window.addEventListener('resize', updateNavIndicator);
+            
+            // Add hover effects to cards
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('.card-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1.1) rotate(5deg)';
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('.card-icon');
+                    if (icon) {
+                        icon.style.transform = 'scale(1) rotate(0deg)';
+                    }
+                });
+            });
+            
+            // Simulate loading animation
+            setTimeout(() => {
+                document.body.style.opacity = '1';
+            }, 100);
+            
+            // Initialize user data
+            console.log('%c🚀 ModHub System Loaded', 'color: #6366f1; font-size: 16px; font-weight: bold;');
+            console.log('%cUser: Perets (Senior Moderator)', 'color: #8b5cf6;');
+            console.log('%cAccess Level: Advanced', 'color: #10b981;');
+        });
+        
+        // Coming soon notification
+        function showComingSoon() {
+            const notification = document.createElement('div');
+            notification.innerHTML = `
+                <div style="position: fixed; top: 20px; right: 20px; background: var(--gradient-primary); color: white; padding: 15px 25px; border-radius: var(--radius-md); z-index: 9999; box-shadow: var(--shadow-lg); animation: slideInRight 0.5s ease;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-rocket"></i>
+                        <div>
+                            <div style="font-weight: 600;">Функція в розробці</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Доступна в наступному оновленні</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideInRight 0.5s ease reverse';
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 3000);
+            
+            // Add animation if not exists
+            if (!document.querySelector('#slideInRight')) {
+                const style = document.createElement('style');
+                style.id = 'slideInRight';
+                style.textContent = `
+                    @keyframes slideInRight {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+    </script>
+</body>
+</html>
