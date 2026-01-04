@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизація | Ukraine GTA 5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0C1016;
+            --bg-card: #141A24;
+            --primary: #0088cc;
+            --primary-dark: #0077b5;
+            --warning: #F59E0B;
+            --text-light: #F8FAFC;
+            --text-gray: #A6A6A6;
+            --border: #2D3748;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .login-card {
+            background: linear-gradient(135deg, var(--bg-card), rgba(30, 41, 59, 0.9));
+            border-radius: 20px;
+            padding: 50px 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .logo {
+            margin-bottom: 30px;
+        }
+        
+        .logo h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        
+        .logo p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+        }
+        
+        .login-content h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--text-light);
+        }
+        
+        .login-content > p {
+            color: var(--text-gray);
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        /* Кнопка Telegram */
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .telegram-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 136, 204, 0.4);
+        }
+        
+        .telegram-btn i {
+            font-size: 1.5rem;
+        }
+        
+        /* Индикатор загрузки */
+        .loading {
+            display: none;
+            margin: 25px 0;
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(0, 136, 204, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading p {
+            color: var(--text-gray);
+            font-size: 1rem;
+        }
+        
+        /* Система подтверждения */
+        .confirmation-info {
+            background-color: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            text-align: left;
+        }
+        
+        .confirmation-info h4 {
+            color: var(--warning);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .confirmation-info ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .confirmation-info li {
+            color: var(--text-gray);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .confirmation-info li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--warning);
+            font-size: 1.2rem;
+        }
+        
+        /* White list info */
+        .whitelist-info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .whitelist-info p {
+            color: var(--text-gray);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 40px 25px;
+            }
+            
+            .logo h1 {
+                font-size: 2rem;
+            }
+            
+            .login-content h2 {
+                font-size: 1.6rem;
+            }
+            
+            .telegram-btn {
+                padding: 16px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <h1>Ukraine GTA 5</h1>
+                <p>Посібник модератора</p>
+            </div>
+            
+            <div class="login-content">
+                <h2>Вхід у розділ модерації</h2>
+                <p>Увійдіть через Telegram для доступу до системи</p>
+                
+                <!-- Кнопка Telegram -->
+                <button class="telegram-btn" id="telegramBtn" onclick="loginWithTelegram()">
+                    <i class="fab fa-telegram"></i> Увійти через Telegram
+                </button>
+                
+                <!-- Индикатор загрузки -->
+                <div class="loading" id="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Перевіряємо доступ...</p>
+                </div>
+                
+                <!-- Информация о подтверждении -->
+                <div class="confirmation-info">
+                    <h4><i class="fas fa-shield-alt"></i> Як працює система:</h4>
+                    <ul>
+                        <li><strong>Перший вхід:</strong> Потрібне підтвердження адміністратора</li>
+                        <li><strong>Наступні входи:</strong> Автоматично, без підтвердження</li>
+                        <li>Адміністратор отримає запит у Telegram боті</li>
+                        <li>Після підтвердження доступ зберігається</li>
+                    </ul>
+                </div>
+                
+                <!-- Информация о белом списке -->
+                <div class="whitelist-info">
+                    <p><i class="fas fa-check-circle"></i> Після першого підтвердження ви потрапляєте в "білий список" і можете заходити без додаткових підтверджень.</p>
+                </div>
+            </div>
+            
+            <div class="footer">
+                <p>Доступ лише для підтверджених модераторів</p>
+                <p style="margin-top: 5px; font-size: 0.85rem;">Бот: @ukraine_gta5_mod_bot</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Имя бота (замени на свое)
+        const BOT_USERNAME = 'ukraine_gta5_mod_bot';
+        
+        // Проверяем, если уже авторизован
+        function checkExistingAuth() {
+            const userData = localStorage.getItem('userData');
+            const authToken = localStorage.getItem('authToken');
+            
+            if (userData && authToken) {
+                // Проверяем токен (в реальном приложении здесь будет запрос к серверу)
+                const user = JSON.parse(userData);
+                const currentTime = new Date().getTime();
+                const tokenTime = localStorage.getItem('tokenTime');
+                
+                // Если токен свежий (менее 7 дней)
+                if (tokenTime && (currentTime - parseInt(tokenTime)) < 7 * 24 * 60 * 60 * 1000) {
+                    // Автоматически переходим на сайт
+                    window.location.href = 'index.html';
+                }
+            }
+        }
+        
+        // Функция входа через Telegram
+        async function loginWithTelegram() {
+            const btn = document.getElementById('telegramBtn');
+            const loading = document.getElementById('loading');
+            
+            // Показываем индикатор загрузки
+            btn.style.display = 'none';
+            loading.style.display = 'block';
+            
+            try {
+                // 1. Получаем данные пользователя через Telegram Widget
+                // (В реальном приложении здесь будет Telegram Login Widget)
+                
+                // Для демо - имитация получения данных
+                const userData = await simulateTelegramLogin();
+                
+                // 2. Проверяем, есть ли пользователь в белом списке
+                const isWhitelisted = await checkWhitelist(userData.id);
+                
+                if (isWhitelisted) {
+                    // Пользователь в белом списке - сразу пускаем
+                    await grantAccess(userData);
+                } else {
+                    // Пользователя нет в белом списке - запрашиваем подтверждение
+                    const isApproved = await requestAdminApproval(userData);
+                    
+                    if (isApproved) {
+                        // Добавляем в белый список и пускаем
+                        await addToWhitelist(userData);
+                        await grantAccess(userData);
+                    } else {
+                        // Отказ
+                        showAccessDenied();
+                        btn.style.display = 'inline-flex';
+                        loading.style.display = 'none';
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Помилка авторизації. Спробуйте ще раз.');
+                btn.style.display = 'inline-flex';
+                loading.style.display = 'none';
+            }
+        }
+        
+        // Имитация входа через Telegram
+        async function simulateTelegramLogin() {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    // Тестовые данные пользователя
+                    const userData = {
+                        id: Math.floor(Math.random() * 1000000) + 1000000,
+                        first_name: 'Користувач',
+                        username: 'user_' + Math.floor(Math.random() * 1000),
+                        photo_url: '',
+                        auth_date: Math.floor(Date.now() / 1000),
+                        hash: 'test_hash'
+                    };
+                    
+                    // Спросить данные для демо
+                    const firstName = prompt('Введіть ваше ім\'я (для демо):', 'Користувач');
+                    const username = prompt('Введіть ваш Telegram username (для демо):', 'user_test');
+                    
+                    if (firstName) userData.first_name = firstName;
+                    if (username) userData.username = username;
+                    
+                    resolve(userData);
+                }, 1000);
+            });
+        }
+        
+        // Проверка белого списка
+        async function checkWhitelist(userId) {
+            // В реальном приложении здесь запрос к серверу
+            // Для демо - проверяем localStorage
+            const whitelist = JSON.parse(localStorage.getItem('whitelist') || '[]');
+            return whitelist.includes(userId.toString());
+        }
+        
+        // Запрос подтверждения у админа
+        async function requestAdminApproval(userData) {
+            return new Promise((resolve) => {
+                // В реальном приложении здесь запрос к Telegram боту
+                alert(`Запит на доступ відправлено адміністратору.\n\nКористувач: ${userData.first_name}\nUsername: @${userData.username}\n\nАдмін підтвердить доступ в боті @${BOT_USERNAME}`);
+                
+                // Для демо - спрашиваем подтверждение
+                const approved = confirm(`Демо: Ви адміністратор. Дозволити доступ для ${userData.first_name} (@${userData.username})?`);
+                resolve(approved);
+            });
+        }
+        
+        // Добавление в белый список
+        async function addToWhitelist(userData) {
+            const whitelist = JSON.parse(localStorage.getItem('whitelist') || '[]');
+            if (!whitelist.includes(userData.id.toString())) {
+                whitelist.push(userData.id.toString());
+                localStorage.setItem('whitelist', JSON.stringify(whitelist));
+                console.log('Користувача додано до білого списку:', userData.username);
+            }
+        }
+        
+        // Предоставление доступа
+        async function grantAccess(userData) {
+            // Сохраняем данные пользователя
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('authToken', generateToken());
+            localStorage.setItem('tokenTime', new Date().getTime().toString());
+            
+            // Переходим на сайт
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1000);
+        }
+        
+        // Отказ в доступе
+        function showAccessDenied() {
+            loading.innerHTML = `
+                <div style="color: #EF4444; font-size: 3rem; margin-bottom: 15px;">
+                    <i class="fas fa-ban"></i>
+                </div>
+                <p style="color: #EF4444; font-weight: bold;">Доступ відхилено</p>
+                <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px;">
+                    Адміністратор не підтвердив ваш доступ
+                </p>
+                <button onclick="location.reload()" style="
+                    background: var(--primary);
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    margin-top: 15px;
+                ">
+                    Спробувати знову
+                </button>
+            `;
+        }
+        
+        // Генерация токена
+        function generateToken() {
+            return 'token_' + Math.random().toString(36).substr(2) + '_' + Date.now().toString(36);
+        }
+        
+        // Проверяем авторизацию при загрузке
+        window.onload = checkExistingAuth;
+    </script>
+</body>
+</html>
