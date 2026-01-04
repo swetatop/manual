@@ -7,12 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     
-    <!-- ========== ПРОВЕРКА АДМИНА (ДОБАВЛЕНО) ========== -->
+    <!-- ========== ПРОВЕРКА АДМИНА ========== -->
     <script>
-        // ID адміністратора
         const ADMIN_ID = "5316593741";
         
-        // Перевірка авторизації при завантаженні
         function checkAdminAuth() {
             console.log('=== ПРОВЕРКА АДМІН ДОСТУПА ===');
             
@@ -21,13 +19,6 @@
                 const authToken = localStorage.getItem('authToken');
                 const isAdmin = localStorage.getItem('isAdmin');
                 
-                console.log('Дані:', { 
-                    hasUserData: !!userData, 
-                    hasAuthToken: !!authToken, 
-                    isAdmin: isAdmin 
-                });
-                
-                // Перевіряємо наявність усіх даних
                 if (!userData || !authToken || isAdmin !== 'true') {
                     console.log('❌ Недостатньо даних для доступу');
                     window.location.href = 'login.html';
@@ -35,16 +26,13 @@
                 }
                 
                 const user = JSON.parse(userData);
-                console.log('Користувач ID:', user.id, 'Очікуваний ID:', ADMIN_ID);
                 
-                // СТРОГА ПЕРЕВІРКА ID АДМІНА
                 if (user.id !== ADMIN_ID && user.id.toString() !== ADMIN_ID) {
                     console.log('❌ Доступ заборонено: невірний ID');
                     window.location.href = 'login.html';
                     return null;
                 }
                 
-                // Перевіряємо термін токена (30 днів)
                 const tokenTime = localStorage.getItem('tokenTime');
                 if (!tokenTime) {
                     console.log('❌ Немає часу токена');
@@ -54,9 +42,7 @@
                 
                 const currentTime = new Date().getTime();
                 const tokenAge = currentTime - parseInt(tokenTime);
-                const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 днів
-                
-                console.log('Вік токена:', Math.floor(tokenAge / (24 * 60 * 60 * 1000)), 'днів');
+                const maxAge = 30 * 24 * 60 * 60 * 1000;
                 
                 if (tokenAge > maxAge) {
                     console.log('❌ Токен застарів');
@@ -65,10 +51,7 @@
                 }
                 
                 console.log('✅ Адмін авторизований успішно');
-                
-                // Оновлюємо привітання
                 updateUserGreeting(user);
-                
                 return user;
                 
             } catch (error) {
@@ -78,25 +61,20 @@
             }
         }
         
-        // Оновлення привітання
         function updateUserGreeting(user) {
-            // Оновлюємо "Perets" на справжнє ім'я адміна
-            const usernameElements = document.querySelectorAll('#userGreeting span, .username-placeholder, .footer-content p strong');
-            
+            const usernameElements = document.querySelectorAll('#userGreeting span, .username-placeholder');
             usernameElements.forEach(element => {
                 if (element.textContent === 'Perets' || element.textContent === 'Користувач') {
                     element.textContent = user.first_name || 'Адміністратор';
                 }
             });
             
-            // Оновлюємо заголовок сторінки "Статут та регламент"
             const statuteHeader = document.querySelector('#statutePage .user-info h1 span');
             if (statuteHeader && statuteHeader.textContent === 'Perets') {
                 statuteHeader.textContent = user.first_name || 'Адміністратор';
             }
         }
         
-        // Вихід з системи
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
                 localStorage.clear();
@@ -104,7 +82,6 @@
             }
         }
         
-        // Перевіряємо при завантаженні
         document.addEventListener('DOMContentLoaded', function() {
             const user = checkAdminAuth();
             if (user) {
@@ -112,10 +89,9 @@
             }
         });
     </script>
-    <!-- ========== КІНЕЦЬ ПРОВЕРКИ АДМІНА ========== -->
+    <!-- ========== КОНЕЦ ПРОВЕРКИ ========== -->
     
     <style>
-        /* Базовые стили */
         :root {
             --bg-dark: #0C1016;
             --bg-card: #141A24;
@@ -232,6 +208,7 @@
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
             font-size: 1rem;
+            cursor: pointer;
         }
         
         .nav-item:hover, .nav-item.active {
@@ -284,7 +261,6 @@
             width: 100%;
         }
         
-        /* Контент страниц (скрыт по умолчанию) */
         .page-content {
             display: none;
             animation: fadeIn 0.4s ease;
@@ -299,9 +275,7 @@
             to { opacity: 1; }
         }
         
-        /* ========== СТИЛИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ ========== */
-        
-        /* Шапка главной страницы */
+        /* Остальные стили */
         .user-header {
             text-align: center;
             margin: 30px 0 80px 0;
@@ -333,7 +307,6 @@
             margin: 0 auto;
         }
         
-        /* Блок возможностей на главной */
         .capabilities {
             margin: 80px 0 100px 0;
             text-align: center;
@@ -361,7 +334,6 @@
             border-radius: 2px;
         }
         
-        /* Карточки на главной */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -423,7 +395,6 @@
             min-height: 70px;
         }
         
-        /* Кнопка "Детальніше" на главной */
         .home-card-btn {
             display: inline-block;
             background-color: rgba(59, 130, 246, 0.1);
@@ -447,18 +418,6 @@
             box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
         }
         
-        .home-card-btn i {
-            margin-left: 6px;
-            transition: transform 0.3s ease;
-        }
-        
-        .home-card-btn:hover i {
-            transform: translateX(4px);
-        }
-        
-        /* ========== ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ СТРАНИЦ ========== */
-        
-        /* Большая карточка для контента */
         .main-card {
             background-color: var(--bg-card);
             border-radius: 16px;
@@ -468,7 +427,6 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
-        /* Секция с заголовком и линией - ПОЛНАЯ ЛИНИЯ С ГРАДИЕНТОМ */
         .section-header {
             margin: 50px 0 40px 0;
             position: relative;
@@ -490,7 +448,6 @@
             border-radius: 2px;
         }
         
-        /* Карточки с временем змін */
         .time-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -517,23 +474,6 @@
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
         }
         
-        .time-card h3 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.1rem;
-            color: var(--text-gray);
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-        
-        .time-card .time {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2.8rem;
-            font-weight: 800;
-            color: var(--primary-light);
-            line-height: 1.2;
-        }
-        
-        /* Основной текст */
         .content-text {
             font-size: 1.15rem;
             line-height: 1.7;
@@ -542,7 +482,6 @@
             max-width: 100%;
         }
         
-        /* Предупреждение ОРАНЖЕВОЕ с серым текстом */
         .warning-box {
             background-color: rgba(245, 158, 11, 0.15);
             border-left: 4px solid var(--warning);
@@ -564,7 +503,6 @@
             font-size: 1.15rem;
         }
         
-        /* Секция с ссылками */
         .links-section {
             background-color: rgba(20, 26, 36, 0.5);
             border-radius: 12px;
@@ -621,16 +559,6 @@
             box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
         }
         
-        .link-button i {
-            margin-left: 8px;
-            transition: transform 0.3s ease;
-        }
-        
-        .link-button:hover i {
-            transform: translateX(5px);
-        }
-        
-        /* Список рекомендаций */
         .recommendations-list {
             list-style: none;
             margin: 40px 0 30px 0;
@@ -669,8 +597,6 @@
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* ========== СТИЛИ ДЛЯ СТРАНИЦЫ "СТАТУТ ТА РЕГЛАМЕНТ" ========== */
-        
         .regulations-list {
             list-style: none;
             margin: 30px 0;
@@ -700,7 +626,6 @@
             line-height: 1;
         }
         
-        /* ЖЕЛТЫЙ блок (для примечаний) */
         .note-box {
             background-color: rgba(234, 179, 8, 0.15);
             border-left: 4px solid #EAB308;
@@ -709,14 +634,6 @@
             border-radius: 6px;
         }
         
-        .note-box p {
-            color: var(--text-gray);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin: 0;
-        }
-        
-        /* СИНИЙ блок (для примеров) */
         .examples-box {
             background-color: rgba(59, 130, 246, 0.15);
             border-left: 4px solid var(--primary);
@@ -732,14 +649,6 @@
             margin: 5px 0;
         }
         
-        .example-item strong {
-            color: var(--text-gray);
-            font-weight: 700;
-        }
-        
-        /* ========== ОБЩИЕ СТИЛИ ========== */
-        
-        /* Футер */
         .footer {
             background-color: var(--bg-card);
             border-top: 1px solid var(--border);
@@ -766,7 +675,6 @@
             font-weight: 600;
         }
         
-        /* Кнопка выхода */
         .logout-btn {
             position: fixed;
             bottom: 25px;
@@ -793,7 +701,6 @@
             box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
         }
         
-        /* Адаптивность */
         @media (max-width: 1200px) {
             .cards-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -887,10 +794,10 @@
 </head>
 <body>
     <!-- Оверлей для закрытия меню -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
     <!-- Кнопка меню -->
-    <button class="menu-toggle" id="menuToggle">
+    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </button>
 
@@ -1340,22 +1247,40 @@
     </footer>
 
     <!-- Кнопка выхода -->
-    <button class="logout-btn" id="logoutBtn" onclick="logout()">
+    <button class="logout-btn" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i> Вийти з системи
     </button>
 
     <script>
-        // Элементы DOM
+        // ========== УПРАВЛЕНИЕ МЕНЮ ==========
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const logoutBtn = document.getElementById('logoutBtn');
         const navItems = document.querySelectorAll('.nav-item');
-        const statsBtn = document.getElementById('statsBtn');
-        const userGreeting = document.querySelector('#userGreeting span');
         const pageContents = document.querySelectorAll('.page-content');
         
-        // Функция переключения страниц
+        // Переключение сайдбара
+        function toggleSidebar() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+        }
+        
+        // Закрытие сайдбара
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Закрытие по ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && sidebar.classList.contains('active')) {
+                closeSidebar();
+            }
+        });
+        
+        // ========== УПРАВЛЕНИЕ СТРАНИЦАМИ ==========
         function showPage(pageId) {
             // Скрываем все страницы
             pageContents.forEach(page => {
@@ -1371,75 +1296,23 @@
             // Обновляем активный пункт меню
             navItems.forEach(item => {
                 item.classList.remove('active');
-                // Проверяем, содержит ли ссылка нужный обработчик
                 if (item.getAttribute('onclick') === `showPage('${pageId}')`) {
                     item.classList.add('active');
                 }
             });
             
-            // Закрываем меню на мобильных
-            if (window.innerWidth < 768) {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
+            // Закрываем меню ВСЕГДА при выборе страницы
+            closeSidebar();
             
             // Прокручиваем наверх
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
-            return false; // Предотвращаем переход по ссылке
+            return false;
         }
         
-        // Открытие сайдбара с анимацией
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.add('active');
-            setTimeout(() => {
-                sidebarOverlay.classList.add('active');
-            }, 10);
-            document.body.style.overflow = 'hidden';
-        });
-        
-        // Закрытие сайдбара по клику на оверлей
-        sidebarOverlay.addEventListener('click', function() {
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        });
-        
-        // Закрытие сайдбара по нажатию ESC
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape' && sidebar.classList.contains('active')) {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        });
-        
-        // Кнопка статистики (пока заглушка)
-        if (statsBtn) {
-            statsBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                alert('Система статистики знаходиться в розробці. Скоро буде доступна!');
-            });
-        }
-        
-        // Навигация по меню через обработчики
-        navItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Находим pageId из onclick атрибута
-                const onclickAttr = this.getAttribute('onclick');
-                if (onclickAttr && onclickAttr.startsWith("showPage('")) {
-                    const pageId = onclickAttr.match(/showPage\('(.+?)'\)/)[1];
-                    showPage(pageId);
-                }
-            });
-        });
-        
-        // Анимация карточек при загрузке
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
-            // Анимация карточек на главной
+            // Анимация карточек
             const homeCards = document.querySelectorAll('.home-card');
             homeCards.forEach((card, index) => {
                 card.style.opacity = '0';
@@ -1464,6 +1337,29 @@
                     card.style.transform = 'translateY(0)';
                 }, 100 * index);
             });
+            
+            // Навигация по меню
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const onclickAttr = this.getAttribute('onclick');
+                    if (onclickAttr && onclickAttr.startsWith("showPage('")) {
+                        const pageId = onclickAttr.match(/showPage\('(.+?)'\)/)[1];
+                        showPage(pageId);
+                    }
+                });
+            });
+            
+            // Кнопка статистики
+            const statsBtn = document.getElementById('statsBtn');
+            if (statsBtn) {
+                statsBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    alert('Система статистики знаходиться в розробці. Скоро буде доступна!');
+                });
+            }
+            
+            console.log('Система завантажена успішно!');
         });
     </script>
 </body>
