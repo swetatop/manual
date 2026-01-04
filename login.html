@@ -116,8 +116,8 @@
             margin-right: auto;
         }
         
-        /* Telegram Button */
-        .telegram-btn-container {
+        /* Telegram Widget */
+        .telegram-widget-container {
             margin: 30px 0;
             padding: 25px;
             background: linear-gradient(135deg, rgba(0, 136, 204, 0.05), rgba(59, 130, 246, 0.05));
@@ -126,15 +126,21 @@
             position: relative;
             z-index: 2;
             transition: all 0.3s ease;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
-        .telegram-btn-container:hover {
+        .telegram-widget-container:hover {
             border-color: var(--primary);
             box-shadow: 0 10px 25px rgba(0, 136, 204, 0.15);
             transform: translateY(-2px);
         }
         
-        .telegram-login-btn {
+        /* Telegram Button (резервный вариант) */
+        .telegram-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -157,34 +163,16 @@
             position: relative;
             overflow: hidden;
             z-index: 2;
+            margin-top: 15px;
         }
         
-        .telegram-login-btn:hover {
+        .telegram-btn:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 25px rgba(0, 136, 204, 0.4);
             background: linear-gradient(135deg, #0077b5, #006699);
         }
         
-        .telegram-login-btn:active {
-            transform: translateY(-2px);
-        }
-        
-        .telegram-login-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
-        
-        .telegram-login-btn:hover::before {
-            left: 100%;
-        }
-        
-        .telegram-login-btn i {
+        .telegram-btn i {
             font-size: 1.4rem;
         }
         
@@ -294,27 +282,6 @@
             line-height: 1;
         }
         
-        /* Админ информация */
-        .admin-only {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(245, 158, 11, 0.05));
-            border-left: 4px solid var(--admin-gold);
-            padding: 18px;
-            border-radius: 12px;
-            margin-top: 25px;
-            position: relative;
-            z-index: 2;
-            backdrop-filter: blur(10px);
-        }
-        
-        .admin-only p {
-            color: var(--text-gray);
-            margin: 0;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
         /* Футер */
         .footer {
             margin-top: 40px;
@@ -337,6 +304,27 @@
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
         
+        /* Секретная кнопка теста */
+        .secret-test-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(107, 114, 128, 0.3);
+            color: var(--text-gray);
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+            z-index: 9999;
+        }
+        
+        .secret-test-btn:hover {
+            opacity: 0.8;
+        }
+        
         @media (max-width: 768px) {
             .login-card {
                 padding: 40px 25px;
@@ -350,12 +338,12 @@
                 font-size: 1.6rem;
             }
             
-            .telegram-login-btn, .admin-demo-btn {
+            .telegram-btn, .admin-demo-btn {
                 padding: 14px 28px;
                 font-size: 1rem;
             }
             
-            .telegram-btn-container {
+            .telegram-widget-container {
                 padding: 20px;
             }
         }
@@ -378,6 +366,45 @@
                 font-size: 1rem;
             }
         }
+        
+        /* Пульсация */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 136, 204, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 136, 204, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 136, 204, 0); }
+        }
+        
+        .telegram-widget-container.pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        /* Стили для альтернативных методов */
+        .alternative-methods {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.1);
+        }
+        
+        .method-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-light);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .method-btn:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--primary);
+        }
     </style>
 </head>
 <body>
@@ -394,19 +421,24 @@
                 <h2>Вхід до адмін панелі</h2>
                 <p>Використовуйте Telegram для входу в систему. Доступ для адміністратора та підтверджених модераторів.</p>
                 
-                <!-- Telegram Button -->
-                <div class="telegram-btn-container">
+                <!-- Telegram Widget (ОСНОВНОЙ СПОСОБ) -->
+                <div class="telegram-widget-container" id="telegramWidget">
+                    <script async 
+                        src="https://telegram.org/js/telegram-widget.js?22" 
+                        data-telegram-login="UGgtavBot"
+                        data-size="large" 
+                        data-auth-url="https://swetatop.github.io/manual/auth-handler.html"
+                        data-request-access="write">
+                    </script>
+                    
+                    <!-- Альтернативная кнопка если виджет не загрузился -->
                     <a href="https://oauth.telegram.org/auth?bot_id=8506586970&origin=https://swetatop.github.io&request_access=write&embed=1&return_to=https://swetatop.github.io/manual/auth-handler.html" 
-                       class="telegram-login-btn" 
-                       id="telegramLoginBtn">
+                       class="telegram-btn" 
+                       id="telegramBtnAlt" 
+                       style="display: none;">
                         <i class="fab fa-telegram-plane"></i>
                         Увійти через Telegram
                     </a>
-                    
-                    <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px;">
-                        <i class="fas fa-info-circle"></i>
-                        Натисніть для входу через Telegram бот @UGgtavBot
-                    </p>
                 </div>
                 
                 <!-- Демо кнопка для админа -->
@@ -420,21 +452,30 @@
                     <p>Перевіряємо доступ...</p>
                 </div>
                 
+                <!-- Альтернативные методы входа -->
+                <div class="alternative-methods" id="altMethods" style="display: none;">
+                    <h4 style="color: var(--text-gray); margin-bottom: 15px; font-size: 1rem;">
+                        <i class="fas fa-exchange-alt"></i> Альтернативні способи входу:
+                    </h4>
+                    
+                    <button class="method-btn" onclick="window.location.href='auth-manual.html'">
+                        <i class="fas fa-key"></i> Ввести Telegram ID вручну
+                    </button>
+                    
+                    <button class="method-btn" onclick="window.location.href='auth-qr.html'">
+                        <i class="fas fa-qrcode"></i> Вхід через QR-код
+                    </button>
+                </div>
+                
                 <!-- Информация о системе -->
                 <div class="info-box">
                     <h4><i class="fas fa-shield-alt"></i> Система безпеки:</h4>
                     <ul>
                         <li><strong>Адмін ID:</strong> 5316593741 (автоматичний доступ)</li>
-                        <li><strong>Інші користувачі:</strong> Потребують підтвердження</li>
-                        <li><strong>Двофакторна автентифікація</strong> через Telegram</li>
-                        <li><strong>Автоматичний вхід</strong> після підтвердження</li>
+                        <li><strong>Інші користувачі:</strong> Потребують підтвердження в Telegram</li>
+                        <li><strong>Тебе прийде повідомлення</strong> в бот @UGgtavBot</li>
+                        <li><strong>Натисни "✅ Підтвердити"</strong> щоб дати доступ</li>
                     </ul>
-                </div>
-                
-                <!-- Информация только для админа -->
-                <div class="admin-only">
-                    <p><i class="fas fa-crown" style="color: var(--admin-gold);"></i> 
-                        <strong>Адмін:</strong> Може підтверджувати доступ іншим користувачам через Telegram бот.</p>
                 </div>
             </div>
             
@@ -454,11 +495,6 @@
         const ADMIN_ID = "5316593741";
         const BOT_USERNAME = "UGgtavBot";
         const BOT_ID = "8506586970";
-        
-        // DOM элементы
-        const telegramBtn = document.getElementById('telegramLoginBtn');
-        const demoBtn = document.getElementById('demoBtn');
-        const loading = document.getElementById('loading');
         
         // Проверяем если уже авторизован
         function checkExistingAuth() {
@@ -502,12 +538,47 @@
             return false;
         }
         
+        // Проверяем Telegram Widget
+        function checkTelegramWidget() {
+            setTimeout(() => {
+                const widget = document.querySelector('[data-telegram-login]');
+                console.log('Telegram Widget статус:', widget ? 'Завантажено' : 'Не завантажено');
+                
+                if (!widget || !widget.offsetParent) {
+                    console.log('Telegram Widget не завантажився, показуємо альтернативну кнопку');
+                    document.getElementById('telegramBtnAlt').style.display = 'flex';
+                    document.getElementById('altMethods').style.display = 'block';
+                    
+                    // Показываем инструкцию
+                    const telegramContainer = document.getElementById('telegramWidget');
+                    telegramContainer.innerHTML += `
+                        <div style="
+                            background: rgba(245, 158, 11, 0.1);
+                            border: 1px solid rgba(245, 158, 11, 0.3);
+                            border-radius: 8px;
+                            padding: 12px;
+                            margin-top: 15px;
+                            font-size: 0.9rem;
+                            color: var(--text-gray);
+                        ">
+                            <i class="fas fa-exclamation-triangle" style="color: #F59E0B; margin-right: 8px;"></i>
+                            <strong>Telegram Widget може не працювати локально.</strong><br>
+                            Використовуйте кнопку вище або демо-вхід.
+                        </div>
+                    `;
+                } else {
+                    console.log('Telegram Widget працює нормально');
+                    document.querySelector('.telegram-widget-container').classList.add('pulse');
+                }
+            }, 3000);
+        }
+        
         // Демо вход для админа
         function demoAdminLogin() {
             console.log('Демо вхід адміна...');
             
-            demoBtn.style.display = 'none';
-            loading.style.display = 'block';
+            document.getElementById('demoBtn').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
             
             setTimeout(() => {
                 const userData = {
@@ -546,6 +617,7 @@
                 'error': '#EF4444'
             };
             
+            const loading = document.getElementById('loading');
             loading.innerHTML = `
                 <div class="loading-spinner" style="border-top-color: ${colors[type]};"></div>
                 <p style="color: ${colors[type]}; font-weight: 500;">${message}</p>
@@ -554,8 +626,8 @@
         
         // Инициализация
         window.onload = function() {
-            console.log('Сторінка завантажена');
-            console.log('Бот:', BOT_USERNAME, 'ID:', BOT_ID);
+            console.log('=== СИСТЕМА АВТОРИЗАЦІЇ UKRAINE GTA 5 ===');
+            console.log('Бот:', BOT_USERNAME);
             console.log('Адмін ID:', ADMIN_ID);
             
             // Проверяем авторизацию
@@ -563,11 +635,10 @@
                 console.log('Потрібна авторизація');
             }
             
-            // Анимация кнопки
-            telegramBtn.style.opacity = '1';
-            telegramBtn.style.transform = 'translateY(0)';
+            // Проверяем Telegram Widget
+            checkTelegramWidget();
             
-            // Проверяем если открыт в iframe
+            // Проверяем если открыт в iframe Telegram
             if (window.self !== window.top) {
                 console.log('Відкрито в iframe Telegram');
                 document.querySelector('.info-box').innerHTML += `
@@ -578,11 +649,6 @@
                 `;
             }
         };
-        
-        // CSS для плавного появления
-        telegramBtn.style.opacity = '0';
-        telegramBtn.style.transform = 'translateY(10px)';
-        telegramBtn.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     </script>
 </body>
 </html>
