@@ -110,6 +110,7 @@
 
     <script type="module">
         import { db, ADMIN_ID } from './firebase-app.js';
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
         // Демо вход
         window.demoLogin = async function(type) {
