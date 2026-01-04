@@ -3,11 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Обробка авторизації | Ukraine GTA 5</title>
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
+    <title>Авторизація | Ukraine GTA 5</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -51,9 +47,9 @@
             margin: 20px 0;
             text-align: left;
         }
-        .error { color: #EF4444; }
         .success { color: #10B981; }
         .warning { color: #F59E0B; }
+        .error { color: #EF4444; }
     </style>
 </head>
 <body>
@@ -62,185 +58,106 @@
         <div id="content">
             <div class="spinner"></div>
             <h3>Обробка авторизації...</h3>
-            <p>Зачекайте, будь ласка</p>
         </div>
     </div>
 
-    <!-- Firebase Config -->
-    <script src="firebase-config.js"></script>
-    
-    <script>
-        // === НАСТРОЙКИ ===
+    <script type="module">
+        import { db, ADMIN_ID } from './firebase-app.js';
+        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        
         const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
-        const ADMIN_ID = "5316593741";
         
-        // === ОСНОВНАЯ ФУНКЦИЯ ===
         async function processAuth() {
-            console.log('=== АВТОРИЗАЦИЯ НАЧАТА ===');
+            const userData = getTelegramData();
             
-            // Получаем данные из URL
-            const userData = getDataFromURL();
-            
-            if (userData && userData.id) {
-                console.log('✅ Данные получены:', userData);
-                await handleUser(userData);
-            } else {
-                console.log('❌ Данные не получены');
-                showError('Дані не отримано від Telegram');
-            }
-        }
-        
-        // === ПОЛУЧИТЬ ДАННЫЕ ИЗ URL ===
-        function getDataFromURL() {
-            try {
-                // Telegram передает данные в hash (#id=...)
-                if (window.location.hash) {
-                    const hash = window.location.hash.substring(1);
-                    const params = new URLSearchParams(hash);
-                    
-                    const userData = {
-                        id: params.get('id'),
-                        first_name: params.get('first_name'),
-                        username: params.get('username'),
-                        photo_url: params.get('photo_url'),
-                        auth_date: params.get('auth_date'),
-                        hash: params.get('hash')
-                    };
-                    
-                    if (userData.id) {
-                        return userData;
-                    }
-                }
-                
-                // Или из query параметров
-                const params = new URLSearchParams(window.location.search);
-                const id = params.get('id');
-                
-                if (id) {
-                    return {
-                        id: id,
-                        first_name: params.get('first_name') || 'Користувач',
-                        username: params.get('username') || '',
-                        auth_date: params.get('auth_date') || Math.floor(Date.now() / 1000)
-                    };
-                }
-                
-            } catch (e) {
-                console.error('Ошибка парсинга:', e);
+            if (!userData?.id) {
+                showError('Не вдалося отримати дані з Telegram');
+                return;
             }
             
-            return null;
-        }
-        
-        // === ОБРАБОТКА ПОЛЬЗОВАТЕЛЯ ===
-        async function handleUser(userData) {
-            showMessage(`
-                <h2>👋 Вітаємо, ${userData.first_name}!</h2>
-                <div class="user-info">
-                    <p><strong>ID:</strong> ${userData.id}</p>
-                    <p><strong>Username:</strong> ${userData.username ? '@' + userData.username : 'немає'}</p>
-                    <p><strong>Статус:</strong> Перевіряємо доступ...</p>
-                </div>
-                <div class="spinner"></div>
-            `);
+            console.log('Отримано дані:', userData);
             
-            // Если это админ - сразу даем доступ
+            // Если админ - сразу доступ
             if (userData.id === ADMIN_ID) {
-                console.log('✅ Это админ, даем доступ');
-                await saveUserToFirebase(userData, true);
+                await saveUser(userData, true);
                 grantAccess(userData, true);
                 return;
             }
             
             // Проверяем в Firebase
-            await checkFirebaseAccess(userData);
+            await checkUserAccess(userData);
         }
         
-        // === СОХРАНИТЬ ПОЛЬЗОВАТЕЛЯ В FIREBASE ===
-        async function saveUserToFirebase(userData, isAdmin = false) {
-            if (typeof db === 'undefined') {
-                console.error('Firebase не загружен');
-                return false;
-            }
-            
+        function getTelegramData() {
             try {
-                const userDoc = {
-                    telegram_id: userData.id,
-                    first_name: userData.first_name,
-                    username: userData.username || '',
-                    photo_url: userData.photo_url || '',
-                    isAdmin: isAdmin,
-                    status: isAdmin ? 'approved' : 'pending',
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                };
-                
-                await db.collection("users").doc(userData.id).set(userDoc, { merge: true });
-                console.log('✅ Пользователь сохранен в Firebase');
-                
-                // Если не админ, отправляем запрос админу
-                if (!isAdmin) {
-                    await sendRequestToAdmin(userData);
-                }
-                
-                return true;
-            } catch (error) {
-                console.error('❌ Ошибка Firebase:', error);
-                return false;
-            }
-        }
-        
-        // === ПРОВЕРИТЬ ДОСТУП В FIREBASE ===
-        async function checkFirebaseAccess(userData) {
-            if (typeof db === 'undefined') {
-                showError('Firebase не підключено');
-                return;
-            }
-            
-            try {
-                const docRef = db.collection("users").doc(userData.id);
-                const doc = await docRef.get();
-                
-                if (doc.exists) {
-                    const userDoc = doc.data();
-                    console.log('Найден пользователь:', userDoc);
+                if (window.location.hash) {
+                    const hash = window.location.hash.substring(1);
+                    const params = new URLSearchParams(hash);
                     
-                    if (userDoc.status === 'approved') {
-                        // Доступ уже подтвержден
-                        grantAccess(userData, false);
+                    return {
+                        id: params.get('id'),
+                        first_name: params.get('first_name'),
+                        username: params.get('username'),
+                        photo_url: params.get('photo_url'),
+                        auth_date: params.get('auth_date')
+                    };
+                }
+            } catch (e) {
+                console.error('Помилка:', e);
+            }
+            return null;
+        }
+        
+        async function checkUserAccess(userData) {
+            try {
+                const userDoc = await getDoc(doc(db, "users", userData.id));
+                
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    
+                    if (data.status === 'approved') {
+                        grantAccess(userData, data.isAdmin || false);
                         return;
-                    } else if (userDoc.status === 'rejected') {
-                        // Доступ отклонен
-                        showMessage(`
-                            <h2 class="error">❌ Доступ відхилено</h2>
-                            <p>Адміністратор відхилив ваш запит на доступ.</p>
-                            <a href="login.html" class="btn">← Повернутися</a>
-                        `);
+                    }
+                    
+                    if (data.status === 'pending') {
+                        showWaiting(userData);
+                        listenForApproval(userData.id);
                         return;
-                    } else if (userDoc.status === 'pending') {
-                        // Ожидание подтверждения
-                        showWaitingScreen(userData);
-                        startFirebaseListener(userData.id);
+                    }
+                    
+                    if (data.status === 'rejected') {
+                        showError('Доступ відхилено адміністратором');
                         return;
                     }
                 }
                 
-                // Пользователь не найден, создаем запрос
-                await saveUserToFirebase(userData, false);
-                showWaitingScreen(userData);
-                startFirebaseListener(userData.id);
+                // Новый пользователь
+                await saveUser(userData, false);
+                await sendRequestToAdmin(userData);
+                showWaiting(userData);
+                listenForApproval(userData.id);
                 
             } catch (error) {
-                console.error('Ошибка проверки доступа:', error);
+                console.error('Помилка:', error);
                 showError('Помилка перевірки доступу');
             }
         }
         
-        // === ОТПРАВИТЬ ЗАПРОС АДМИНУ ===
+        async function saveUser(userData, isAdmin) {
+            await setDoc(doc(db, "users", userData.id), {
+                telegram_id: userData.id,
+                first_name: userData.first_name,
+                username: userData.username || '',
+                status: isAdmin ? 'approved' : 'pending',
+                isAdmin: isAdmin,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+            });
+        }
+        
         async function sendRequestToAdmin(userData) {
-            const usernameDisplay = userData.username 
-                ? `@${userData.username}` 
-                : 'немає';
+            const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
             
             const message = `🔔 *НОВИЙ ЗАПИТ ДОСТУПУ*
 
@@ -251,7 +168,6 @@
 *Надати доступ до адмін-панелі Ukraine GTA 5?*`;
             
             try {
-                // Ссылки для подтверждения
                 const approveUrl = `https://swetatop.github.io/manual/bot-handler.html?action=approve&user_id=${userData.id}`;
                 const rejectUrl = `https://swetatop.github.io/manual/bot-handler.html?action=reject&user_id=${userData.id}`;
                 
@@ -264,220 +180,100 @@
                         parse_mode: 'Markdown',
                         reply_markup: {
                             inline_keyboard: [[
-                                { 
-                                    text: "✅ ПІДТВЕРДИТИ", 
-                                    url: approveUrl
-                                },
-                                { 
-                                    text: "❌ ВІДХИЛИТИ", 
-                                    url: rejectUrl
-                                }
+                                { text: "✅ ПІДТВЕРДИТИ", url: approveUrl },
+                                { text: "❌ ВІДХИЛИТИ", url: rejectUrl }
                             ]]
                         }
                     })
                 });
                 
-                const result = await response.json();
-                console.log('Ответ Telegram API:', result);
-                
-                if (!result.ok) {
-                    console.error('Telegram API ошибка:', result.description);
-                    return false;
-                }
-                
-                // Сохраняем запрос в Firebase
-                if (typeof db !== 'undefined') {
-                    const requestData = {
-                        user_id: userData.id,
-                        user_name: userData.first_name,
-                        username: userData.username || '',
-                        status: 'pending',
-                        created_at: new Date().toISOString()
-                    };
-                    
-                    await db.collection("access_requests").doc(userData.id).set(requestData);
-                }
-                
-                return true;
-                
+                return response.ok;
             } catch (error) {
-                console.error('Сетевая ошибка:', error);
+                console.error('Помилка відправки:', error);
                 return false;
             }
         }
         
-        // === ЭКРАН ОЖИДАНИЯ ===
-        function showWaitingScreen(userData) {
-            const usernameDisplay = userData.username 
-                ? `@${userData.username}` 
-                : 'немає';
+        function showWaiting(userData) {
+            const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
             
-            showMessage(`
+            document.getElementById('content').innerHTML = `
                 <h2 class="warning">⏳ Очікуйте підтвердження</h2>
-                <p>Запит відправлено адміністратору</p>
-                
                 <div class="user-info">
                     <p><strong>Користувач:</strong> ${userData.first_name} (${usernameDisplay})</p>
                     <p><strong>ID:</strong> ${userData.id}</p>
                     <p><strong>Статус:</strong> Очікує підтвердження...</p>
                 </div>
-                
-                <div style="margin: 30px;">
-                    <div style="display: inline-block; width: 12px; height: 12px; background: #0088cc; border-radius: 50%; margin: 0 5px; animation: pulse 1s infinite;"></div>
-                    <div style="display: inline-block; width: 12px; height: 12px; background: #0088cc; border-radius: 50%; margin: 0 5px; animation: pulse 1s infinite 0.2s;"></div>
-                    <div style="display: inline-block; width: 12px; height: 12px; background: #0088cc; border-radius: 50%; margin: 0 5px; animation: pulse 1s infinite 0.4s;"></div>
-                </div>
-                
-                <style>
-                    @keyframes pulse {
-                        0%, 100% { opacity: 0.2; transform: scale(0.8); }
-                        50% { opacity: 1; transform: scale(1.1); }
-                    }
-                </style>
-                
-                <p style="color: #94A3B8; font-size: 0.9rem;">
-                    Адмін отримав повідомлення в Telegram бот<br>
-                    Після підтвердження ви автоматично отримаєте доступ
+                <div class="spinner"></div>
+                <p style="color: #94A3B8; margin-top: 20px;">
+                    Адмін отримав повідомлення в Telegram<br>
+                    Після підтвердження ви отримаєте доступ
                 </p>
-                
-                <button class="btn" onclick="checkStatusManually('${userData.id}')" style="margin-top: 20px;">
+                <button class="btn" onclick="checkStatus('${userData.id}')" style="margin-top: 20px;">
                     🔄 Перевірити статус
                 </button>
-            `);
+            `;
         }
         
-        // === REAL-TIME ПРОСЛУШИВАТЕЛЬ FIREBASE ===
-        function startFirebaseListener(userId) {
-            if (typeof db === 'undefined') return;
-            
-            console.log('🎧 Слушаем изменения в Firebase для пользователя:', userId);
-            
-            const unsubscribe = db.collection("users").doc(userId)
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        console.log('Изменение статуса:', userData.status);
-                        
-                        if (userData.status === 'approved') {
-                            // Отписываемся от прослушивания
-                            unsubscribe();
-                            
-                            const userInfo = {
-                                id: userId,
-                                first_name: userData.first_name,
-                                username: userData.username || ''
-                            };
-                            
-                            grantAccess(userInfo, false);
-                        } else if (userData.status === 'rejected') {
-                            unsubscribe();
-                            showMessage(`
-                                <h2 class="error">❌ Доступ відхилено</h2>
-                                <p>Адміністратор відхилив ваш запит на доступ.</p>
-                                <a href="login.html" class="btn">← Повернутися</a>
-                            `);
-                        }
+        function listenForApproval(userId) {
+            const unsubscribe = onSnapshot(doc(db, "users", userId), (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    if (data.status === 'approved') {
+                        unsubscribe();
+                        grantAccess({
+                            id: userId,
+                            first_name: data.first_name,
+                            username: data.username
+                        }, data.isAdmin || false);
                     }
-                }, (error) => {
-                    console.error('Ошибка прослушивания:', error);
-                });
-                
-            // Сохраняем отписку для очистки
-            window.firebaseUnsubscribe = unsubscribe;
+                }
+            });
         }
         
-        // === РУЧНАЯ ПРОВЕРКА СТАТУСА ===
-        async function checkStatusManually(userId) {
-            if (typeof db === 'undefined') {
-                alert('Firebase не підключено');
-                return;
-            }
-            
+        async function checkStatus(userId) {
             try {
-                const docRef = db.collection("users").doc(userId);
-                const doc = await docRef.get();
-                
-                if (doc.exists) {
-                    const userData = doc.data();
-                    alert(`Статус: ${userData.status || 'не знайдено'}`);
-                } else {
-                    alert('Користувача не знайдено');
+                const docSnap = await getDoc(doc(db, "users", userId));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    alert(`Статус: ${data.status || 'не визначено'}`);
                 }
             } catch (error) {
-                console.error('Ошибка проверки:', error);
                 alert('Помилка перевірки статусу');
             }
         }
         
-        // === ПРЕДОСТАВИТЬ ДОСТУП ===
         function grantAccess(userData, isAdmin) {
-            console.log('🎉 Предоставляем доступ:', userData);
-            
             // Сохраняем в sessionStorage
             sessionStorage.setItem('user_id', userData.id);
             sessionStorage.setItem('user_name', userData.first_name);
             sessionStorage.setItem('user_username', userData.username || '');
             sessionStorage.setItem('is_admin', isAdmin ? 'true' : 'false');
             
-            showMessage(`
+            document.getElementById('content').innerHTML = `
                 <h2 class="success">✅ Доступ надано!</h2>
                 <p>Перенаправляємо до адмін-панелі...</p>
                 <div class="spinner"></div>
-            `);
+            `;
             
             setTimeout(() => {
                 window.location.href = 'index.html';
             }, 2000);
         }
         
-        // === ПОКАЗАТЬ ОШИБКУ ===
         function showError(message) {
-            showMessage(`
+            document.getElementById('content').innerHTML = `
                 <h2 class="error">😕 Помилка авторизації</h2>
                 <p>${message}</p>
-                
-                <p style="color: #94A3B8; margin: 20px 0;">
-                    <strong>Можливі причини:</strong><br>
-                    1. Telegram не передав дані<br>
-                    2. Проблема з підключенням<br>
-                    3. Ви скасували авторизацію
-                </p>
-                
-                <a href="login.html" class="btn">← Спробувати знову</a>
-                <button class="btn" style="background: #F59E0B;" onclick="demoLogin()">
-                    Демо вхід (адмін)
-                </button>
-            `);
+                <a href="login.html" class="btn">← Повернутися</a>
+            `;
         }
         
-        // === ПОКАЗАТЬ СООБЩЕНИЕ ===
-        function showMessage(html) {
-            document.getElementById('content').innerHTML = html;
-        }
+        // Делаем функции глобальными
+        window.checkStatus = checkStatus;
         
-        // === ДЕМО ВХОД ===
-        function demoLogin() {
-            const adminData = {
-                id: ADMIN_ID,
-                first_name: "Perets",
-                username: "swetatopp"
-            };
-            
-            grantAccess(adminData, true);
-        }
-        
-        // === ЗАПУСК ===
-        window.onload = function() {
-            console.log('🚀 Страница загружена, начинаем обработку');
-            processAuth();
-        };
-        
-        // Очистка при разгрузке страницы
-        window.addEventListener('beforeunload', function() {
-            if (window.firebaseUnsubscribe) {
-                window.firebaseUnsubscribe();
-            }
-        });
+        // Запускаем
+        window.onload = processAuth;
     </script>
 </body>
 </html>
