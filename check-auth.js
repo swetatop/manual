@@ -1,50 +1,37 @@
-// Файл: check-auth.js
-// Проверка авторизации
+// check-auth.js - модуль для проверки авторизации
+import { db, ADMIN_ID } from './firebase-app.js';
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-function checkAuth() {
-    console.log('🔐 Проверка авторизации...');
+export async function checkAuth() {
+    const userId = sessionStorage.getItem('user_id');
+    const userName = sessionStorage.getItem('user_name');
     
-    // Проверяем данные в localStorage
-    const authToken = localStorage.getItem('authToken');
-    const userData = localStorage.getItem('userData');
-    
-    if (!authToken || !userData) {
-        console.log('❌ Нет авторизации');
+    if (!userId || !userName) {
         window.location.href = 'login.html';
         return false;
     }
     
     try {
-        const user = JSON.parse(userData);
-        const userId = user.id;
-        const access = localStorage.getItem(`access_${userId}`);
-        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+        const userDoc = await getDoc(doc(db, "users", userId));
         
-        console.log('👤 Пользователь:', user.first_name);
-        console.log('🆔 ID:', userId);
-        console.log('👑 Админ:', isAdmin);
-        console.log('✅ Доступ:', access);
-        
-        // Проверяем доступ
-        if (access !== 'approved' && !isAdmin) {
-            console.log('❌ Доступ не подтвержден');
+        if (!userDoc.exists()) {
+            sessionStorage.clear();
             window.location.href = 'login.html';
             return false;
         }
         
-        console.log('✅ Авторизация успешна');
-        return true;
+        const userData = userDoc.data();
+        
+        if (userData.status !== 'approved' && !userData.isAdmin) {
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+            return false;
+        }
+        
+        return userData;
         
     } catch (error) {
-        console.error('❌ Ошибка проверки:', error);
-        window.location.href = 'login.html';
+        console.error('Помилка перевірки авторизації:', error);
         return false;
     }
-}
-
-// Проверяем на всех страницах кроме login и auth-handler
-if (!window.location.pathname.includes('login.html') && 
-    !window.location.pathname.includes('auth-handler.html')) {
-    
-    document.addEventListener('DOMContentLoaded', checkAuth);
 }
