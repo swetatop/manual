@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Управління доступом | Ukraine GTA 5</title>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -59,6 +63,21 @@
             max-height: 300px;
             overflow-y: auto;
         }
+        .manual-approval {
+            background: #1E293B;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .manual-input {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #2D3748;
+            background: #141A24;
+            color: white;
+            width: 100%;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
@@ -77,6 +96,21 @@
             <p id="noRequests">Немає активних запитів</p>
         </div>
         
+        <div class="manual-approval">
+            <h3>Ручне підтвердження:</h3>
+            <input type="text" id="manualUserId" class="manual-input" placeholder="Введіть ID користувача">
+            <input type="text" id="manualUserName" class="manual-input" placeholder="Введіть ім'я користувача (опціонально)">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-approve" onclick="manualApprove()">
+                    ✅ Підтвердити вручну
+                </button>
+                <button class="btn btn-reject" onclick="manualReject()">
+                    ❌ Відхилити вручну
+                </button>
+            </div>
+        </div>
+        
         <button class="btn-clear" onclick="clearAllRequests()">
             🗑️ Очистити всі запити
         </button>
@@ -87,89 +121,226 @@
         </div>
     </div>
 
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+    
     <script>
         const ADMIN_ID = "5316593741";
         
-        function loadRequests() {
-            const requests = JSON.parse(localStorage.getItem('access_requests') || '[]');
+        // Проверяем параметры URL для автоматического подтверждения
+        async function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const action = params.get('action');
+            const userId = params.get('user_id');
             
-            if (requests.length === 0) {
-                document.getElementById('noRequests').style.display = 'block';
-                document.getElementById('pendingCount').textContent = '⏳ Очікують підтвердження: 0';
+            if (action && userId) {
+                if (action === 'approve') {
+                    await approveRequest(userId, 'Користувач');
+                    addLog(`✅ Автоматично підтверджено доступ для ID: ${userId}`);
+                    showNotification('✅ Доступ підтверджено!');
+                    
+                    // Убираем параметры из URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                } else if (action === 'reject') {
+                    await rejectRequest(userId);
+                    addLog(`❌ Автоматично відхилено доступ для ID: ${userId}`);
+                    showNotification('❌ Доступ відхилено!');
+                    
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            }
+        }
+        
+        // Загружаем запросы из Firebase
+        async function loadRequests() {
+            if (typeof db === 'undefined') {
+                addLog('⚠️ Firebase не підключено');
                 return;
             }
             
-            document.getElementById('noRequests').style.display = 'none';
-            document.getElementById('pendingCount').textContent = `⏳ Очікують підтвердження: ${requests.length}`;
-            
-            let html = '';
-            
-            requests.forEach((req, index) => {
-                html += `
-                    <div class="request-item">
-                        <p><strong>👤 ${req.first_name}</strong></p>
-                        <p>🆔 ID: ${req.id}</p>
-                        <p>📱 @${req.username || 'немає'}</p>
-                        <p>⏰ ${new Date(req.timestamp).toLocaleTimeString('uk-UA')}</p>
-                        
-                        <div style="margin-top: 10px;">
-                            <button class="btn btn-approve" onclick="approveRequest('${req.id}', '${req.first_name}')">
-                                ✅ Підтвердити
-                            </button>
-                            <button class="btn btn-reject" onclick="rejectRequest('${req.id}')">
-                                ❌ Відхилити
-                            </button>
+            try {
+                const snapshot = await db.collection("access_requests")
+                    .where("status", "==", "pending")
+                    .get();
+                
+                const requests = [];
+                snapshot.forEach(doc => {
+                    requests.push({ id: doc.id, ...doc.data() });
+                });
+                
+                if (requests.length === 0) {
+                    document.getElementById('noRequests').style.display = 'block';
+                    document.getElementById('pendingCount').textContent = '⏳ Очікують підтвердження: 0';
+                    return;
+                }
+                
+                document.getElementById('noRequests').style.display = 'none';
+                document.getElementById('pendingCount').textContent = `⏳ Очікують підтвердження: ${requests.length}`;
+                
+                let html = '';
+                
+                requests.forEach((req) => {
+                    const usernameDisplay = req.username 
+                        ? `@${req.username}` 
+                        : 'немає';
+                    
+                    html += `
+                        <div class="request-item">
+                            <p><strong>👤 ${req.user_name}</strong> (${usernameDisplay})</p>
+                            <p>🆔 ID: ${req.user_id}</p>
+                            <p>⏰ ${new Date(req.created_at).toLocaleTimeString('uk-UA')}</p>
+                            
+                            <div style="margin-top: 10px;">
+                                <button class="btn btn-approve" onclick="approveRequest('${req.user_id}', '${req.user_name}')">
+                                    ✅ Підтвердити
+                                </button>
+                                <button class="btn btn-reject" onclick="rejectRequest('${req.user_id}')">
+                                    ❌ Відхилити
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `;
-            });
-            
-            document.getElementById('requestsList').innerHTML = '<h3>Запити на доступ:</h3>' + html;
-        }
-        
-        function approveRequest(userId, userName) {
-            // Сохраняем доступ
-            localStorage.setItem(`access_${userId}`, 'approved');
-            localStorage.setItem(`name_${userId}`, userName);
-            
-            // Удаляем из списка ожидания
-            removeRequest(userId);
-            
-            // Логируем
-            addLog(`✅ Доступ надано для ${userName} (ID: ${userId})`);
-            
-            // Перезагружаем список
-            loadRequests();
-        }
-        
-        function rejectRequest(userId) {
-            // Отмечаем как отклоненный
-            localStorage.setItem(`access_${userId}`, 'rejected');
-            
-            // Удаляем из списка ожидания
-            removeRequest(userId);
-            
-            // Логируем
-            addLog(`❌ Доступ відхилено для ID: ${userId}`);
-            
-            // Перезагружаем список
-            loadRequests();
-        }
-        
-        function removeRequest(userId) {
-            let requests = JSON.parse(localStorage.getItem('access_requests') || '[]');
-            requests = requests.filter(req => req.id !== userId);
-            localStorage.setItem('access_requests', JSON.stringify(requests));
-        }
-        
-        function clearAllRequests() {
-            if (confirm('Очистити всі запити на доступ?')) {
-                localStorage.removeItem('access_requests');
-                addLog('🗑️ Всі запити очищено');
-                loadRequests();
+                    `;
+                });
+                
+                document.getElementById('requestsList').innerHTML = '<h3>Запити на доступ:</h3>' + html;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки запросов:', error);
+                addLog(`❌ Помилка завантаження: ${error.message}`);
             }
         }
         
+        // Подтвердить запрос
+        async function approveRequest(userId, userName) {
+            try {
+                // Обновляем статус пользователя
+                await db.collection("users").doc(userId).update({
+                    status: 'approved',
+                    updated_at: new Date().toISOString()
+                });
+                
+                // Обновляем запрос
+                await db.collection("access_requests").doc(userId).update({
+                    status: 'approved',
+                    approved_at: new Date().toISOString()
+                });
+                
+                addLog(`✅ Доступ надано для ${userName} (ID: ${userId})`);
+                showNotification(`✅ Доступ надано користувачу ${userName}`);
+                
+                // Перезагружаем список
+                await loadRequests();
+                
+            } catch (error) {
+                console.error('Ошибка подтверждения:', error);
+                addLog(`❌ Помилка підтвердження: ${error.message}`);
+                alert('Помилка підтвердження: ' + error.message);
+            }
+        }
+        
+        // Отклонить запрос
+        async function rejectRequest(userId) {
+            try {
+                await db.collection("users").doc(userId).update({
+                    status: 'rejected',
+                    updated_at: new Date().toISOString()
+                });
+                
+                await db.collection("access_requests").doc(userId).update({
+                    status: 'rejected',
+                    rejected_at: new Date().toISOString()
+                });
+                
+                addLog(`❌ Доступ відхилено для ID: ${userId}`);
+                showNotification(`❌ Доступ відхилено`);
+                
+                await loadRequests();
+                
+            } catch (error) {
+                console.error('Ошибка отклонения:', error);
+                addLog(`❌ Помилка відхилення: ${error.message}`);
+            }
+        }
+        
+        // Ручное подтверждение
+        async function manualApprove() {
+            const userId = document.getElementById('manualUserId').value.trim();
+            const userName = document.getElementById('manualUserName').value.trim() || 'Користувач';
+            
+            if (!userId) {
+                alert('Введіть ID користувача');
+                return;
+            }
+            
+            await approveRequest(userId, userName);
+            
+            // Очищаем поля
+            document.getElementById('manualUserId').value = '';
+            document.getElementById('manualUserName').value = '';
+        }
+        
+        // Ручное отклонение
+        async function manualReject() {
+            const userId = document.getElementById('manualUserId').value.trim();
+            
+            if (!userId) {
+                alert('Введіть ID користувача');
+                return;
+            }
+            
+            await rejectRequest(userId);
+            
+            document.getElementById('manualUserId').value = '';
+            document.getElementById('manualUserName').value = '';
+        }
+        
+        // Очистить все запросы
+        async function clearAllRequests() {
+            if (confirm('Очистити всі запити на доступ?')) {
+                try {
+                    const snapshot = await db.collection("access_requests").get();
+                    const batch = db.batch();
+                    
+                    snapshot.forEach(doc => {
+                        batch.delete(doc.ref);
+                    });
+                    
+                    await batch.commit();
+                    addLog('🗑️ Всі запити очищено');
+                    await loadRequests();
+                    
+                } catch (error) {
+                    console.error('Ошибка очистки:', error);
+                    addLog(`❌ Помилка очищення: ${error.message}`);
+                }
+            }
+        }
+        
+        // Показать уведомление
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #10B981, #059669);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        // Логи
         function addLog(message) {
             const logDiv = document.getElementById('logOutput');
             const timestamp = new Date().toLocaleTimeString('uk-UA');
@@ -180,9 +351,10 @@
         setInterval(loadRequests, 5000);
         
         // Загружаем при старте
-        window.onload = function() {
+        window.onload = async function() {
             addLog('🚀 Панель управління запущена');
-            loadRequests();
+            await checkUrlParams();
+            await loadRequests();
         };
     </script>
 </body>
