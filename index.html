@@ -7,32 +7,28 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     
-    <!-- ========== ПРОВЕРКА АДМИНА ========== -->
+    <!-- ========== ПРОВЕРКА ДОСТУПА (ОБНОВЛЕННАЯ) ========== -->
     <script>
-        const ADMIN_ID = "5316593741";
+        const ADMIN_ID = "5316593741"; // Твой ID
+        const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA"; // Токен бота
         
-        function checkAdminAuth() {
-            console.log('=== ПРОВЕРКА АДМІН ДОСТУПА ===');
+        function checkAccess() {
+            console.log('=== ПРОВЕРКА ДОСТУПУ ===');
             
             try {
                 const userData = localStorage.getItem('userData');
                 const authToken = localStorage.getItem('authToken');
-                const isAdmin = localStorage.getItem('isAdmin');
                 
-                if (!userData || !authToken || isAdmin !== 'true') {
-                    console.log('❌ Недостатньо даних для доступу');
+                if (!userData || !authToken) {
+                    console.log('❌ Не авторизований');
                     window.location.href = 'login.html';
                     return null;
                 }
                 
                 const user = JSON.parse(userData);
+                console.log('Користувач:', user);
                 
-                if (user.id !== ADMIN_ID && user.id.toString() !== ADMIN_ID) {
-                    console.log('❌ Доступ заборонено: невірний ID');
-                    window.location.href = 'login.html';
-                    return null;
-                }
-                
+                // Проверяем срок токена (30 дней)
                 const tokenTime = localStorage.getItem('tokenTime');
                 if (!tokenTime) {
                     console.log('❌ Немає часу токена');
@@ -44,18 +40,138 @@
                 const tokenAge = currentTime - parseInt(tokenTime);
                 const maxAge = 30 * 24 * 60 * 60 * 1000;
                 
+                console.log('Вік токена:', Math.floor(tokenAge / (24 * 60 * 60 * 1000)), 'днів');
+                
                 if (tokenAge > maxAge) {
                     console.log('❌ Токен застарів');
                     window.location.href = 'login.html';
                     return null;
                 }
                 
-                console.log('✅ Адмін авторизований успішно');
+                // Проверяем доступ пользователя
+                const userAccess = localStorage.getItem(`access_${user.id}`);
+                
+                // Если это админ - всегда доступ
+                if (user.id === ADMIN_ID || user.id.toString() === ADMIN_ID) {
+                    console.log('✅ Це адмін, доступ надається');
+                    user.isAdmin = true;
+                    localStorage.setItem('isAdmin', 'true');
+                } 
+                // Если обычный пользователь - проверяем подтверждение
+                else if (userAccess === 'approved') {
+                    console.log('✅ Користувач підтверджений');
+                    user.isAdmin = false;
+                    localStorage.setItem('isAdmin', 'false');
+                }
+                // Если нет доступа
+                else {
+                    console.log('❌ Немає доступу для користувача:', user.id);
+                    
+                    // Показываем сообщение и редирект
+                    document.body.innerHTML = `
+                        <div style="
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: linear-gradient(135deg, #0C1016, #141A24);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            z-index: 9999;
+                            padding: 20px;
+                        ">
+                            <div style="
+                                background: linear-gradient(135deg, rgba(20, 26, 36, 0.9), rgba(30, 41, 59, 0.7));
+                                border-radius: 20px;
+                                padding: 50px 40px;
+                                border: 1px solid #2D3748;
+                                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                                text-align: center;
+                                max-width: 500px;
+                                width: 100%;
+                            ">
+                                <div style="font-size: 4rem; color: #EF4444; margin-bottom: 20px;">
+                                    <i class="fas fa-ban"></i>
+                                </div>
+                                <h2 style="color: white; margin-bottom: 15px;">Доступ не підтверджено</h2>
+                                <p style="color: #A6A6A6; margin-bottom: 25px; line-height: 1.6;">
+                                    Ваш запит ще не підтверджено адміністратором.<br>
+                                    Будь ласка, зачекайте на підтвердження або зверніться до адміністратора.
+                                </p>
+                                
+                                <div style="
+                                    background: rgba(239, 68, 68, 0.1);
+                                    padding: 15px;
+                                    border-radius: 8px;
+                                    margin: 20px 0;
+                                    text-align: left;
+                                ">
+                                    <p style="color: #A6A6A6; margin: 5px 0; font-size: 0.9rem;">
+                                        <strong>ID:</strong> ${user.id}<br>
+                                        <strong>Ім'я:</strong> ${user.first_name || 'Користувач'}<br>
+                                        <strong>Статус:</strong> Очікує підтвердження
+                                    </p>
+                                </div>
+                                
+                                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
+                                    <button onclick="logout()" style="
+                                        background: linear-gradient(135deg, #0088cc, #0077b5);
+                                        color: white;
+                                        border: none;
+                                        padding: 12px 30px;
+                                        border-radius: 8px;
+                                        font-size: 1rem;
+                                        cursor: pointer;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        transition: all 0.3s ease;
+                                    ">
+                                        <i class="fas fa-sign-out-alt"></i> Вийти
+                                    </button>
+                                    
+                                    <button onclick="location.reload()" style="
+                                        background: rgba(59, 130, 246, 0.1);
+                                        color: #3B82F6;
+                                        border: 2px solid #3B82F6;
+                                        padding: 12px 30px;
+                                        border-radius: 8px;
+                                        font-size: 1rem;
+                                        cursor: pointer;
+                                        display: flex;
+                                        align-items: center;
+                                        gap: 8px;
+                                        transition: all 0.3s ease;
+                                    ">
+                                        <i class="fas fa-sync-alt"></i> Оновити
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Добавляем стили для иконок
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+                    document.head.appendChild(link);
+                    
+                    return null;
+                }
+                
+                console.log('✅ Доступ надано для:', user.first_name);
                 updateUserGreeting(user);
+                
+                // Определяем роль пользователя
+                user.role = user.id === ADMIN_ID ? 'admin' : 'user';
+                localStorage.setItem('userRole', user.role);
+                
                 return user;
                 
             } catch (error) {
-                console.error('❌ Помилка перевірки авторизації:', error);
+                console.error('❌ Помилка перевірки доступу:', error);
                 window.location.href = 'login.html';
                 return null;
             }
@@ -65,27 +181,79 @@
             const usernameElements = document.querySelectorAll('#userGreeting span, .username-placeholder');
             usernameElements.forEach(element => {
                 if (element.textContent === 'Perets' || element.textContent === 'Користувач') {
-                    element.textContent = user.first_name || 'Адміністратор';
+                    element.textContent = user.first_name || (user.id === ADMIN_ID ? 'Адміністратор' : 'Користувач');
                 }
             });
             
             const statuteHeader = document.querySelector('#statutePage .user-info h1 span');
-            if (statuteHeader && statuteHeader.textContent === 'Perets') {
-                statuteHeader.textContent = user.first_name || 'Адміністратор';
+            if (statuteHeader) {
+                statuteHeader.textContent = user.first_name || (user.id === ADMIN_ID ? 'Адміністратор' : 'Користувач');
+            }
+            
+            // Обновляем футер
+            const footerName = document.querySelector('.footer-content p strong');
+            if (footerName && footerName.textContent === 'Perets') {
+                footerName.textContent = user.first_name || 'Адмін';
+            }
+            
+            // Показываем/скрываем админские элементы
+            if (user.id !== ADMIN_ID) {
+                // Скрываем чувствительные разделы для обычных пользователей
+                const adminSections = document.querySelectorAll('.admin-only');
+                adminSections.forEach(section => {
+                    section.style.display = 'none';
+                });
+                
+                // Меняем заголовок
+                const mainTitle = document.querySelector('#userGreeting');
+                if (mainTitle) {
+                    mainTitle.innerHTML = `Вітаємо, <span>${user.first_name}</span>!`;
+                }
             }
         }
         
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                // Получаем ID пользователя перед очисткой
+                const userData = localStorage.getItem('userData');
+                let userId = '';
+                if (userData) {
+                    try {
+                        const user = JSON.parse(userData);
+                        userId = user.id;
+                    } catch (e) {}
+                }
+                
+                // Очищаем localStorage
                 localStorage.clear();
+                
+                // Если это не админ, удаляем его доступ
+                if (userId && userId !== ADMIN_ID) {
+                    localStorage.removeItem(`access_${userId}`);
+                    localStorage.removeItem(`name_${userId}`);
+                    localStorage.removeItem(`username_${userId}`);
+                }
+                
                 window.location.href = 'login.html';
             }
         }
         
+        // Проверяем при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            const user = checkAdminAuth();
+            const user = checkAccess();
             if (user) {
-                console.log('✅ Ласкаво просимо, адміне:', user.first_name);
+                console.log('✅ Ласкаво просимо:', user.first_name, user.id === ADMIN_ID ? '(адмін)' : '(користувач)');
+                
+                // Показываем информацию о пользователе в консоли
+                console.log('👤 Інформація про користувача:');
+                console.log('- ID:', user.id);
+                console.log('- Ім\'я:', user.first_name);
+                console.log('- Username:', user.username);
+                console.log('- Роль:', user.id === ADMIN_ID ? 'Адмін' : 'Користувач');
+                console.log('- Термін дії токена:', 
+                    Math.floor((30 * 24 * 60 * 60 * 1000 - 
+                    (new Date().getTime() - parseInt(localStorage.getItem('tokenTime')))) 
+                    / (24 * 60 * 60 * 1000)), 'днів залишилось');
             }
         });
     </script>
@@ -701,6 +869,35 @@
             box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
         }
         
+        /* Индикатор пользователя */
+        .user-indicator {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 850;
+        }
+        
+        .user-indicator.admin {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-color: var(--success);
+        }
+        
+        .user-indicator.user {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border-color: var(--warning);
+        }
+        
         @media (max-width: 1200px) {
             .cards-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -772,6 +969,12 @@
             .regulations-list li {
                 padding: 12px 0 12px 30px;
             }
+            
+            .user-indicator {
+                top: 80px;
+                right: 20px;
+                font-size: 0.8rem;
+            }
         }
         
         @media (max-width: 480px) {
@@ -801,6 +1004,12 @@
         <i class="fas fa-bars"></i>
     </button>
 
+    <!-- Индикатор пользователя -->
+    <div class="user-indicator" id="userIndicator">
+        <i class="fas fa-user"></i>
+        <span>Завантаження...</span>
+    </div>
+
     <!-- Сайдбар -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
@@ -816,13 +1025,13 @@
             <a href="#" class="nav-item" onclick="showPage('statute')">
                 <i class="fas fa-scroll"></i> Статут та регламент
             </a>
-            <a href="#" class="nav-item" onclick="showPage('penalties')">
+            <a href="#" class="nav-item admin-only" onclick="showPage('penalties')">
                 <i class="fas fa-gavel"></i> Система стягнень
             </a>
             <a href="#" class="nav-item" onclick="showPage('inactive')">
                 <i class="fas fa-calendar-times"></i> Заявка на неактив
             </a>
-            <a href="#" class="nav-item" onclick="showPage('personnel')">
+            <a href="#" class="nav-item admin-only" onclick="showPage('personnel')">
                 <i class="fas fa-users"></i> Особовий склад
             </a>
             <a href="#" class="nav-item" onclick="showPage('commands')">
@@ -831,7 +1040,7 @@
             <a href="#" class="nav-item" onclick="showPage('fractions')">
                 <i class="fas fa-city"></i> Фракції
             </a>
-            <a href="#" class="nav-item" onclick="showPage('scripts')">
+            <a href="#" class="nav-item admin-only" onclick="showPage('scripts')">
                 <i class="fas fa-code"></i> Скрипти
             </a>
             <a href="#" class="nav-item" onclick="showPage('faq')">
@@ -879,7 +1088,7 @@
                         </a>
                     </div>
                     
-                    <div class="home-card" onclick="showPage('penalties')">
+                    <div class="home-card admin-only" onclick="showPage('penalties')">
                         <div class="home-card-icon">
                             <i class="fas fa-gavel"></i>
                         </div>
@@ -1258,6 +1467,7 @@
         const sidebarOverlay = document.getElementById('sidebarOverlay');
         const navItems = document.querySelectorAll('.nav-item');
         const pageContents = document.querySelectorAll('.page-content');
+        const userIndicator = document.getElementById('userIndicator');
         
         // Переключение сайдбара
         function toggleSidebar() {
@@ -1312,6 +1522,25 @@
         
         // ========== ИНИЦИАЛИЗАЦИЯ ==========
         document.addEventListener('DOMContentLoaded', function() {
+            // Получаем данные пользователя
+            const userData = localStorage.getItem('userData');
+            let userName = 'Користувач';
+            let userRole = 'user';
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    userName = user.first_name || 'Користувач';
+                    userRole = user.id === "5316593741" ? 'admin' : 'user';
+                    
+                    // Обновляем индикатор пользователя
+                    updateUserIndicator(userName, userRole);
+                    
+                } catch (error) {
+                    console.error('Помилка парсингу userData:', error);
+                }
+            }
+            
             // Анимация карточек
             const homeCards = document.querySelectorAll('.home-card');
             homeCards.forEach((card, index) => {
@@ -1359,8 +1588,45 @@
                 });
             }
             
+            // Проверяем если пользователь не админ - скрываем админские разделы
+            if (userRole !== 'admin') {
+                const adminElements = document.querySelectorAll('.admin-only');
+                adminElements.forEach(el => {
+                    el.style.display = 'none';
+                });
+            }
+            
             console.log('Система завантажена успішно!');
+            console.log('Користувач:', userName, 'Роль:', userRole);
         });
+        
+        // Обновление индикатора пользователя
+        function updateUserIndicator(userName, userRole) {
+            if (!userIndicator) return;
+            
+            userIndicator.innerHTML = '';
+            
+            const icon = document.createElement('i');
+            icon.className = userRole === 'admin' ? 'fas fa-crown' : 'fas fa-user';
+            
+            const text = document.createElement('span');
+            text.textContent = `${userName} (${userRole === 'admin' ? 'Адмін' : 'Користувач'})`;
+            
+            userIndicator.appendChild(icon);
+            userIndicator.appendChild(text);
+            
+            // Добавляем соответствующий класс
+            userIndicator.className = 'user-indicator';
+            userIndicator.classList.add(userRole);
+        }
+        
+        // Функция для выхода (уже есть в верхнем скрипте, дублируем для доступа)
+        window.logout = function() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        };
     </script>
 </body>
 </html>
