@@ -6,96 +6,49 @@
     <title>Обробка авторизації | Ukraine GTA 5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ... существующие стили остаются ... */
         
-        body {
-            background: linear-gradient(135deg, #0C1016, #141A24);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .auth-container {
-            max-width: 500px;
-            width: 100%;
+        /* Новые стили для ожидания */
+        .waiting-screen {
             text-align: center;
+            padding: 30px;
         }
         
-        .auth-card {
-            background: linear-gradient(135deg, rgba(20, 26, 36, 0.9), rgba(30, 41, 59, 0.7));
-            border-radius: 20px;
-            padding: 50px 40px;
-            border: 1px solid #2D3748;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        .status-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #F59E0B;
         }
         
-        .loading {
-            margin: 30px 0;
+        .status-icon.approved {
+            color: #10B981;
         }
         
-        .spinner {
-            border: 4px solid rgba(0, 136, 204, 0.1);
-            border-top: 4px solid #0088cc;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px auto;
+        .status-icon.rejected {
+            color: #EF4444;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .btn {
-            background: linear-gradient(135deg, #0088cc, #0077b5);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 20px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
-        }
-        
-        .success { color: #10B981; }
-        .error { color: #EF4444; }
-        .warning { color: #F59E0B; }
-        
-        .user-info {
-            background: rgba(0, 136, 204, 0.1);
-            padding: 15px;
-            border-radius: 8px;
+        .checking-animation {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
             margin: 20px 0;
-            text-align: left;
         }
         
-        .user-info p {
-            margin: 5px 0;
-            font-size: 0.95rem;
+        .checking-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #0088cc;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
         }
         
-        @media (max-width: 768px) {
-            .auth-card {
-                padding: 40px 25px;
-            }
+        .checking-dot:nth-child(1) { animation-delay: -0.32s; }
+        .checking-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
         }
     </style>
 </head>
@@ -120,24 +73,27 @@
     </div>
 
     <script>
-        // ID адміністратора
-        const ADMIN_ID = "5316593741";
+        // Конфигурация
+        const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
+        const ADMIN_CHAT_ID = "5316593741"; // Твой ID
+        const SITE_URL = "https://swetatop.github.io/manual/";
+        const CHECK_INTERVAL = 5000; // Проверка каждые 5 секунд
         
-        function processTelegramAuth() {
+        // Хранилище статусов (в реальном проекте это должна быть база данных)
+        let accessRequests = {};
+        
+        async function processTelegramAuth() {
             try {
-                console.log('Початок обробки авторизації...');
+                console.log('=== ОБРОБКА АВТОРИЗАЦІЇ ===');
                 
-                // Отримуємо параметри з URL
+                // Получаем данные из URL
                 const urlParams = new URLSearchParams(window.location.hash.substring(1));
                 
-                console.log('Параметри URL:', Object.fromEntries(urlParams.entries()));
-                
-                // Перевіряємо чи є дані
                 if (!urlParams.get('id')) {
                     throw new Error('Немає даних авторизації');
                 }
                 
-                // Дані від Telegram
+                // Данные пользователя
                 const userData = {
                     id: urlParams.get('id'),
                     first_name: urlParams.get('first_name'),
@@ -147,101 +103,305 @@
                     hash: urlParams.get('hash')
                 };
                 
-                console.log('Дані користувача:', userData);
+                console.log('Користувач:', userData);
                 
-                // Перевіряємо чи це адмін
-                if (userData.id === ADMIN_ID) {
-                    // Зберігаємо дані адміна
-                    localStorage.setItem('userData', JSON.stringify(userData));
-                    localStorage.setItem('authToken', 'tg_' + userData.id + '_' + Date.now());
-                    localStorage.setItem('tokenTime', Date.now().toString());
-                    localStorage.setItem('isAdmin', 'true');
-                    
-                    console.log('Адмін авторизований, перенаправляємо...');
-                    
-                    // Показуємо успіх
-                    document.getElementById('auth-message').innerHTML = `
-                        <div class="success">
-                            <div style="font-size: 4rem; margin-bottom: 20px;">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <h2>Авторизація успішна!</h2>
-                            <p style="color: #A6A6A6; margin: 15px 0;">Вітаємо, адміністраторе!</p>
-                            
-                            <div class="user-info">
-                                <p><strong>ID:</strong> ${userData.id}</p>
-                                <p><strong>Ім'я:</strong> ${userData.first_name}</p>
-                                <p><strong>Username:</strong> @${userData.username}</p>
-                            </div>
-                            
-                            <p style="color: #A6A6A6; margin: 20px 0;">Перенаправляємо до адмін панелі...</p>
-                        </div>
-                    `;
-                    
-                    // Переходимо на головну сторінку через 2 секунди
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
-                    
-                } else {
-                    // Не адмін
-                    console.log('Спроба входу не адміна:', userData.id);
-                    
-                    document.getElementById('auth-message').innerHTML = `
-                        <div class="error">
-                            <div style="font-size: 4rem; margin-bottom: 20px;">
-                                <i class="fas fa-ban"></i>
-                            </div>
-                            <h2>Доступ заборонено</h2>
-                            <p style="color: #A6A6A6; margin: 15px 0;">
-                                Ця панель тільки для головного адміністратора
-                            </p>
-                            
-                            <div class="user-info">
-                                <p><strong>Ваш ID:</strong> ${userData.id}</p>
-                                <p><strong>Потрібний ID:</strong> ${ADMIN_ID}</p>
-                            </div>
-                            
-                            <a href="login.html" class="btn">
-                                <i class="fas fa-arrow-left"></i> Повернутися
-                            </a>
-                        </div>
-                    `;
+                // Проверяем если уже есть доступ
+                const existingAccess = localStorage.getItem(`access_${userData.id}`);
+                if (existingAccess === 'approved') {
+                    grantAccess(userData);
+                    return;
                 }
                 
-            } catch (error) {
-                console.error('Помилка обробки авторизації:', error);
+                // Если это ты - сразу даем доступ
+                if (userData.id === ADMIN_CHAT_ID) {
+                    console.log('👑 Це адмін, доступ надається');
+                    grantAccess(userData);
+                    return;
+                }
                 
-                document.getElementById('auth-message').innerHTML = `
-                    <div class="warning">
-                        <div style="font-size: 4rem; margin-bottom: 20px;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <h2>Помилка авторизації</h2>
-                        <p style="color: #A6A6A6; margin: 15px 0;">
-                            Сталася помилка під час входу. Спробуйте ще раз.
-                        </p>
-                        <p style="font-size: 0.9rem; color: #A6A6A6; margin-bottom: 20px;">
-                            Помилка: ${error.message}
-                        </p>
-                        
-                        <div style="display: flex; gap: 10px; justify-content: center;">
-                            <a href="login.html" class="btn">
-                                <i class="fas fa-redo"></i> Спробувати знову
-                            </a>
-                            <button onclick="demoAdminLogin()" class="btn" style="background: #F59E0B;">
-                                <i class="fas fa-user-secret"></i> Демо вхід
-                            </button>
-                        </div>
-                    </div>
-                `;
+                // Отправляем запрос на доступ
+                await sendAccessRequest(userData);
+                
+                // Показываем экран ожидания
+                showWaitingScreen(userData);
+                
+                // Начинаем проверку статуса
+                startStatusChecking(userData.id);
+                
+            } catch (error) {
+                console.error('Помилка:', error);
+                showError(error.message);
             }
         }
         
-        // Демо вхід для тесту
+        // Отправка запроса в бот
+        async function sendAccessRequest(userData) {
+            console.log('📤 Відправляємо запит адміну...');
+            
+            const messageText = `🔔 *Новий запит доступу до адмін-панелі*
+            
+👤 *Ім'я:* ${userData.first_name}
+📱 *Username:* @${userData.username || 'немає'}
+🆔 *ID:* ${userData.id}
+⏰ *Час:* ${new Date().toLocaleTimeString('uk-UA')}
+            
+*Надати доступ?*`;
+            
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: ADMIN_CHAT_ID,
+                        text: messageText,
+                        parse_mode: 'Markdown',
+                        reply_markup: {
+                            inline_keyboard: [
+                                [
+                                    {
+                                        text: "✅ Підтвердити доступ",
+                                        callback_data: `approve_${userData.id}_${Date.now()}`
+                                    },
+                                    {
+                                        text: "❌ Відхилити",
+                                        callback_data: `reject_${userData.id}_${Date.now()}`
+                                    }
+                                ]
+                            ]
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (!result.ok) {
+                    throw new Error(`Помилка Telegram API: ${result.description}`);
+                }
+                
+                console.log('✅ Запит відправлено адміну');
+                
+                // Сохраняем запрос
+                accessRequests[userData.id] = {
+                    status: 'pending',
+                    messageId: result.result.message_id,
+                    timestamp: Date.now()
+                };
+                
+            } catch (error) {
+                console.error('Помилка відправки запиту:', error);
+                throw error;
+            }
+        }
+        
+        // Показать экран ожидания
+        function showWaitingScreen(userData) {
+            document.getElementById('auth-message').innerHTML = `
+                <div class="waiting-screen">
+                    <div class="status-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h2>Очікуйте підтвердження</h2>
+                    <p style="color: #A6A6A6; margin: 15px 0;">
+                        Ваш запит відправлено адміністратору<br>
+                        <strong>${userData.first_name}</strong> (@${userData.username || 'немає'})
+                    </p>
+                    
+                    <div class="checking-animation">
+                        <div class="checking-dot"></div>
+                        <div class="checking-dot"></div>
+                        <div class="checking-dot"></div>
+                    </div>
+                    
+                    <p style="color: #A6A6A6; font-size: 0.9rem; margin-top: 20px;">
+                        <i class="fas fa-info-circle"></i>
+                        Ви отримаєте сповіщення, коли адміністратор розгляне ваш запит
+                    </p>
+                    
+                    <div style="margin-top: 30px; padding: 15px; background: rgba(0, 136, 204, 0.1); border-radius: 8px;">
+                        <p style="margin: 0; color: #A6A6A6; font-size: 0.85rem;">
+                            <i class="fas fa-history"></i> 
+                            Автоматична перевірка статусу...
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Начать проверку статуса
+        function startStatusChecking(userId) {
+            let checkCount = 0;
+            const maxChecks = 30; // 30 проверок = 2.5 минуты
+            
+            const checkInterval = setInterval(async () => {
+                checkCount++;
+                
+                try {
+                    const status = await checkUserStatus(userId);
+                    
+                    if (status === 'approved') {
+                        clearInterval(checkInterval);
+                        showApprovedScreen();
+                        
+                        // Даем доступ через 2 секунды
+                        setTimeout(() => {
+                            const userData = {
+                                id: userId,
+                                first_name: localStorage.getItem(`name_${userId}`) || 'Користувач',
+                                username: localStorage.getItem(`username_${userId}`) || ''
+                            };
+                            grantAccess(userData);
+                        }, 2000);
+                        
+                    } else if (status === 'rejected') {
+                        clearInterval(checkInterval);
+                        showRejectedScreen();
+                        
+                    } else if (checkCount >= maxChecks) {
+                        clearInterval(checkInterval);
+                        showTimeoutScreen();
+                    }
+                    
+                } catch (error) {
+                    console.error('Помилка перевірки статусу:', error);
+                }
+                
+            }, CHECK_INTERVAL);
+        }
+        
+        // Проверить статус пользователя
+        async function checkUserStatus(userId) {
+            try {
+                // В реальном проекте здесь запрос к серверу
+                // Для демо используем localStorage
+                const status = localStorage.getItem(`access_${userId}`);
+                return status || 'pending';
+                
+            } catch (error) {
+                console.error('Помилка перевірки статусу:', error);
+                return 'pending';
+            }
+        }
+        
+        // Дать доступ пользователю
+        function grantAccess(userData) {
+            console.log('✅ Надаємо доступ користувачу:', userData);
+            
+            // Сохраняем данные
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('authToken', 'tg_' + userData.id + '_' + Date.now());
+            localStorage.setItem('tokenTime', Date.now().toString());
+            localStorage.setItem('isAdmin', userData.id === ADMIN_CHAT_ID ? 'true' : 'false');
+            
+            // Сохраняем статус доступа
+            localStorage.setItem(`access_${userData.id}`, 'approved');
+            localStorage.setItem(`name_${userData.id}`, userData.first_name);
+            localStorage.setItem(`username_${userData.id}`, userData.username || '');
+            
+            // Перенаправляем на главную
+            window.location.href = 'index.html';
+        }
+        
+        // Показать экран подтверждения
+        function showApprovedScreen() {
+            document.getElementById('auth-message').innerHTML = `
+                <div class="waiting-screen">
+                    <div class="status-icon approved">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2>Доступ підтверджено! 🎉</h2>
+                    <p style="color: #A6A6A6; margin: 15px 0;">
+                        Адміністратор підтвердив ваш запит на доступ
+                    </p>
+                    
+                    <div style="background: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #10B981;">
+                            <i class="fas fa-rocket"></i>
+                            Перенаправляємо до адмін-панелі...
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Показать экран отказа
+        function showRejectedScreen() {
+            document.getElementById('auth-message').innerHTML = `
+                <div class="waiting-screen">
+                    <div class="status-icon rejected">
+                        <i class="fas fa-ban"></i>
+                    </div>
+                    <h2>Доступ відхилено</h2>
+                    <p style="color: #A6A6A6; margin: 15px 0;">
+                        Адміністратор відхилив ваш запит на доступ до адмін-панелі
+                    </p>
+                    
+                    <div style="background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #EF4444;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Для отримання доступу зверніться до адміністратора
+                        </p>
+                    </div>
+                    
+                    <a href="login.html" class="btn" style="margin-top: 20px;">
+                        <i class="fas fa-arrow-left"></i> Повернутися
+                    </a>
+                </div>
+            `;
+        }
+        
+        // Показать таймаут
+        function showTimeoutScreen() {
+            document.getElementById('auth-message').innerHTML = `
+                <div class="waiting-screen">
+                    <div class="status-icon">
+                        <i class="fas fa-hourglass-end"></i>
+                    </div>
+                    <h2>Час очікування вийшов</h2>
+                    <p style="color: #A6A6A6; margin: 15px 0;">
+                        Адміністратор не встиг розглянути ваш запит
+                    </p>
+                    
+                    <div style="background: rgba(245, 158, 11, 0.1); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; color: #F59E0B;">
+                            <i class="fas fa-sync-alt"></i>
+                            Спробуйте пізніше або зверніться безпосередньо
+                        </p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <a href="login.html" class="btn">
+                            <i class="fas fa-redo"></i> Спробувати знову
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Показать ошибку
+        function showError(message) {
+            document.getElementById('auth-message').innerHTML = `
+                <div class="error">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h2>Помилка авторизації</h2>
+                    <p style="color: #A6A6A6; margin: 15px 0;">${message}</p>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <a href="login.html" class="btn">
+                            <i class="fas fa-arrow-left"></i> Повернутися
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Демо вход для теста
         function demoAdminLogin() {
             const userData = {
-                id: ADMIN_ID,
+                id: ADMIN_CHAT_ID,
                 first_name: "Perets",
                 username: "swetatopp",
                 photo_url: "",
@@ -249,15 +409,10 @@
                 hash: "demo_" + Date.now()
             };
             
-            localStorage.setItem('userData', JSON.stringify(userData));
-            localStorage.setItem('authToken', 'demo_tg_' + Date.now());
-            localStorage.setItem('tokenTime', Date.now().toString());
-            localStorage.setItem('isAdmin', 'true');
-            
-            window.location.href = 'index.html';
+            grantAccess(userData);
         }
         
-        // Запускаємо обробку при завантаженні сторінки
+        // Запускаем при загрузке
         window.onload = processTelegramAuth;
     </script>
 </body>
