@@ -111,18 +111,38 @@
             const action = params.get('action');
             const userId = params.get('user_id');
             
+            console.log('🔍 Перевірка параметрів URL:', { action, userId });
+            
             if (action && userId) {
+                addLog(`📱 Отримано запит: ${action} для користувача ${userId}`);
+                
                 if (action === 'approve') {
-                    await approveUser(userId);
-                    addLog(`✅ Автоматично підтверджено доступ для ID: ${userId}`);
-                    alert('✅ Доступ підтверджено!');
-                    window.history.replaceState({}, document.title, window.location.pathname);
+                    const success = await approveUser(userId);
+                    if (success) {
+                        addLog(`✅ Автоматично підтверджено доступ для ID: ${userId}`);
+                        alert('✅ Доступ підтверджено!');
+                        // Закрываем окно через 2 секунды
+                        setTimeout(() => {
+                            if (window.opener) {
+                                window.close();
+                            }
+                        }, 2000);
+                    }
                 } else if (action === 'reject') {
-                    await rejectUser(userId);
-                    addLog(`❌ Автоматично відхилено доступ для ID: ${userId}`);
-                    alert('❌ Доступ відхилено!');
-                    window.history.replaceState({}, document.title, window.location.pathname);
+                    const success = await rejectUser(userId);
+                    if (success) {
+                        addLog(`❌ Автоматично відхилено доступ для ID: ${userId}`);
+                        alert('❌ Доступ відхилено!');
+                        setTimeout(() => {
+                            if (window.opener) {
+                                window.close();
+                            }
+                        }, 2000);
+                    }
                 }
+                
+                // Очищаем параметры URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
         
@@ -144,6 +164,7 @@
                 
                 let html = '';
                 requests.forEach(user => {
+                    // Отображаем username через @
                     const usernameDisplay = user.username ? `@${user.username}` : 'немає';
                     
                     html += `
@@ -177,34 +198,99 @@
         // Подтвердить пользователя
         async function approveUser(userId) {
             try {
+                // Получаем данные пользователя
+                const userDoc = await getDoc(doc(db, "users", userId));
+                if (!userDoc.exists()) {
+                    addLog(`❌ Користувача з ID ${userId} не знайдено`);
+                    return false;
+                }
+                
+                const userData = userDoc.data();
+                
+                // Обновляем статус
                 await updateDoc(doc(db, "users", userId), {
                     status: 'approved',
                     updated_at: new Date().toISOString()
                 });
                 
-                addLog(`✅ Доступ надано для ID: ${userId}`);
+                // Отправляем уведомление через бота
+                await sendTelegramNotification(userId, 'approved', userData);
+                
+                addLog(`✅ Доступ надано для: ${userData.first_name} (ID: ${userId})`);
                 loadRequests();
+                return true;
                 
             } catch (error) {
                 console.error('Помилка:', error);
                 addLog(`❌ Помилка підтвердження: ${error.message}`);
+                return false;
             }
         }
         
         // Отклонить пользователя
         async function rejectUser(userId) {
             try {
+                const userDoc = await getDoc(doc(db, "users", userId));
+                if (!userDoc.exists()) {
+                    addLog(`❌ Користувача з ID ${userId} не знайдено`);
+                    return false;
+                }
+                
+                const userData = userDoc.data();
+                
                 await updateDoc(doc(db, "users", userId), {
                     status: 'rejected',
                     updated_at: new Date().toISOString()
                 });
                 
-                addLog(`❌ Доступ відхилено для ID: ${userId}`);
+                // Отправляем уведомление через бота
+                await sendTelegramNotification(userId, 'rejected', userData);
+                
+                addLog(`❌ Доступ відхилено для: ${userData.first_name} (ID: ${userId})`);
                 loadRequests();
+                return true;
                 
             } catch (error) {
                 console.error('Помилка:', error);
                 addLog(`❌ Помилка відхилення: ${error.message}`);
+                return false;
+            }
+        }
+        
+        // Отправка уведомления в Telegram
+        async function sendTelegramNotification(userId, action, userData) {
+            const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
+            const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
+            
+            const message = action === 'approved' 
+                ? `🎉 *ДОСТУП НАДАНО!*
+
+👤 *Користувач:* ${userData.first_name} (${usernameDisplay})
+🆔 *ID:* ${userId}
+✅ *Статус:* Доступ надано
+
+Користувач тепер може увійти до адмін-панелі.`
+                : `🚫 *ДОСТУП ВІДХИЛЕНО*
+
+👤 *Користувач:* ${userData.first_name} (${usernameDisplay})
+🆔 *ID:* ${userId}
+❌ *Статус:* Доступ відхилено
+
+Користувачу відмовлено в доступі до адмін-панелі.`;
+            
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: userId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                addLog(`📤 Уведомление отправлено пользователю ${userId}`);
+            } catch (error) {
+                console.error('Ошибка отправки уведомления:', error);
             }
         }
         
@@ -218,9 +304,11 @@
                 return;
             }
             
-            await approveUser(userId);
-            document.getElementById('manualUserId').value = '';
-            document.getElementById('manualUserName').value = '';
+            const success = await approveUser(userId);
+            if (success) {
+                document.getElementById('manualUserId').value = '';
+                document.getElementById('manualUserName').value = '';
+            }
         };
         
         // Ручное отклонение
@@ -232,9 +320,11 @@
                 return;
             }
             
-            await rejectUser(userId);
-            document.getElementById('manualUserId').value = '';
-            document.getElementById('manualUserName').value = '';
+            const success = await rejectUser(userId);
+            if (success) {
+                document.getElementById('manualUserId').value = '';
+                document.getElementById('manualUserName').value = '';
+            }
         };
         
         // Логи
@@ -249,7 +339,7 @@
         window.rejectUser = rejectUser;
         
         // Автообновление и инициализация
-        setInterval(loadRequests, 5000);
+        setInterval(loadRequests, 3000);
         
         window.onload = async function() {
             addLog('🚀 Панель управління запущена');
