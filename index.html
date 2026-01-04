@@ -16,7 +16,7 @@
             --primary-dark: #2563EB;
             --primary-light: #60A5FA;
             --text-light: #F8FAFC;
-            --text-gray: #94A3B8;
+            --text-gray: #A6A6A6;
             --border: #2D3748;
             --success: #10B981;
             --warning: #F59E0B;
@@ -350,27 +350,26 @@
         
         /* ========== СТИЛИ ДЛЯ СТРАНИЦЫ "ОНЛАЙН ЗМІНА" ========== */
         
-        /* Секция с заголовком и линией */
+        /* Секция с заголовком и линией - ПОЛНАЯ ЛИНИЯ С ГРАДИЕНТОМ */
         .section-header {
-            margin: 60px 0 40px 0;
+            margin: 50px 0 40px 0;
             position: relative;
             width: 100%;
         }
         
         .section-title {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.9rem;
+            font-size: 2rem;
             color: var(--primary);
-            margin-bottom: 15px;
-            display: inline-block;
+            margin-bottom: 20px;
+            display: block;
         }
         
         .section-line {
             height: 3px;
-            background: linear-gradient(90deg, var(--primary), transparent 80%);
+            background: linear-gradient(90deg, var(--primary), #8B5CF6);
             width: 100%;
             border-radius: 2px;
-            margin-top: 5px;
         }
         
         /* Карточки с временем змін */
@@ -384,7 +383,7 @@
         .time-card {
             background: linear-gradient(135deg, rgba(20, 26, 36, 0.9), rgba(30, 41, 59, 0.7));
             border-radius: 12px;
-            padding: 35px 25px;
+            padding: 40px 30px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid var(--border);
             text-align: center;
@@ -392,7 +391,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 180px;
+            min-height: 200px;
         }
         
         .time-card:hover {
@@ -402,7 +401,7 @@
         
         .time-card h3 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--text-gray);
             margin-bottom: 15px;
             font-weight: 500;
@@ -410,50 +409,41 @@
         
         .time-card .time {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--primary);
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--primary-light);
             line-height: 1.2;
         }
         
         /* Основной текст */
         .content-text {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             line-height: 1.7;
             color: var(--text-gray);
-            margin-bottom: 25px;
-            max-width: 900px;
+            margin-bottom: 30px;
+            max-width: 100%;
         }
         
-        /* Предупреждение */
+        /* Предупреждение ОРАНЖЕВОЕ с серым текстом */
         .warning-box {
-            background-color: rgba(148, 163, 184, 0.1);
+            background-color: rgba(245, 158, 11, 0.15);
             border-left: 4px solid var(--warning);
-            padding: 20px;
-            margin: 30px 0;
-            border-radius: 6px;
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        
-        .warning-icon {
-            color: var(--warning);
-            font-size: 1.5rem;
-            flex-shrink: 0;
-            margin-top: 2px;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 8px;
         }
         
         .warning-box p {
-            color: var(--text-light);
-            font-size: 1.05rem;
+            color: var(--text-gray);
+            font-size: 1.1rem;
             line-height: 1.6;
             margin: 0;
         }
         
         .warning-box strong {
-            color: var(--text-light);
-            font-weight: 600;
+            color: var(--text-gray);
+            font-weight: 700;
+            font-size: 1.15rem;
         }
         
         /* Секция с ссылками */
@@ -468,7 +458,7 @@
         .link-item {
             margin-bottom: 25px;
             padding-bottom: 25px;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            border-bottom: 1px solid rgba(166, 166, 166, 0.2);
         }
         
         .link-item:last-child {
@@ -525,18 +515,18 @@
         /* Список рекомендаций */
         .recommendations-list {
             list-style: none;
-            margin: 30px 0 40px 0;
+            margin: 40px 0 30px 0;
             padding-left: 0;
             counter-reset: recommendation-counter;
         }
         
         .recommendations-list li {
-            padding: 18px 0 18px 50px;
+            padding: 20px 0 20px 60px;
             position: relative;
             color: var(--text-gray);
-            font-size: 1.05rem;
-            line-height: 1.6;
-            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            border-bottom: 1px solid rgba(166, 166, 166, 0.1);
             counter-increment: recommendation-counter;
         }
         
@@ -545,20 +535,88 @@
         }
         
         .recommendations-list li:before {
-            content: counter(recommendation-counter) ".";
+            content: counter(recommendation-counter);
             position: absolute;
             left: 0;
             color: var(--primary);
-            font-weight: bold;
-            font-size: 1.3rem;
-            width: 40px;
-            height: 40px;
+            font-weight: 700;
+            font-size: 1.4rem;
+            width: 45px;
+            height: 45px;
             background-color: rgba(59, 130, 246, 0.1);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* ========== СТИЛИ ДЛЯ СТРАНИЦЫ "СТАТУТ ТА РЕГЛАМЕНТ" ========== */
+        
+        .regulations-list {
+            list-style: none;
+            margin: 30px 0;
+            padding-left: 0;
+        }
+        
+        .regulations-list li {
+            padding: 15px 0 15px 40px;
+            position: relative;
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            line-height: 1.7;
+            border-bottom: 1px solid rgba(166, 166, 166, 0.1);
+        }
+        
+        .regulations-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .regulations-list li:before {
+            content: "•";
+            position: absolute;
+            left: 15px;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+        
+        /* ЖЕЛТЫЙ блок (для примечаний) */
+        .note-box {
+            background-color: rgba(234, 179, 8, 0.15);
+            border-left: 4px solid #EAB308;
+            padding: 15px;
+            margin: 5px 0 15px 0;
+            border-radius: 6px;
+        }
+        
+        .note-box p {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        /* СИНИЙ блок (для примеров) */
+        .examples-box {
+            background-color: rgba(59, 130, 246, 0.15);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 5px 0 15px 0;
+            border-radius: 6px;
+        }
+        
+        .example-item {
+            color: var(--text-gray);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        
+        .example-item strong {
+            color: var(--text-gray);
+            font-weight: 700;
         }
         
         /* ========== ОБЩИЕ СТИЛИ ========== */
@@ -619,11 +677,17 @@
         
         /* Адаптивность */
         @media (max-width: 1200px) {
-            .cards-grid, .time-cards {
+            .cards-grid {
                 grid-template-columns: repeat(2, 1fr);
                 max-width: 900px;
                 margin-left: auto;
                 margin-right: auto;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .time-cards {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
         
@@ -650,7 +714,11 @@
             }
             
             .section-title {
-                font-size: 1.6rem;
+                font-size: 1.7rem;
+            }
+            
+            .time-card .time {
+                font-size: 2.4rem;
             }
             
             .links-section {
@@ -663,13 +731,17 @@
             }
             
             .recommendations-list li {
-                padding: 15px 0 15px 45px;
+                padding: 18px 0 18px 50px;
             }
             
             .recommendations-list li:before {
-                width: 35px;
-                height: 35px;
-                font-size: 1.2rem;
+                width: 40px;
+                height: 40px;
+                font-size: 1.3rem;
+            }
+            
+            .regulations-list li {
+                padding: 12px 0 12px 30px;
             }
         }
         
@@ -679,7 +751,7 @@
             }
             
             .time-card .time {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
             
             .logout-btn {
@@ -841,9 +913,6 @@
             
             <!-- Предупреждение -->
             <div class="warning-box">
-                <div class="warning-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
                 <p><strong>Увага!</strong> Якщо модератор не встигає зробити зміну та не попередив про це Тім Лідера, то модератор отримує штраф <strong>–2% до заробітної плати</strong>.</p>
             </div>
             
@@ -892,21 +961,128 @@
             </ul>
         </div>
         
-        <!-- ========== ЗАГЛУШКИ ДЛЯ ДРУГИХ СТРАНИЦ ========== -->
-        
+        <!-- ========== СТРАНИЦА "СТАТУТ ТА РЕГЛАМЕНТ" ========== -->
         <div id="statutePage" class="page-content">
+            <!-- Шапка страницы -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1>Статут та регламент</h1>
-                    <p>Основні правила та положення для модераторів сервера Ukraine GTA 5.</p>
+                    <h1>Вітаємо, <span>Perets</span>!</h1>
+                    <p>Цей документ визначає правила, обов'язки та заборони для модераторів Discord сервера Ukraine GTA5. Уважно ознайомтесь з усіма положеннями.</p>
+                    
+                    <p class="content-text" style="text-align: center; font-size: 1.1rem; margin-top: 20px;">
+                        Увага! Незнання статуту не звільняє вас від відповідальності. Усі модератори зобов'язані дотримуватись цих правил.
+                    </p>
                 </div>
             </div>
+            
+            <!-- Основні положення -->
             <div class="section-header">
-                <h2 class="section-title">Розділ в розробці</h2>
+                <h2 class="section-title">Основні положення</h2>
                 <div class="section-line"></div>
             </div>
-            <p class="content-text">Ця сторінка знаходиться в розробці. Скоро тут з'явиться повний статут та регламент для модераторів.</p>
+            
+            <p class="content-text">Регламент модераторів - це документ, в якому прописані обов'язки та заборони для модераторів ДС.</p>
+            
+            <p class="content-text" style="margin: 20px 0;">
+                Важливо: Незнання статуту не звільняє вас від відповідальності.
+            </p>
+            
+            <ul class="regulations-list">
+                <li>Модератори діскорду - це команда, яка слідкує за порушеннями правил діскорд сервера.</li>
+                <li>Модератор - людина стримана, логічна та з холодним розсудом, яка дотримується правил поводження у колективі.</li>
+                <li>Модератор не вирішує/втручається в проблеми ігрового та RP-процесу та не надає привілеї гравцям в грі.</li>
+            </ul>
+            
+            <!-- Примеры в синем блоке -->
+            <div class="examples-box">
+                <div class="example-item"><strong>Приклад:</strong> "Замов за мене словечко у Адмінів"</div>
+                <div class="example-item"><strong>Приклад:</strong> "А можеш покликати адміна/дай мені номер ГА/Попроси, щоб мене тп-хнули"</div>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>Модератор тільки видає покарання та попередження у Discord.</li>
+                <li>Правила Discord сервера – це головний документ, за яким модератори видають покарання.</li>
+                <li>Модератор повинен бути прикладом для інших учасників у поведінці та комунікації.</li>
+            </ul>
+            
+            <!-- Повноваження та обов'язки -->
+            <div class="section-header">
+                <h2 class="section-title">Повноваження та обов'язки</h2>
+                <div class="section-line"></div>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>Модератор зобов'язаний виконувати норматив (онлайн зміни), які встановлюються Тім Лідером.</li>
+                <li>Слідкувати за тим, щоб учасники не порушували правила сервера.</li>
+                <li>Вживати заходів щодо учасників, які порушують правила (попередження, м'ют, тимчасове або постійне блокування на сервері).</li>
+                <li>Модератор зобов'язаний прикріпляти докази до кожного випадку покарання.</li>
+            </ul>
+            
+            <!-- Желтый блок с примечанием -->
+            <div class="note-box">
+                <p><strong>Примітка:</strong> Якщо модератор займає посаду адміністратора на проєкті та у відео-доказах міститься конфіденційна інформація, яка не може бути розголошена гравцям, він може не надсилати докази у відповідний канал. У такому випадку модератор зобов'язаний надіслати докази в особисті повідомлення своєму Тім-лідеру (S.M).</p>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>Модератор зобов'язаний відповідати користувачам у чаті.</li>
+                <li>Модератор зобов'язаний слідкувати за голосовими та текстовими каналами.</li>
+                <li>Модератор має поважати своїх колег та керівників.</li>
+            </ul>
+            
+            <!-- Желтый блок с примечанием -->
+            <div class="note-box">
+                <p><strong>Примітка:</strong> У разі виникнення конфлікту між модераторами вони зобов'язані повідомити про це старшого керівника (S.M, КТП).</p>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>Модератор має бути адекватним та стресостійким.</li>
+                <li>Модератор зобов'язаний приймати рішення на основі фактів, а не особистих симпатій чи антипатій.</li>
+                <li>Модератор повинен забезпечувати прозорість у своїх діях і рішеннях. Це включає документування та пояснення причин покарань.</li>
+            </ul>
+            
+            <!-- Заборони -->
+            <div class="section-header">
+                <h2 class="section-title">Заборони</h2>
+                <div class="section-line"></div>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>Модератору заборонено розповсюджувати конфіденційну інформацію учасників.</li>
+                <li>Модератору заборонено використовувати привілеї у своїх цілях.</li>
+                <li>Модератору заборонено видавати покарання без причини.</li>
+                <li>Модератору заборонено не дотримуватись субординації з користувачами.</li>
+            </ul>
+            
+            <!-- Желтый блок с винятком и примечанием -->
+            <div class="note-box">
+                <p><strong>Виняток:</strong> особи, які перебувають у знайомих стосунках.<br>
+                <strong>Примітка:</strong> Навіть у такому випадку має бути дотримана мінімальна субординація; образи та подібна поведінка заборонені.</p>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>Модератору заборонено ігнорувати прохання керівників.</li>
+                <li>Модератору заборонено розкривати інформацію, надану їм керівниками, без їх узгодження.</li>
+                <li>Модератору заборонено перетягувати гравців з одного голосового чату в інший без їх узгодження.</li>
+                <li>Модератору заборонено грубо/непрофесійно/некоректно поводитись в чатах.</li>
+                <li>Модератору заборонено ігнорувати питання гравців.</li>
+                <li>Модератору заборонено займати посади на інших проектах.</li>
+                <li>Модератору заборонено марно тегати керівників.</li>
+            </ul>
+            
+            <!-- Санкції та відповідальність -->
+            <div class="section-header">
+                <h2 class="section-title">Санкції та відповідальність</h2>
+                <div class="section-line"></div>
+            </div>
+            
+            <ul class="regulations-list">
+                <li>У разі порушення цього регламенту модератор може бути підданий санкціям (штраф, попередження, догана, зняття з посади).</li>
+                <li>Модератор несе відповідальність за свої дії та рішення.</li>
+                <li>У разі серйозних порушень або зловживань повноваженнями модератор може бути притягнутий до відповідальності згідно цього регламенту та правил діскорду.</li>
+            </ul>
         </div>
+        
+        <!-- ========== ЗАГЛУШКИ ДЛЯ ДРУГИХ СТРАНИЦ ========== -->
         
         <div id="penaltiesPage" class="page-content">
             <div class="user-header">
@@ -1147,19 +1323,6 @@
             // Анимация карточек на главной
             const homeCards = document.querySelectorAll('.home-card');
             homeCards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                
-                setTimeout(() => {
-                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, 100 * index);
-            });
-            
-            // Анимация карточек на странице онлайн змін
-            const timeCards = document.querySelectorAll('.time-card');
-            timeCards.forEach((card, index) => {
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(20px)';
                 
