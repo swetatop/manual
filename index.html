@@ -37,6 +37,8 @@
             line-height: 1.6;
             font-family: 'Roboto', sans-serif;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         /* Сайдбар - без скроллбара */
@@ -166,19 +168,19 @@
             box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
         }
         
-        /* Основной контент с отступами */
+        /* Основной контент */
         .main-content {
-            padding: 30px;
+            flex: 1;
+            padding: 40px 30px;
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
-            padding-left: max(30px, 5%);
-            padding-right: max(30px, 5%);
         }
         
-        /* Хедер с пользователем */
+        /* Хедер с пользователем - ПО ЦЕНТРУ */
         .user-header {
-            margin: 30px 0 60px 0;
+            text-align: center;
+            margin: 40px 0 80px 0;
             padding: 0;
             background: transparent;
             border: none;
@@ -188,7 +190,7 @@
             font-family: 'Montserrat', sans-serif;
             font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             color: var(--text-light);
             line-height: 1.3;
         }
@@ -204,32 +206,49 @@
             font-size: 1.1rem;
             max-width: 800px;
             line-height: 1.7;
+            margin: 0 auto;
         }
         
-        /* Блок возможностей */
+        /* Блок возможностей - ТОЖЕ ПО ЦЕНТРУ */
         .capabilities {
-            margin: 60px 0;
+            margin: 80px 0 100px 0;
+            text-align: center;
         }
         
         .capabilities h2 {
             font-family: 'Montserrat', sans-serif;
-            font-size: 2rem;
-            margin-bottom: 40px;
+            font-size: 2.2rem;
+            margin-bottom: 60px;
             color: var(--text-light);
+            position: relative;
+            display: inline-block;
+            padding-bottom: 15px;
+        }
+        
+        .capabilities h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            border-radius: 2px;
         }
         
         /* КАРТОЧКИ - все 4 в одну линию */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 25px;
+            gap: 30px;
             margin-top: 40px;
         }
         
         .card {
             background-color: var(--bg-card);
             border-radius: 12px;
-            padding: 30px 25px;
+            padding: 35px 25px;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid var(--border);
             overflow: hidden;
@@ -278,15 +297,16 @@
         .card h3 {
             font-family: 'Montserrat', sans-serif;
             font-size: 1.3rem;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             color: var(--text-light);
         }
         
         .card p {
             color: var(--text-gray);
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             font-size: 0.95rem;
             line-height: 1.6;
+            min-height: 70px;
         }
         
         /* Кнопка "Детальніше" */
@@ -295,8 +315,8 @@
             background-color: rgba(59, 130, 246, 0.1);
             color: var(--primary);
             border: 2px solid var(--primary);
-            padding: 10px 24px;
-            border-radius: 6px;
+            padding: 12px 28px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.95rem;
@@ -335,38 +355,38 @@
         .page-title {
             font-family: 'Montserrat', sans-serif;
             font-size: 2.2rem;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
             border-bottom: 2px solid var(--border);
             color: var(--text-light);
         }
         
         .page-subtitle {
             font-family: 'Montserrat', sans-serif;
-            font-size: 1.5rem;
-            margin: 30px 0 20px;
+            font-size: 1.6rem;
+            margin: 40px 0 25px;
             color: var(--primary);
         }
         
         .content-block {
             background-color: var(--bg-card);
             border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
             border: 1px solid var(--border);
             animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .content-block p {
-            margin-bottom: 20px;
-            font-size: 1rem;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
             line-height: 1.7;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
-            margin: 25px 0;
+            margin: 30px 0;
             background-color: rgba(20, 26, 36, 0.7);
             border-radius: 8px;
             overflow: hidden;
@@ -375,7 +395,7 @@
         }
         
         th, td {
-            padding: 16px;
+            padding: 18px;
             text-align: left;
             border-bottom: 1px solid var(--border);
         }
@@ -402,7 +422,7 @@
         }
         
         .link-list li {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
             padding-left: 25px;
             position: relative;
         }
@@ -427,6 +447,33 @@
         
         .link-list a:hover {
             border-bottom-color: var(--primary);
+        }
+        
+        /* Футер */
+        .footer {
+            background-color: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 25px 0;
+            margin-top: 80px;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+        
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 30px;
+        }
+        
+        .footer p {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .footer strong {
+            color: var(--primary);
+            font-weight: 600;
         }
         
         /* Кнопка выхода */
@@ -544,6 +591,7 @@
                 max-width: 900px;
                 margin-left: auto;
                 margin-right: auto;
+                gap: 25px;
             }
         }
         
@@ -562,9 +610,7 @@
             }
             
             .main-content {
-                padding: 20px 15px;
-                padding-left: max(15px, 5%);
-                padding-right: max(15px, 5%);
+                padding: 30px 20px;
             }
             
             .menu-toggle {
@@ -584,11 +630,21 @@
             }
             
             .capabilities h2 {
-                font-size: 1.8rem;
+                font-size: 1.9rem;
+                margin-bottom: 50px;
             }
             
             .page-title {
                 font-size: 1.9rem;
+            }
+            
+            .content-block {
+                padding: 30px;
+            }
+            
+            .footer {
+                margin-top: 60px;
+                padding: 20px 0;
             }
         }
         
@@ -597,8 +653,12 @@
                 font-size: 1.8rem;
             }
             
+            .user-info p {
+                font-size: 0.95rem;
+            }
+            
             .card {
-                padding: 25px 20px;
+                padding: 30px 20px;
             }
             
             .card-icon {
@@ -611,11 +671,19 @@
                 font-size: 1.2rem;
             }
             
+            .card p {
+                min-height: auto;
+            }
+            
             .logout-btn {
                 bottom: 20px;
                 right: 20px;
                 padding: 8px 16px;
                 font-size: 0.9rem;
+            }
+            
+            .footer {
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -890,6 +958,13 @@
         </div>
     </div>
 
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong>Perets</strong> | Контент – <strong>Parkhyts</strong></p>
+        </div>
+    </footer>
+
     <!-- Кнопка выхода -->
     <button class="logout-btn" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i> Вийти з системи
@@ -938,6 +1013,12 @@
         function updateUserGreeting() {
             const greetingSpan = document.querySelector('#userGreeting span');
             greetingSpan.textContent = currentUser.firstName;
+            
+            // Обновляем также имя в футере
+            const footerName = document.querySelector('.footer-content p');
+            if (footerName) {
+                footerName.innerHTML = footerName.innerHTML.replace('Perets', `<strong>${currentUser.firstName}</strong>`);
+            }
         }
         
         // Открытие сайдбара с анимацией
