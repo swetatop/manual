@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhook Handler | Ukraine GTA 5</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 { color: #0088cc; margin-bottom: 20px; }
+        .status {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+        .success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .info { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            margin: 20px 0;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 Webhook Handler</h1>
+        <p>Ця сторінка обробляє запити від Telegram бота</p>
+        
+        <div id="result" class="status info">
+            <i class="fas fa-spinner fa-spin"></i> Обробка запиту...
+        </div>
+        
+        <pre id="dataDisplay">Дані будуть показані тут...</pre>
+    </div>
+
+    <script>
+        // Токен бота
+        const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
+        const ADMIN_CHAT_ID = "5316593741";
+        
+        async function processWebhook() {
+            try {
+                // Получаем данные из URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const callbackData = urlParams.get('callback_data');
+                
+                if (!callbackData) {
+                    document.getElementById('result').innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Немає даних для обробки
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Показываем данные
+                document.getElementById('dataDisplay').textContent = 
+                    `Callback data: ${callbackData}\n\n` +
+                    `Full URL: ${window.location.href}`;
+                
+                // Разбираем callback_data
+                // Формат: action_userId_timestamp
+                const parts = callbackData.split('_');
+                const action = parts[0]; // 'approve' или 'reject'
+                const userId = parts[1];
+                const timestamp = parts[2];
+                
+                console.log(`Обробка: ${action} для користувача ${userId}`);
+                
+                // Сохраняем статус в localStorage (в реальном проекте - в базу)
+                localStorage.setItem(`access_${userId}`, action === 'approve' ? 'approved' : 'rejected');
+                
+                // Отправляем ответ пользователю
+                if (action === 'approve') {
+                    // Сохраняем имя пользователя (получим из другого источника)
+                    const userName = urlParams.get('name') || 'Користувач';
+                    localStorage.setItem(`name_${userId}`, userName);
+                    
+                    // Отправляем сообщение пользователю, что доступ подтвержден
+                    await sendNotification(userId, 'approved');
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="success">
+                            <i class="fas fa-check-circle"></i>
+                            ✅ Доступ підтверджено для користувача ${userId}
+                        </div>
+                    `;
+                    
+                } else if (action === 'reject') {
+                    await sendNotification(userId, 'rejected');
+                    
+                    document.getElementById('result').innerHTML = `
+                        <div class="error">
+                            <i class="fas fa-ban"></i>
+                            ❌ Доступ відхилено для користувача ${userId}
+                        </div>
+                    `;
+                }
+                
+                // Отправляем ответ в Telegram (callback answer)
+                await answerCallback(callbackData);
+                
+            } catch (error) {
+                console.error('Помилка обробки:', error);
+                document.getElementById('result').innerHTML = `
+                    <div class="error">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Помилка: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Отправка уведомления пользователю
+        async function sendNotification(userId, status) {
+            try {
+                const message = status === 'approved' 
+                    ? `🎉 Ваш доступ до адмін-панелі Ukraine GTA 5 підтверджено!\n\nВи можете оновити сторінку входу.`
+                    : `❌ Ваш запит на доступ до адмін-панелі Ukraine GTA 5 відхилено.\n\nЗверніться до адміністратора для отримання додаткової інформації.`;
+                
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: userId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+                
+            } catch (error) {
+                console.error('Помилка відправки сповіщення:', error);
+            }
+        }
+        
+        // Ответ на callback в Telegram
+        async function answerCallback(callbackData) {
+            try {
+                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        callback_query_id: callbackData,
+                        text: "Дія виконана успішно!",
+                        show_alert: false
+                    })
+                });
+            } catch (error) {
+                console.error('Помилка відповіді на callback:', error);
+            }
+        }
+        
+        // Запускаем обработку при загрузке
+        window.onload = processWebhook;
+    </script>
+    
+    <!-- Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</body>
+</html>
