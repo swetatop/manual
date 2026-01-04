@@ -6,6 +6,114 @@
     <title>Посібник модератора | Ukraine GTA 5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- ========== ПРОВЕРКА АДМИНА (ДОБАВЛЕНО) ========== -->
+    <script>
+        // ID адміністратора
+        const ADMIN_ID = "5316593741";
+        
+        // Перевірка авторизації при завантаженні
+        function checkAdminAuth() {
+            console.log('=== ПРОВЕРКА АДМІН ДОСТУПА ===');
+            
+            try {
+                const userData = localStorage.getItem('userData');
+                const authToken = localStorage.getItem('authToken');
+                const isAdmin = localStorage.getItem('isAdmin');
+                
+                console.log('Дані:', { 
+                    hasUserData: !!userData, 
+                    hasAuthToken: !!authToken, 
+                    isAdmin: isAdmin 
+                });
+                
+                // Перевіряємо наявність усіх даних
+                if (!userData || !authToken || isAdmin !== 'true') {
+                    console.log('❌ Недостатньо даних для доступу');
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                const user = JSON.parse(userData);
+                console.log('Користувач ID:', user.id, 'Очікуваний ID:', ADMIN_ID);
+                
+                // СТРОГА ПЕРЕВІРКА ID АДМІНА
+                if (user.id !== ADMIN_ID && user.id.toString() !== ADMIN_ID) {
+                    console.log('❌ Доступ заборонено: невірний ID');
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                // Перевіряємо термін токена (30 днів)
+                const tokenTime = localStorage.getItem('tokenTime');
+                if (!tokenTime) {
+                    console.log('❌ Немає часу токена');
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                const currentTime = new Date().getTime();
+                const tokenAge = currentTime - parseInt(tokenTime);
+                const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 днів
+                
+                console.log('Вік токена:', Math.floor(tokenAge / (24 * 60 * 60 * 1000)), 'днів');
+                
+                if (tokenAge > maxAge) {
+                    console.log('❌ Токен застарів');
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                console.log('✅ Адмін авторизований успішно');
+                
+                // Оновлюємо привітання
+                updateUserGreeting(user);
+                
+                return user;
+                
+            } catch (error) {
+                console.error('❌ Помилка перевірки авторизації:', error);
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+        
+        // Оновлення привітання
+        function updateUserGreeting(user) {
+            // Оновлюємо "Perets" на справжнє ім'я адміна
+            const usernameElements = document.querySelectorAll('#userGreeting span, .username-placeholder, .footer-content p strong');
+            
+            usernameElements.forEach(element => {
+                if (element.textContent === 'Perets' || element.textContent === 'Користувач') {
+                    element.textContent = user.first_name || 'Адміністратор';
+                }
+            });
+            
+            // Оновлюємо заголовок сторінки "Статут та регламент"
+            const statuteHeader = document.querySelector('#statutePage .user-info h1 span');
+            if (statuteHeader && statuteHeader.textContent === 'Perets') {
+                statuteHeader.textContent = user.first_name || 'Адміністратор';
+            }
+        }
+        
+        // Вихід з системи
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.clear();
+                window.location.href = 'login.html';
+            }
+        }
+        
+        // Перевіряємо при завантаженні
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = checkAdminAuth();
+            if (user) {
+                console.log('✅ Ласкаво просимо, адміне:', user.first_name);
+            }
+        });
+    </script>
+    <!-- ========== КІНЕЦЬ ПРОВЕРКИ АДМІНА ========== -->
+    
     <style>
         /* Базовые стили */
         :root {
@@ -778,68 +886,6 @@
     </style>
 </head>
 <body>
-    <!-- Проверка авторизации -->
-    <script>
-        // Проверка авторизации
-        function checkAuth() {
-            const userData = localStorage.getItem('userData');
-            const authToken = localStorage.getItem('authToken');
-            
-            if (!userData || !authToken) {
-                // Не авторизован - перенаправляем на логин
-                window.location.href = 'login.html';
-                return null;
-            }
-            
-            try {
-                const user = JSON.parse(userData);
-                
-                // Проверяем срок токена (30 дней)
-                const tokenTime = localStorage.getItem('tokenTime');
-                const currentTime = new Date().getTime();
-                const tokenAge = currentTime - parseInt(tokenTime);
-                const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 дней
-                
-                if (tokenAge > maxAge) {
-                    // Токен устарел
-                    localStorage.removeItem('userData');
-                    localStorage.removeItem('authToken');
-                    localStorage.removeItem('tokenTime');
-                    window.location.href = 'login.html';
-                    return null;
-                }
-                
-                return user;
-            } catch (error) {
-                console.error('Auth error:', error);
-                window.location.href = 'login.html';
-                return null;
-            }
-        }
-        
-        // Проверяем при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            const user = checkAuth();
-            if (user) {
-                console.log('Авторизований як:', user.username || user.first_name);
-                // Обновляем приветствие
-                document.querySelectorAll('span.username-placeholder').forEach(el => {
-                    el.textContent = user.first_name || user.username || 'Користувач';
-                });
-            }
-        });
-        
-        // Выход
-        function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                localStorage.removeItem('userData');
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('tokenTime');
-                window.location.href = 'login.html';
-            }
-        }
-    </script>
-
     <!-- Оверлей для закрытия меню -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -894,7 +940,7 @@
             <!-- Шапка главной страницы -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1 id="userGreeting">Вітаємо, <span class="username-placeholder">Користувач</span>!</h1>
+                    <h1 id="userGreeting">Вітаємо, <span>Perets</span>!</h1>
                     <p>Цей посібник створений для того, щоб допомогти модераторам ефективно виконувати свої обов'язки, ознайомитись із правилами, командами та новими оновленнями сервера.</p>
                 </div>
             </div>
@@ -1045,7 +1091,7 @@
             <!-- Шапка страницы -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1>Вітаємо, <span class="username-placeholder">Користувач</span>!</h1>
+                    <h1>Вітаємо, <span>Perets</span>!</h1>
                     <p>Цей документ визначає правила, обов'язки та заборони для модераторів Discord сервера Ukraine GTA5. Уважно ознайомтесь з усіма положеннями.</p>
                     
                     <p class="content-text" style="text-align: center; font-size: 1.1rem; margin-top: 20px;">
@@ -1082,7 +1128,7 @@
                 
                 <ul class="regulations-list">
                     <li>Модератор тільки видає покарання та попередження у Discord.</li>
-                    <li>Правила Discord сервера – це головний документ, за яким модератори видають покарання.</li>
+                    <li>Правила Discord сервера – это головний документ, за яким модератори видають покарання.</li>
                     <li>Модератор повинен бути прикладом для інших учасників у поведінці та комунікації.</li>
                 </ul>
                 
@@ -1289,12 +1335,12 @@
     <!-- Футер -->
     <footer class="footer">
         <div class="footer-content">
-            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong class="username-placeholder">Perets</strong> | Контент – <strong>Parkhyts</strong></p>
+            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong>Perets</strong> | Контент – <strong>Parkhyts</strong></p>
         </div>
     </footer>
 
     <!-- Кнопка выхода -->
-    <button class="logout-btn" onclick="logout()">
+    <button class="logout-btn" id="logoutBtn" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i> Вийти з системи
     </button>
 
@@ -1303,9 +1349,10 @@
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const logoutBtn = document.querySelector('.logout-btn');
+        const logoutBtn = document.getElementById('logoutBtn');
         const navItems = document.querySelectorAll('.nav-item');
         const statsBtn = document.getElementById('statsBtn');
+        const userGreeting = document.querySelector('#userGreeting span');
         const pageContents = document.querySelectorAll('.page-content');
         
         // Функция переключения страниц
