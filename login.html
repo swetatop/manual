@@ -5,37 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід | Ukraine GTA 5</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0C1016;
             color: white;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
         }
-        
-        .container {
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-        
+        .container { max-width: 500px; width: 100%; }
         .card {
             background: linear-gradient(135deg, #141A24, #1E293B);
             border-radius: 20px;
             padding: 50px 40px;
             border: 1px solid #2D3748;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
         }
-        
         h1 {
             color: #0088cc;
             font-size: 2.5rem;
@@ -44,14 +33,11 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
         .subtitle {
             color: #94A3B8;
             margin-bottom: 40px;
             font-size: 1.1rem;
         }
-        
-        /* Telegram Widget стили */
         .telegram-widget-wrapper {
             margin: 30px 0;
             padding: 30px;
@@ -63,8 +49,6 @@
             align-items: center;
             justify-content: center;
         }
-        
-        /* Стили для Telegram кнопки */
         .tg-login-btn {
             display: inline-flex;
             align-items: center;
@@ -79,15 +63,12 @@
             cursor: pointer;
             text-decoration: none;
             transition: all 0.3s;
-            font-family: inherit;
         }
-        
         .tg-login-btn:hover {
             background: #0077b5;
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
         }
-        
         .demo-btn {
             background: linear-gradient(135deg, #F59E0B, #EAB308);
             color: white;
@@ -102,12 +83,10 @@
             width: 100%;
             max-width: 300px;
         }
-        
         .demo-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
         }
-        
         .info-box {
             background: rgba(245, 158, 11, 0.1);
             border-left: 4px solid #F59E0B;
@@ -116,36 +95,23 @@
             margin-top: 30px;
             text-align: left;
         }
-        
         .steps {
             list-style: none;
             padding: 0;
             margin: 15px 0;
         }
-        
         .steps li {
             color: #94A3B8;
             margin-bottom: 10px;
             padding-left: 25px;
             position: relative;
         }
-        
         .steps li:before {
             content: "•";
             position: absolute;
             left: 10px;
             color: #F59E0B;
             font-size: 1.5rem;
-        }
-        
-        @media (max-width: 768px) {
-            .card {
-                padding: 40px 25px;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
         }
     </style>
 </head>
@@ -162,24 +128,24 @@
             </p>
             
             <!-- Telegram Widget -->
-            <div class="telegram-widget-wrapper" id="telegramWidget">
+            <div class="telegram-widget-wrapper">
                 <script async 
                     src="https://telegram.org/js/telegram-widget.js?22" 
                     data-telegram-login="UGgtavBot"
                     data-size="large" 
-                    data-auth-url="https://swetatop.github.io/manual/auth.php"
+                    data-auth-url="auth-handler.html"
                     data-request-access="write">
                 </script>
             </div>
             
-            <!-- Демо вход для админа -->
+            <!-- Демо вход -->
             <button class="demo-btn" onclick="demoAdminLogin()">
                 🔐 Демо вхід (адмін)
             </button>
             
             <!-- Инструкция -->
             <div class="info-box">
-                <h3 style="color: #F59E0B; margin-bottom: 15px;">Як працює вхід:</h3>
+                <h3 style="color: #F59E0B; margin-bottom: 15px;">Як працює:</h3>
                 <ol class="steps">
                     <li><strong>Натискаєте</strong> кнопку "Увійти через Telegram"</li>
                     <li><strong>Telegram відкриє вікно</strong> з вашим профілем</li>
@@ -193,42 +159,33 @@
     </div>
 
     <script>
-        // Демо вход для админа
         function demoAdminLogin() {
             const adminData = {
                 id: "5316593741",
                 first_name: "Perets",
-                username: "swetatopp",
-                auth_date: Math.floor(Date.now() / 1000)
+                username: "swetatopp"
             };
             
-            // Сохраняем данные
             localStorage.setItem('userData', JSON.stringify(adminData));
-            localStorage.setItem('authToken', 'admin_token_' + Date.now());
+            localStorage.setItem('authToken', 'admin_' + Date.now());
             localStorage.setItem('isAdmin', 'true');
             localStorage.setItem('access_5316593741', 'approved');
             
-            // Переходим в админку
             window.location.href = 'index.html';
         }
         
-        // Проверяем Telegram Widget
+        // Запасная кнопка если виджет не загрузился
         setTimeout(() => {
-            const widget = document.querySelector('[data-telegram-login]');
-            if (!widget) {
-                // Если виджет не загрузился, показываем альтернативу
-                document.getElementById('telegramWidget').innerHTML = `
+            if (!document.querySelector('[data-telegram-login]')) {
+                document.querySelector('.telegram-widget-wrapper').innerHTML = `
                     <a href="tg://resolve?domain=UGgtavBot&start=auth_${Date.now()}" 
                        class="tg-login-btn">
-                        <svg width="20" height="20" viewBox="0 0 240 240" style="margin-right: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 240 240">
                             <path d="M240 120c0 66.3-53.7 120-120 120S0 186.3 0 120 53.7 0 120 0s120 53.7 120 120z" fill="#0088cc"/>
                             <path d="M98 175c-3.9 0-3.2-1.5-4.6-5.2L82 132.2 152.8 88.8c1.9-1.1 3.6-.5 2.2 1.1-1.4 1.6-5.8 4-5.8 4s-73 46.5-81.6 51.6c-1.6.9-3.1.9-1.6.9 1.5 0 4.3-.9 4.3-.9l111.1-45.4c4.6-2.2 8.3-1 8.3 3.1 0 1.6-.2 2.5-.2 2.5s-51.7 48.1-57.8 53.1c-6.1 5-4.6 2.2-8.7-.1-4.1-2.3-71.2-45.6-79.1-50.5-7.9-4.9-5.7-7.4.3-11.2 6.1-3.8 107.8-41.6 107.8-41.6s24.7-9.4 22.5 13.6z" fill="#fff"/>
                         </svg>
                         Увійти через Telegram
                     </a>
-                    <p style="color: #94A3B8; font-size: 0.9rem; margin-top: 10px;">
-                        Натисніть для відкриття в додатку Telegram
-                    </p>
                 `;
             }
         }, 3000);
