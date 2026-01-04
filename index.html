@@ -778,6 +778,68 @@
     </style>
 </head>
 <body>
+    <!-- Проверка авторизации -->
+    <script>
+        // Проверка авторизации
+        function checkAuth() {
+            const userData = localStorage.getItem('userData');
+            const authToken = localStorage.getItem('authToken');
+            
+            if (!userData || !authToken) {
+                // Не авторизован - перенаправляем на логин
+                window.location.href = 'login.html';
+                return null;
+            }
+            
+            try {
+                const user = JSON.parse(userData);
+                
+                // Проверяем срок токена (30 дней)
+                const tokenTime = localStorage.getItem('tokenTime');
+                const currentTime = new Date().getTime();
+                const tokenAge = currentTime - parseInt(tokenTime);
+                const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 дней
+                
+                if (tokenAge > maxAge) {
+                    // Токен устарел
+                    localStorage.removeItem('userData');
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('tokenTime');
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                return user;
+            } catch (error) {
+                console.error('Auth error:', error);
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+        
+        // Проверяем при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = checkAuth();
+            if (user) {
+                console.log('Авторизований як:', user.username || user.first_name);
+                // Обновляем приветствие
+                document.querySelectorAll('span.username-placeholder').forEach(el => {
+                    el.textContent = user.first_name || user.username || 'Користувач';
+                });
+            }
+        });
+        
+        // Выход
+        function logout() {
+            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+                localStorage.removeItem('userData');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('tokenTime');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+
     <!-- Оверлей для закрытия меню -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
@@ -832,7 +894,7 @@
             <!-- Шапка главной страницы -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1 id="userGreeting">Вітаємо, <span>Perets</span>!</h1>
+                    <h1 id="userGreeting">Вітаємо, <span class="username-placeholder">Користувач</span>!</h1>
                     <p>Цей посібник створений для того, щоб допомогти модераторам ефективно виконувати свої обов'язки, ознайомитись із правилами, командами та новими оновленнями сервера.</p>
                 </div>
             </div>
@@ -983,7 +1045,7 @@
             <!-- Шапка страницы -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1>Вітаємо, <span>Perets</span>!</h1>
+                    <h1>Вітаємо, <span class="username-placeholder">Користувач</span>!</h1>
                     <p>Цей документ визначає правила, обов'язки та заборони для модераторів Discord сервера Ukraine GTA5. Уважно ознайомтесь з усіма положеннями.</p>
                     
                     <p class="content-text" style="text-align: center; font-size: 1.1rem; margin-top: 20px;">
@@ -1227,12 +1289,12 @@
     <!-- Футер -->
     <footer class="footer">
         <div class="footer-content">
-            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong>Perets</strong> | Контент – <strong>Parkhyts</strong></p>
+            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong class="username-placeholder">Perets</strong> | Контент – <strong>Parkhyts</strong></p>
         </div>
     </footer>
 
     <!-- Кнопка выхода -->
-    <button class="logout-btn" id="logoutBtn">
+    <button class="logout-btn" onclick="logout()">
         <i class="fas fa-sign-out-alt"></i> Вийти з системи
     </button>
 
@@ -1241,30 +1303,10 @@
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const logoutBtn = document.getElementById('logoutBtn');
+        const logoutBtn = document.querySelector('.logout-btn');
         const navItems = document.querySelectorAll('.nav-item');
         const statsBtn = document.getElementById('statsBtn');
-        const userGreeting = document.querySelector('#userGreeting span');
         const pageContents = document.querySelectorAll('.page-content');
-        
-        // Имитация пользователя
-        let currentUser = {
-            firstName: 'Perets'
-        };
-        
-        // Обновление приветствия
-        function updateUserGreeting() {
-            const username = localStorage.getItem('username') || currentUser.firstName;
-            if (userGreeting) {
-                userGreeting.textContent = username;
-            }
-            
-            // Обновляем также имя в футере
-            const footerName = document.querySelector('.footer-content p');
-            if (footerName) {
-                footerName.innerHTML = footerName.innerHTML.replace('Perets', `<strong>${username}</strong>`);
-            }
-        }
         
         // Функция переключения страниц
         function showPage(pageId) {
@@ -1334,14 +1376,6 @@
             });
         }
         
-        // Кнопка выхода
-        logoutBtn.addEventListener('click', function() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                // Здесь будет редирект на страницу авторизации
-                alert('Функція виходу в розробці. Для демонстрації - оновіть сторінку.');
-            }
-        });
-        
         // Навигация по меню через обработчики
         navItems.forEach(item => {
             item.addEventListener('click', function(e) {
@@ -1358,12 +1392,22 @@
         
         // Анимация карточек при загрузке
         document.addEventListener('DOMContentLoaded', function() {
-            // Обновляем приветствие
-            updateUserGreeting();
-            
             // Анимация карточек на главной
             const homeCards = document.querySelectorAll('.home-card');
             homeCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
+            
+            // Анимация карточек времени
+            const timeCards = document.querySelectorAll('.time-card');
+            timeCards.forEach((card, index) => {
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(20px)';
                 
