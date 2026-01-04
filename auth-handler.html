@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обробка авторизації | Ukraine GTA 5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0C1016, #141A24);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .auth-container {
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .auth-card {
+            background: linear-gradient(135deg, rgba(20, 26, 36, 0.9), rgba(30, 41, 59, 0.7));
+            border-radius: 20px;
+            padding: 50px 40px;
+            border: 1px solid #2D3748;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .loading {
+            margin: 30px 0;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 136, 204, 0.1);
+            border-top: 4px solid #0088cc;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #0088cc, #0077b5);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.4);
+        }
+        
+        .success { color: #10B981; }
+        .error { color: #EF4444; }
+        .warning { color: #F59E0B; }
+        
+        .user-info {
+            background: rgba(0, 136, 204, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .user-info p {
+            margin: 5px 0;
+            font-size: 0.95rem;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-card {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="logo" style="margin-bottom: 30px;">
+                <h1 style="font-size: 2rem; color: #0088cc; margin-bottom: 10px;">
+                    Ukraine GTA 5
+                </h1>
+                <p style="color: #A6A6A6;">Обробка авторизації</p>
+            </div>
+            
+            <div id="auth-message">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <h3>Обробка авторизації...</h3>
+                    <p style="color: #A6A6A6; margin-top: 10px;">Зачекайте, будь ласка</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ID адміністратора
+        const ADMIN_ID = "5316593741";
+        
+        function processTelegramAuth() {
+            try {
+                console.log('Початок обробки авторизації...');
+                
+                // Отримуємо параметри з URL
+                const urlParams = new URLSearchParams(window.location.hash.substring(1));
+                
+                console.log('Параметри URL:', Object.fromEntries(urlParams.entries()));
+                
+                // Перевіряємо чи є дані
+                if (!urlParams.get('id')) {
+                    throw new Error('Немає даних авторизації');
+                }
+                
+                // Дані від Telegram
+                const userData = {
+                    id: urlParams.get('id'),
+                    first_name: urlParams.get('first_name'),
+                    username: urlParams.get('username'),
+                    photo_url: urlParams.get('photo_url'),
+                    auth_date: urlParams.get('auth_date'),
+                    hash: urlParams.get('hash')
+                };
+                
+                console.log('Дані користувача:', userData);
+                
+                // Перевіряємо чи це адмін
+                if (userData.id === ADMIN_ID) {
+                    // Зберігаємо дані адміна
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    localStorage.setItem('authToken', 'tg_' + userData.id + '_' + Date.now());
+                    localStorage.setItem('tokenTime', Date.now().toString());
+                    localStorage.setItem('isAdmin', 'true');
+                    
+                    console.log('Адмін авторизований, перенаправляємо...');
+                    
+                    // Показуємо успіх
+                    document.getElementById('auth-message').innerHTML = `
+                        <div class="success">
+                            <div style="font-size: 4rem; margin-bottom: 20px;">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h2>Авторизація успішна!</h2>
+                            <p style="color: #A6A6A6; margin: 15px 0;">Вітаємо, адміністраторе!</p>
+                            
+                            <div class="user-info">
+                                <p><strong>ID:</strong> ${userData.id}</p>
+                                <p><strong>Ім'я:</strong> ${userData.first_name}</p>
+                                <p><strong>Username:</strong> @${userData.username}</p>
+                            </div>
+                            
+                            <p style="color: #A6A6A6; margin: 20px 0;">Перенаправляємо до адмін панелі...</p>
+                        </div>
+                    `;
+                    
+                    // Переходимо на головну сторінку через 2 секунди
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                    
+                } else {
+                    // Не адмін
+                    console.log('Спроба входу не адміна:', userData.id);
+                    
+                    document.getElementById('auth-message').innerHTML = `
+                        <div class="error">
+                            <div style="font-size: 4rem; margin-bottom: 20px;">
+                                <i class="fas fa-ban"></i>
+                            </div>
+                            <h2>Доступ заборонено</h2>
+                            <p style="color: #A6A6A6; margin: 15px 0;">
+                                Ця панель тільки для головного адміністратора
+                            </p>
+                            
+                            <div class="user-info">
+                                <p><strong>Ваш ID:</strong> ${userData.id}</p>
+                                <p><strong>Потрібний ID:</strong> ${ADMIN_ID}</p>
+                            </div>
+                            
+                            <a href="login.html" class="btn">
+                                <i class="fas fa-arrow-left"></i> Повернутися
+                            </a>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Помилка обробки авторизації:', error);
+                
+                document.getElementById('auth-message').innerHTML = `
+                    <div class="warning">
+                        <div style="font-size: 4rem; margin-bottom: 20px;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h2>Помилка авторизації</h2>
+                        <p style="color: #A6A6A6; margin: 15px 0;">
+                            Сталася помилка під час входу. Спробуйте ще раз.
+                        </p>
+                        <p style="font-size: 0.9rem; color: #A6A6A6; margin-bottom: 20px;">
+                            Помилка: ${error.message}
+                        </p>
+                        
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <a href="login.html" class="btn">
+                                <i class="fas fa-redo"></i> Спробувати знову
+                            </a>
+                            <button onclick="demoAdminLogin()" class="btn" style="background: #F59E0B;">
+                                <i class="fas fa-user-secret"></i> Демо вхід
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        // Демо вхід для тесту
+        function demoAdminLogin() {
+            const userData = {
+                id: ADMIN_ID,
+                first_name: "Perets",
+                username: "swetatopp",
+                photo_url: "",
+                auth_date: Math.floor(Date.now() / 1000),
+                hash: "demo_" + Date.now()
+            };
+            
+            localStorage.setItem('userData', JSON.stringify(userData));
+            localStorage.setItem('authToken', 'demo_tg_' + Date.now());
+            localStorage.setItem('tokenTime', Date.now().toString());
+            localStorage.setItem('isAdmin', 'true');
+            
+            window.location.href = 'index.html';
+        }
+        
+        // Запускаємо обробку при завантаженні сторінки
+        window.onload = processTelegramAuth;
+    </script>
+</body>
+</html>
