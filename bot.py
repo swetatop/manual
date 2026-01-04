@@ -5,8 +5,8 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
 
 # ⚠️ НАСТРОЙКИ ⚠️
-BOT_TOKEN = "ТВОЙ_ТОКЕН_ОТ_BOTFATHER"
-ADMIN_ID = 123456789  # Твой chat_id
+BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA"
+ADMIN_ID = 5316593741  # Твой chat_id
 WHITELIST_FILE = "whitelist.json"
 
 # Настройка логирования
