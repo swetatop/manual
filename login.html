@@ -4,17 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід | Ukraine GTA 5</title>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
     <style>
+        /* Твой существующий CSS */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #0C1016;
             color: white;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            text-align: center;
         }
         .container { max-width: 500px; width: 100%; }
         .card {
@@ -23,7 +30,6 @@
             padding: 50px 40px;
             border: 1px solid #2D3748;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            text-align: center;
         }
         h1 {
             color: #0088cc;
@@ -32,11 +38,6 @@
             background: linear-gradient(90deg, #0088cc, #60A5FA);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-        .subtitle {
-            color: #94A3B8;
-            margin-bottom: 40px;
-            font-size: 1.1rem;
         }
         .telegram-widget-wrapper {
             margin: 30px 0;
@@ -48,26 +49,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        .tg-login-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        .tg-login-btn:hover {
-            background: #0077b5;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
         }
         .demo-btn {
             background: linear-gradient(135deg, #F59E0B, #EAB308);
@@ -87,39 +68,13 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
         }
-        .info-box {
-            background: rgba(245, 158, 11, 0.1);
-            border-left: 4px solid #F59E0B;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 30px;
-            text-align: left;
-        }
-        .steps {
-            list-style: none;
-            padding: 0;
-            margin: 15px 0;
-        }
-        .steps li {
-            color: #94A3B8;
-            margin-bottom: 10px;
-            padding-left: 25px;
-            position: relative;
-        }
-        .steps li:before {
-            content: "•";
-            position: absolute;
-            left: 10px;
-            color: #F59E0B;
-            font-size: 1.5rem;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <h1>Ukraine GTA 5</h1>
-            <p class="subtitle">Адмін панель | Посібник модератора</p>
+            <p style="color: #94A3B8; margin-bottom: 40px;">Адмін панель | Посібник модератора</p>
             
             <h2 style="margin-bottom: 20px;">Вхід через Telegram</h2>
             <p style="color: #94A3B8; margin-bottom: 30px;">
@@ -128,7 +83,7 @@
             </p>
             
             <!-- Telegram Widget -->
-            <div class="telegram-widget-wrapper">
+            <div class="telegram-widget-wrapper" id="telegramWidget">
                 <script async 
                     src="https://telegram.org/js/telegram-widget.js?22" 
                     data-telegram-login="UGgtavBot"
@@ -143,35 +98,78 @@
                 🔐 Демо вхід (адмін)
             </button>
             
-            <!-- Инструкция -->
-            <div class="info-box">
-                <h3 style="color: #F59E0B; margin-bottom: 15px;">Як працює:</h3>
-                <ol class="steps">
-                    <li><strong>Натискаєте</strong> кнопку "Увійти через Telegram"</li>
-                    <li><strong>Telegram відкриє вікно</strong> з вашим профілем</li>
-                    <li><strong>Введіть номер телефону</strong> якщо потрібно</li>
-                    <li><strong>Натисніть "Allow"</strong> щоб підтвердити вхід</li>
-                    <li><strong>Адмін отримає запит</strong> в Telegram бот</li>
-                    <li><strong>Після підтвердження</strong> ви отримаєте доступ!</li>
-                </ol>
+            <!-- Статус Firebase -->
+            <div id="firebaseStatus" style="margin-top: 20px; padding: 10px; border-radius: 8px; display: none;">
+                <span id="statusText"></span>
             </div>
         </div>
     </div>
 
+    <!-- Firebase Config -->
+    <script src="firebase-config.js"></script>
+    
     <script>
+        // Проверяем Firebase подключение
+        setTimeout(() => {
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                showFirebaseStatus('✅ Firebase подключен', 'success');
+            } else {
+                showFirebaseStatus('⚠️ Firebase не подключен', 'warning');
+            }
+        }, 1000);
+        
+        function showFirebaseStatus(message, type) {
+            const statusDiv = document.getElementById('firebaseStatus');
+            const statusText = document.getElementById('statusText');
+            
+            statusDiv.style.display = 'block';
+            statusText.textContent = message;
+            
+            if (type === 'success') {
+                statusDiv.style.background = 'rgba(16, 185, 129, 0.1)';
+                statusDiv.style.border = '1px solid #10B981';
+                statusText.style.color = '#10B981';
+            } else if (type === 'warning') {
+                statusDiv.style.background = 'rgba(245, 158, 11, 0.1)';
+                statusDiv.style.border = '1px solid #F59E0B';
+                statusText.style.color = '#F59E0B';
+            }
+        }
+        
         function demoAdminLogin() {
+            // Для демо создаем админа
             const adminData = {
                 id: "5316593741",
                 first_name: "Perets",
-                username: "swetatopp"
+                username: "swetatopp",
+                status: "approved",
+                isAdmin: true,
+                timestamp: new Date().toISOString()
             };
             
-            localStorage.setItem('userData', JSON.stringify(adminData));
-            localStorage.setItem('authToken', 'admin_' + Date.now());
-            localStorage.setItem('isAdmin', 'true');
-            localStorage.setItem('access_5316593741', 'approved');
-            
-            window.location.href = 'index.html';
+            // Сохраняем в Firebase
+            if (typeof db !== 'undefined') {
+                db.collection("users").doc(adminData.id).set(adminData)
+                    .then(() => {
+                        // Сохраняем в sessionStorage для текущей сессии
+                        sessionStorage.setItem('user_id', adminData.id);
+                        sessionStorage.setItem('user_name', adminData.first_name);
+                        sessionStorage.setItem('is_admin', 'true');
+                        
+                        // Переходим в админку
+                        window.location.href = 'index.html';
+                    })
+                    .catch(error => {
+                        console.error('Ошибка Firebase:', error);
+                        alert('Ошибка Firebase: ' + error.message);
+                    });
+            } else {
+                // Fallback если Firebase не работает
+                sessionStorage.setItem('user_id', adminData.id);
+                sessionStorage.setItem('user_name', adminData.first_name);
+                sessionStorage.setItem('is_admin', 'true');
+                window.location.href = 'index.html';
+            }
         }
         
         // Запасная кнопка если виджет не загрузился
@@ -179,7 +177,7 @@
             if (!document.querySelector('[data-telegram-login]')) {
                 document.querySelector('.telegram-widget-wrapper').innerHTML = `
                     <a href="tg://resolve?domain=UGgtavBot&start=auth_${Date.now()}" 
-                       class="tg-login-btn">
+                       style="display: inline-flex; align-items: center; gap: 12px; background: #0088cc; color: white; border: none; padding: 16px 32px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; text-decoration: none;">
                         <svg width="20" height="20" viewBox="0 0 240 240">
                             <path d="M240 120c0 66.3-53.7 120-120 120S0 186.3 0 120 53.7 0 120 0s120 53.7 120 120z" fill="#0088cc"/>
                             <path d="M98 175c-3.9 0-3.2-1.5-4.6-5.2L82 132.2 152.8 88.8c1.9-1.1 3.6-.5 2.2 1.1-1.4 1.6-5.8 4-5.8 4s-73 46.5-81.6 51.6c-1.6.9-3.1.9-1.6.9 1.5 0 4.3-.9 4.3-.9l111.1-45.4c4.6-2.2 8.3-1 8.3 3.1 0 1.6-.2 2.5-.2 2.5s-51.7 48.1-57.8 53.1c-6.1 5-4.6 2.2-8.7-.1-4.1-2.3-71.2-45.6-79.1-50.5-7.9-4.9-5.7-7.4.3-11.2 6.1-3.8 107.8-41.6 107.8-41.6s24.7-9.4 22.5 13.6z" fill="#fff"/>
