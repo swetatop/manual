@@ -116,8 +116,8 @@
             margin-right: auto;
         }
         
-        /* Telegram Widget контейнер */
-        .telegram-widget-container {
+        /* Telegram Button */
+        .telegram-btn-container {
             margin: 30px 0;
             padding: 25px;
             background: linear-gradient(135deg, rgba(0, 136, 204, 0.05), rgba(59, 130, 246, 0.05));
@@ -128,19 +128,18 @@
             transition: all 0.3s ease;
         }
         
-        .telegram-widget-container:hover {
+        .telegram-btn-container:hover {
             border-color: var(--primary);
             box-shadow: 0 10px 25px rgba(0, 136, 204, 0.15);
             transform: translateY(-2px);
         }
         
-        /* Демо кнопка для админа */
-        .admin-demo-btn {
+        .telegram-login-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            background: linear-gradient(135deg, #0088cc, #0077b5);
             color: white;
             border: none;
             padding: 16px 32px;
@@ -153,7 +152,6 @@
             font-family: inherit;
             letter-spacing: 0.5px;
             box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
-            margin: 20px 0 30px 0;
             width: 100%;
             max-width: 300px;
             position: relative;
@@ -161,16 +159,17 @@
             z-index: 2;
         }
         
-        .admin-demo-btn:hover {
+        .telegram-login-btn:hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 25px rgba(0, 136, 204, 0.4);
+            background: linear-gradient(135deg, #0077b5, #006699);
         }
         
-        .admin-demo-btn:active {
+        .telegram-login-btn:active {
             transform: translateY(-2px);
         }
         
-        .admin-demo-btn::before {
+        .telegram-login-btn::before {
             content: '';
             position: absolute;
             top: 0;
@@ -181,15 +180,51 @@
             transition: 0.5s;
         }
         
-        .admin-demo-btn:hover::before {
+        .telegram-login-btn:hover::before {
             left: 100%;
+        }
+        
+        .telegram-login-btn i {
+            font-size: 1.4rem;
+        }
+        
+        /* Демо кнопка для админа */
+        .admin-demo-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #F59E0B, #EAB308);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+            letter-spacing: 0.5px;
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+            margin: 20px 0 30px 0;
+            width: 100%;
+            max-width: 300px;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+        }
+        
+        .admin-demo-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(245, 158, 11, 0.4);
         }
         
         .admin-demo-btn i {
             font-size: 1.4rem;
         }
         
-        /* Індикатор завантаження */
+        /* Индикатор загрузки */
         .loading {
             display: none;
             margin: 25px 0;
@@ -215,7 +250,7 @@
             font-size: 1rem;
         }
         
-        /* Інформаційні блоки */
+        /* Информационные блоки */
         .info-box {
             background-color: rgba(245, 158, 11, 0.08);
             border-left: 4px solid var(--warning);
@@ -259,7 +294,7 @@
             line-height: 1;
         }
         
-        /* Адмін інформація */
+        /* Админ информация */
         .admin-only {
             background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(245, 158, 11, 0.05));
             border-left: 4px solid var(--admin-gold);
@@ -302,27 +337,6 @@
             border: 1px solid rgba(16, 185, 129, 0.2);
         }
         
-        /* Секретна кнопка тесту */
-        .secret-test-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(107, 114, 128, 0.3);
-            color: var(--text-gray);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            opacity: 0.3;
-            transition: opacity 0.3s;
-            z-index: 9999;
-        }
-        
-        .secret-test-btn:hover {
-            opacity: 0.8;
-        }
-        
         @media (max-width: 768px) {
             .login-card {
                 padding: 40px 25px;
@@ -336,12 +350,12 @@
                 font-size: 1.6rem;
             }
             
-            .admin-demo-btn {
+            .telegram-login-btn, .admin-demo-btn {
                 padding: 14px 28px;
                 font-size: 1rem;
             }
             
-            .telegram-widget-container {
+            .telegram-btn-container {
                 padding: 20px;
             }
         }
@@ -364,17 +378,6 @@
                 font-size: 1rem;
             }
         }
-        
-        /* Пульсація для виджета */
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 136, 204, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 136, 204, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 136, 204, 0); }
-        }
-        
-        .telegram-widget-container.pulse {
-            animation: pulse 2s infinite;
-        }
     </style>
 </head>
 <body>
@@ -389,22 +392,26 @@
             <!-- Контент -->
             <div class="login-content">
                 <h2>Вхід до адмін панелі</h2>
-                <p>Використовуйте Telegram для входу в систему. Доступ тільки для головного адміністратора.</p>
+                <p>Використовуйте Telegram для входу в систему. Доступ для адміністратора та підтверджених модераторів.</p>
                 
-                <!-- Telegram Widget -->
-                <div class="telegram-widget-container" id="telegramWidget">
-                    <script async 
-                        src="https://telegram.org/js/telegram-widget.js?22" 
-                        data-telegram-login="UkraineGTA5_AuthBot" 
-                        data-size="large" 
-                        data-auth-url="https://swetatop.github.io/manual/auth-handler.html" 
-                        data-request-access="write">
-                    </script>
+                <!-- Telegram Button -->
+                <div class="telegram-btn-container">
+                    <a href="https://oauth.telegram.org/auth?bot_id=8506586970&origin=https://swetatop.github.io&request_access=write&embed=1&return_to=https://swetatop.github.io/manual/auth-handler.html" 
+                       class="telegram-login-btn" 
+                       id="telegramLoginBtn">
+                        <i class="fab fa-telegram-plane"></i>
+                        Увійти через Telegram
+                    </a>
+                    
+                    <p style="color: var(--text-gray); font-size: 0.9rem; margin-top: 10px;">
+                        <i class="fas fa-info-circle"></i>
+                        Натисніть для входу через Telegram бот @UGgtavBot
+                    </p>
                 </div>
                 
                 <!-- Демо кнопка для админа -->
                 <button class="admin-demo-btn" onclick="demoAdminLogin()" id="demoBtn">
-                    <i class="fab fa-telegram"></i> Демо вхід (адмін)
+                    <i class="fas fa-user-secret"></i> Демо вхід (адмін)
                 </button>
                 
                 <!-- Индикатор загрузки -->
@@ -417,23 +424,23 @@
                 <div class="info-box">
                     <h4><i class="fas fa-shield-alt"></i> Система безпеки:</h4>
                     <ul>
-                        <li><strong>Доступ тільки для адміністратора</strong> (ID: 5316593741)</li>
+                        <li><strong>Адмін ID:</strong> 5316593741 (автоматичний доступ)</li>
+                        <li><strong>Інші користувачі:</strong> Потребують підтвердження</li>
                         <li><strong>Двофакторна автентифікація</strong> через Telegram</li>
-                        <li><strong>Автоматичний вхід</strong> після першого підтвердження</li>
-                        <li><strong>Захищено від несанкціонованого доступу</strong></li>
+                        <li><strong>Автоматичний вхід</strong> після підтвердження</li>
                     </ul>
                 </div>
                 
                 <!-- Информация только для админа -->
                 <div class="admin-only">
                     <p><i class="fas fa-crown" style="color: var(--admin-gold);"></i> 
-                        <strong>Тільки адмін доступ:</strong> Ця панель призначена виключно для головного адміністратора проекту Ukraine GTA 5.</p>
+                        <strong>Адмін:</strong> Може підтверджувати доступ іншим користувачам через Telegram бот.</p>
                 </div>
             </div>
             
             <!-- Футер -->
             <div class="footer">
-                <p>Система авторизації через Telegram</p>
+                <p>Система авторизації через Telegram бот @UGgtavBot</p>
                 <div class="security-badge">
                     <i class="fas fa-lock"></i>
                     <span>Захищено</span>
@@ -442,81 +449,66 @@
         </div>
     </div>
 
-    <!-- Секретная кнопка для теста отказа -->
-    <button class="secret-test-btn" id="secretTestBtn" title="Тест відмови в доступі">
-        <i class="fas fa-user-slash"></i> Тест
-    </button>
-
     <script>
-        // ID адміністратора
+        // Конфигурация
         const ADMIN_ID = "5316593741";
-        const BOT_USERNAME = "UkraineGTA5_AuthBot";
+        const BOT_USERNAME = "UGgtavBot";
+        const BOT_ID = "8506586970";
         
-        // DOM елементи
-        const telegramWidget = document.getElementById('telegramWidget');
+        // DOM элементы
+        const telegramBtn = document.getElementById('telegramLoginBtn');
         const demoBtn = document.getElementById('demoBtn');
         const loading = document.getElementById('loading');
-        const secretTestBtn = document.getElementById('secretTestBtn');
         
-        // Перевіряємо, якщо вже авторизований
+        // Проверяем если уже авторизован
         function checkExistingAuth() {
             console.log('Перевірка існуючої авторизації...');
             
             try {
                 const userData = localStorage.getItem('userData');
                 const authToken = localStorage.getItem('authToken');
-                const isAdmin = localStorage.getItem('isAdmin');
                 
-                if (userData && authToken && isAdmin === 'true') {
+                if (userData && authToken) {
                     const user = JSON.parse(userData);
                     
-                    // Перевіряємо що це адмін і токен актуальний
-                    if (user.id === ADMIN_ID) {
-                        const currentTime = new Date().getTime();
-                        const tokenTime = localStorage.getItem('tokenTime');
-                        const tokenAge = currentTime - parseInt(tokenTime);
-                        const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 днів
-                        
-                        if (!tokenTime || tokenAge < maxAge) {
-                            console.log('Адмін вже авторизований, перенаправляємо...');
-                            // Автоматично переходимо на сайт через 1 секунду
+                    // Проверяем срок токена
+                    const tokenTime = localStorage.getItem('tokenTime');
+                    const currentTime = new Date().getTime();
+                    const tokenAge = currentTime - parseInt(tokenTime);
+                    const maxAge = 30 * 24 * 60 * 60 * 1000;
+                    
+                    if (!tokenTime || tokenAge < maxAge) {
+                        // Проверяем доступ
+                        const userAccess = localStorage.getItem(`access_${user.id}`);
+                        if (userAccess === 'approved' || user.id === ADMIN_ID) {
+                            console.log('Вже авторизований, перенаправляємо...');
+                            showLoadingMessage('Ви вже авторизовані', 'success');
+                            
                             setTimeout(() => {
                                 window.location.href = 'index.html';
                             }, 1000);
                             
-                            // Показуємо повідомлення
-                            showLoadingMessage('Адмін вже авторизований', 'success');
-                            setTimeout(() => {
-                                loading.style.display = 'none';
-                                demoBtn.style.display = 'inline-flex';
-                            }, 800);
-                        } else {
-                            console.log('Токен застарів');
-                            localStorage.clear();
+                            return true;
                         }
+                    } else {
+                        console.log('Токен застарів');
+                        localStorage.clear();
                     }
                 }
             } catch (error) {
                 console.error('Помилка перевірки авторизації:', error);
             }
+            
+            return false;
         }
         
-        // Функція зворотного виклику для Telegram Widget
-        window.onTelegramAuth = function(user) {
-            console.log('Telegram авторизація:', user);
-            // Telegram Widget автоматично перенаправить на auth-handler.html
-            // Там буде обробка даних
-        };
-        
-        // Демо вхід для адміна (тест)
+        // Демо вход для админа
         function demoAdminLogin() {
             console.log('Демо вхід адміна...');
             
-            // Приховуємо кнопку, показуємо завантаження
             demoBtn.style.display = 'none';
             loading.style.display = 'block';
             
-            // Імітуємо затримку мережі
             setTimeout(() => {
                 const userData = {
                     id: ADMIN_ID,
@@ -527,18 +519,17 @@
                     hash: "demo_hash_" + Date.now()
                 };
                 
-                // Зберігаємо дані адміна
+                // Сохраняем данные админа
                 localStorage.setItem('userData', JSON.stringify(userData));
                 localStorage.setItem('authToken', 'demo_tg_' + userData.id + '_' + Date.now());
-                localStorage.setItem('tokenTime', new Date().getTime().toString());
+                localStorage.setItem('tokenTime', Date.now().toString());
                 localStorage.setItem('isAdmin', 'true');
+                localStorage.setItem(`access_${ADMIN_ID}`, 'approved');
                 
                 console.log('Демо дані збережено:', userData);
                 
-                // Показуємо успіх
                 showLoadingMessage('Демо авторизація успішна!', 'success');
                 
-                // Переходимо на сайт через 1.5 секунди
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1500);
@@ -546,43 +537,7 @@
             }, 800);
         }
         
-        // Тест відмови в доступі (для не адміна)
-        function testAccessDenied() {
-            console.log('Тест відмови в доступі...');
-            
-            demoBtn.style.display = 'none';
-            loading.style.display = 'block';
-            
-            setTimeout(() => {
-                const userData = {
-                    id: "777777777", // Не адмін ID
-                    first_name: "Тестовий Користувач",
-                    username: "test_user",
-                    photo_url: "",
-                    auth_date: Math.floor(Date.now() / 1000),
-                    hash: "test_hash_" + Date.now()
-                };
-                
-                // Спроба зберегти (буде відмовлено в auth-handler.html)
-                localStorage.setItem('userData', JSON.stringify(userData));
-                localStorage.setItem('authToken', 'test_tg_' + Date.now());
-                localStorage.setItem('tokenTime', Date.now().toString());
-                localStorage.setItem('isAdmin', 'false');
-                
-                // Показуємо повідомлення
-                showLoadingMessage('Тестуємо відмову в доступі...', 'warning');
-                
-                // Переходимо на обробник
-                setTimeout(() => {
-                    // Імітуємо перехід на auth-handler.html
-                    const mockUrl = `https://swetatop.github.io/manual/auth-handler.html#id=777777777&first_name=Тестовий Користувач&username=test_user&auth_date=${Math.floor(Date.now()/1000)}&hash=test_hash`;
-                    window.location.href = mockUrl;
-                }, 1500);
-                
-            }, 800);
-        }
-        
-        // Показати повідомлення завантаження
+        // Показать сообщение загрузки
         function showLoadingMessage(message, type = 'info') {
             const colors = {
                 'info': '#0088cc',
@@ -597,68 +552,37 @@
             `;
         }
         
-        // Перевірити чи Telegram Widget завантажився
-        function checkTelegramWidget() {
-            const widget = document.querySelector('[data-telegram-login]');
-            if (widget && widget.offsetParent) {
-                console.log('Telegram Widget завантажено');
-                // Додаємо пульсацію
-                telegramWidget.classList.add('pulse');
-                setTimeout(() => {
-                    telegramWidget.classList.remove('pulse');
-                }, 3000);
-            } else {
-                console.log('Telegram Widget не завантажився');
-                // Показуємо додаткове повідомлення
-                const warningMsg = document.createElement('div');
-                warningMsg.innerHTML = `
-                    <div style="
-                        background: rgba(245, 158, 11, 0.1);
-                        border: 1px solid rgba(245, 158, 11, 0.3);
-                        border-radius: 8px;
-                        padding: 12px;
-                        margin-top: 15px;
-                        font-size: 0.9rem;
-                        color: var(--text-gray);
-                    ">
-                        <i class="fas fa-exclamation-triangle" style="color: #F59E0B; margin-right: 8px;"></i>
-                        <strong>Telegram Widget може не працювати локально.</strong><br>
-                        Використовуйте демо-вхід або перейдіть на реальний сайт.
-                    </div>
-                `;
-                telegramWidget.appendChild(warningMsg);
-            }
-        }
-        
-        // Ініціалізація
+        // Инициализация
         window.onload = function() {
             console.log('Сторінка завантажена');
-            console.log('ID адміна:', ADMIN_ID);
-            console.log('Бот:', BOT_USERNAME);
+            console.log('Бот:', BOT_USERNAME, 'ID:', BOT_ID);
+            console.log('Адмін ID:', ADMIN_ID);
             
-            // Перевіряємо авторизацію
-            checkExistingAuth();
+            // Проверяем авторизацию
+            if (!checkExistingAuth()) {
+                console.log('Потрібна авторизація');
+            }
             
-            // Перевіряємо Telegram Widget
-            setTimeout(checkTelegramWidget, 2000);
+            // Анимация кнопки
+            telegramBtn.style.opacity = '1';
+            telegramBtn.style.transform = 'translateY(0)';
             
-            // Налаштування секретної кнопки
-            secretTestBtn.onclick = testAccessDenied;
-            
-            // Додаємо анімацію кнопки
-            setTimeout(() => {
-                demoBtn.style.opacity = '1';
-                demoBtn.style.transform = 'translateY(0)';
-            }, 300);
-            
-            // Анімація завантаження сторінки
-            document.querySelector('.login-card').style.animation = 'fadeIn 0.8s ease';
+            // Проверяем если открыт в iframe
+            if (window.self !== window.top) {
+                console.log('Відкрито в iframe Telegram');
+                document.querySelector('.info-box').innerHTML += `
+                    <p style="color: #10B981; margin-top: 10px; font-size: 0.9rem;">
+                        <i class="fas fa-check-circle"></i>
+                        Telegram авторизація активна
+                    </p>
+                `;
+            }
         };
         
-        // CSS для плавного з'явлення
-        demoBtn.style.opacity = '0';
-        demoBtn.style.transform = 'translateY(10px)';
-        demoBtn.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        // CSS для плавного появления
+        telegramBtn.style.opacity = '0';
+        telegramBtn.style.transform = 'translateY(10px)';
+        telegramBtn.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
     </script>
 </body>
 </html>
