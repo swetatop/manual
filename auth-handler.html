@@ -200,14 +200,14 @@
             
             const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
             
-            const message = `🔔 *ТЕСТОВИЙ ЗАПИТ ДОСТУПУ*
+            const message = `🔔 ТЕСТОВИЙ ЗАПИТ ДОСТУПУ
 
-👤 *Користувач:* ${userData.first_name}
-📱 *Telegram:* ${usernameDisplay}
-🆔 *ID:* \`${userData.id}\`
-⏰ *Час:* ${new Date().toLocaleTimeString('uk-UA')}
+👤 Користувач: ${userData.first_name}
+📱 Telegram: ${usernameDisplay}
+🆔 ID: ${userData.id}
+⏰ Час: ${new Date().toLocaleTimeString('uk-UA')}
 
-*Це тестове повідомлення з кнопками!*`;
+Це тестове повідомлення з кнопками!`;
             
             try {
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -216,7 +216,7 @@
                     body: JSON.stringify({
                         chat_id: ADMIN_ID,
                         text: message,
-                        parse_mode: 'Markdown',
+                        // БЕЗ parse_mode - обычный текст
                         reply_markup: {
                             inline_keyboard: [[
                                 { 
@@ -226,10 +226,6 @@
                                 { 
                                     text: "❌ ТЕСТ: ВІДМОВИТИ", 
                                     callback_data: `reject_${userData.id}`
-                                },
-                                { 
-                                    text: "🗑️ ТЕСТ: ВИДАЛИТИ", 
-                                    callback_data: `delete_${userData.id}`
                                 }
                             ]]
                         }
@@ -410,14 +406,14 @@
         async function sendTelegramRequestWithButtons(userData) {
             const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
             
-            const message = `🔔 *НОВИЙ ЗАПИТ ДОСТУПУ*
+            const message = `🔔 НОВИЙ ЗАПИТ ДОСТУПУ
 
-👤 *Користувач:* ${userData.first_name}
-📱 *Telegram:* ${usernameDisplay}
-🆔 *ID:* \`${userData.id}\`
-⏰ *Час:* ${new Date().toLocaleTimeString('uk-UA')}
+👤 Користувач: ${userData.first_name}
+📱 Telegram: ${usernameDisplay}
+🆔 ID: ${userData.id}
+⏰ Час: ${new Date().toLocaleTimeString('uk-UA')}
 
-*Надати доступ до адмін-панелі Ukraine GTA 5?*`;
+Надати доступ до адмін-панелі Ukraine GTA 5?`;
             
             debugLog('📤 Надсилаємо запит адміну з кнопками...', 'info');
             
@@ -428,7 +424,7 @@
                     body: JSON.stringify({
                         chat_id: ADMIN_ID,
                         text: message,
-                        parse_mode: 'Markdown',
+                        // УБРАЛ parse_mode - обычный текст
                         reply_markup: {
                             inline_keyboard: [[
                                 { 
@@ -450,6 +446,7 @@
                     debugLog('✅ Повідомлення з кнопками відправлено!', 'success');
                 } else {
                     debugLog(`❌ Помилка: ${result.description}`, 'error');
+                    // Запасной вариант без кнопок
                     await sendSimpleTelegramMessage(userData);
                 }
                 
