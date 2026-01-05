@@ -8,7 +8,7 @@ export default async function handler(req, res) {
 
   try {
     const update = req.body;
-    console.log('📨 Получен запрос от Telegram');
+    console.log('📨 Получен запрос от Telegram:', JSON.stringify(update, null, 2));
     
     // Обработка callback от кнопок
     if (update.callback_query) {
@@ -31,16 +31,43 @@ export default async function handler(req, res) {
         })
       });
 
-      // 2. Редактируем сообщение с кнопками
+      // 2. Обновляем Firebase через API
+      try {
+        const firebaseResponse = await fetch('https://firestore.googleapis.com/v1/projects/manual-moderation-ukraine-gta5/databases/(default)/documents/users/' + userId, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.FIREBASE_ACCESS_TOKEN}`
+          },
+          body: JSON.stringify({
+            fields: {
+              status: { stringValue: action === 'approve' ? 'approved' : 'rejected' },
+              updated_at: { stringValue: new Date().toISOString() }
+            }
+          })
+        });
+        
+        if (firebaseResponse.ok) {
+          console.log(`✅ Firebase обновлен для ${userId}`);
+        } else {
+          console.log(`⚠️ Не удалось обновить Firebase: ${firebaseResponse.status}`);
+        }
+      } catch (firebaseError) {
+        console.log('⚠️ Ошибка обновления Firebase:', firebaseError.message);
+      }
+
+      // 3. Редактируем сообщение с кнопками
+      const newText = action === 'approve' 
+        ? `✅ *ДОСТУП НАДАНО*\n\nКористувачу ${userId} надано доступ до адмін-панелі.\n\nСтатус оновлено в системі.`
+        : `❌ *ДОСТУП ВІДХИЛЕНО*\n\nКористувачу ${userId} відхилено доступ.\n\nСтатус оновлено в системі.`;
+      
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: ADMIN_ID,
           message_id: callback.message.message_id,
-          text: action === 'approve' 
-            ? `✅ *ДОСТУП НАДАНО*\n\nКористувачу ${userId} надано доступ до адмін-панелі.`
-            : `❌ *ДОСТУП ВІДХИЛЕНО*\n\nКористувачу ${userId} відхилено доступ.`,
+          text: newText,
           parse_mode: 'Markdown'
         })
       });
