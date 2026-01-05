@@ -124,6 +124,18 @@
                 </p>
             </div>
             
+            <!-- Альтернативный способ открытия бота -->
+            <div style="margin-top: 20px; border-top: 1px solid #2D3748; padding-top: 20px;">
+                <p style="color: #94A3B8; margin-bottom: 10px;">Або відкрийте в Telegram:</p>
+                <button class="tg-btn" onclick="openTelegramBot()">
+                    <svg width="20" height="20" viewBox="0 0 240 240">
+                        <path d="M240 120c0 66.3-53.7 120-120 120S0 186.3 0 120 53.7 0 120 0s120 53.7 120 120z" fill="#0088cc"/>
+                        <path d="M98 175c-3.9 0-3.2-1.5-4.6-5.2L82 132.2 152.8 88.8c1.9-1.1 3.6-.5 2.2 1.1-1.4 1.6-5.8 4-5.8 4s-73 46.5-81.6 51.6c-1.6.9-3.1.9-1.6.9 1.5 0 4.3-.9 4.3-.9l111.1-45.4c4.6-2.2 8.3-1 8.3 3.1 0 1.6-.2 2.5-.2 2.5s-51.7 48.1-57.8 53.1c-6.1 5-4.6 2.2-8.7-.1-4.1-2.3-71.2-45.6-79.1-50.5-7.9-4.9-5.7-7.4.3-11.2 6.1-3.8 107.8-41.6 107.8-41.6s24.7-9.4 22.5 13.6z" fill="#fff"/>
+                    </svg>
+                    Відкрити @UGgtavBot
+                </button>
+            </div>
+            
             <!-- Демо вход -->
             <div style="margin-top: 30px; border-top: 1px solid #2D3748; padding-top: 20px;">
                 <p style="color: #94A3B8; margin-bottom: 10px;">Демо режим (для тестування):</p>
@@ -144,6 +156,11 @@
     <script type="module">
         import { db, ADMIN_ID } from './firebase-app.js';
         import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        
+        // Функция для открытия Telegram бота
+        window.openTelegramBot = function() {
+            window.open('https://t.me/UGgtavBot', '_blank');
+        };
         
         // Демо вход
         window.demoLogin = async function(type) {
