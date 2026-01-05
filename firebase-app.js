@@ -17,3 +17,4 @@ const db = getFirestore(app);
 
 export { db };
 export const ADMIN_ID = "5316593741";
+export const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
