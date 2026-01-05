@@ -1,5 +1,10 @@
 {
-  "name": "telegram-webhook",
-  "version": "1.0.0",
-  "type": "module"
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "FIREBASE_ACCESS_TOKEN": "тут_нужен_токен_от_firebase"
+  }
 }
