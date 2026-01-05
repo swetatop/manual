@@ -68,41 +68,6 @@
             max-height: 200px;
             overflow-y: auto;
         }
-        .pulse-dots {
-            display: flex;
-            justify-content: center;
-            margin: 25px 0;
-        }
-        .dot {
-            width: 12px;
-            height: 12px;
-            background: #0088cc;
-            border-radius: 50%;
-            margin: 0 5px;
-            animation: pulse 1s infinite;
-        }
-        .dot:nth-child(2) { animation-delay: 0.2s; }
-        .dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes pulse {
-            0%, 100% { opacity: 0.2; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-        .telegram-btn {
-            background: #0088cc;
-            color: white;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 12px 24px;
-            border-radius: 8px;
-            text-decoration: none;
-            margin: 10px;
-            font-weight: 600;
-        }
-        .telegram-btn:hover {
-            background: #0077b5;
-        }
     </style>
 </head>
 <body>
@@ -126,12 +91,11 @@
 
     <script type="module">
         import { db, ADMIN_ID } from './firebase-app.js';
-        import { doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
         const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
         const SITE_URL = "https://swetatop.github.io/manual/";
         
-        // Логирование в панель отладки
         function debugLog(message, type = 'info') {
             const timestamp = new Date().toLocaleTimeString('uk-UA');
             const colors = { info: '#94A3B8', success: '#10B981', error: '#EF4444', warning: '#F59E0B' };
@@ -149,116 +113,6 @@
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
         
-        function getTelegramDataFromUrl() {
-            try {
-                // Спробуємо отримати дані з Telegram Web App SDK
-                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-                    const tgUser = Telegram.WebApp.initDataUnsafe.user;
-                    debugLog('✅ Дані отримано з Telegram Web App SDK', 'success');
-                    
-                    return {
-                        id: tgUser.id.toString(),
-                        first_name: tgUser.first_name || 'Користувач',
-                        username: tgUser.username || '',
-                        auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
-                        hash: Telegram.WebApp.initDataUnsafe.hash
-                    };
-                }
-                
-                // Спробуємо отримати дані з URL hash
-                const hash = window.location.hash.substring(1);
-                debugLog(`Hash отримано: ${hash ? '✅ ' + hash.substring(0, 50) + '...' : '❌ порожній'}`, hash ? 'success' : 'warning');
-                
-                if (!hash) {
-                    // Спробуємо отримати дані з query параметрів
-                    const search = window.location.search.substring(1);
-                    debugLog(`Search отримано: ${search ? '✅ ' + search.substring(0, 50) + '...' : '❌ порожній'}`, search ? 'success' : 'warning');
-                    
-                    if (!search) {
-                        debugLog('❌ Не знайдено даних у URL', 'error');
-                        return null;
-                    }
-                    
-                    // Парсимо query параметри
-                    const params = new URLSearchParams(search);
-                    const id = params.get('id') || params.get('user_id') || params.get('tgid');
-                    const first_name = params.get('first_name') || params.get('firstname') || params.get('name');
-                    const username = params.get('username') || params.get('user_name') || params.get('login');
-                    
-                    if (id) {
-                        debugLog(`✅ Дані знайдено в query параметрах`, 'success');
-                        return {
-                            id: id,
-                            first_name: first_name || 'Користувач',
-                            username: username || '',
-                            auth_date: params.get('auth_date'),
-                            hash: params.get('hash')
-                        };
-                    }
-                    
-                    return null;
-                }
-                
-                // Парсимо hash
-                const params = new URLSearchParams(hash);
-                const id = params.get('id');
-                const first_name = params.get('first_name');
-                const username = params.get('username');
-                
-                if (!id) {
-                    debugLog('❌ ID не знайдено в hash', 'error');
-                    return null;
-                }
-                
-                return {
-                    id: id,
-                    first_name: first_name || 'Користувач',
-                    username: username || '',
-                    auth_date: params.get('auth_date'),
-                    hash: params.get('hash')
-                };
-                
-            } catch (e) {
-                debugLog(`❌ Помилка парсингу URL: ${e.message}`, 'error');
-                return null;
-            }
-        }
-        
-        function redirectToProperLogin() {
-            debugLog('🔄 Перенаправлення на сторінку входу...', 'info');
-            
-            document.getElementById('content').innerHTML = `
-                <h2>📱 Авторизація через Telegram</h2>
-                <p style="color: #94A3B8; margin-bottom: 30px;">
-                    Відкрийте цю сторінку через Telegram бота @UGgtavBot
-                </p>
-                
-                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                    <p style="margin: 0; color: #94A3B8; font-size: 0.9rem;">
-                        <strong>ℹ️ Як увійти:</strong><br>
-                        1. Відкрийте Telegram бота @UGgtavBot<br>
-                        2. Натисніть кнопку "Вхід" або "Admin Panel"<br>
-                        3. Дозвольте доступ до вашого Telegram акаунта<br>
-                        4. Чекайте підтвердження адміністратора
-                    </p>
-                </div>
-                
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px;">
-                    <a href="login.html" class="btn" style="margin: 10px;">
-                        ← Повернутися до входу
-                    </a>
-                    
-                    <button class="btn" onclick="openTelegramBot()" style="background: #0088cc; margin: 10px;">
-                        📱 Відкрити Telegram бота
-                    </button>
-                    
-                    <button class="btn" onclick="manualAuth()" style="background: #F59E0B; margin: 10px;">
-                        🔑 Ручний вхід (для адміністраторів)
-                    </button>
-                </div>
-            `;
-        }
-        
         async function processAuth() {
             debugLog('🔍 Починаємо авторизацію...', 'info');
             
@@ -266,27 +120,58 @@
                 document.getElementById('debugPanel').style.display = 'block';
             }, 3000);
             
-            // Пробуем получить данные из URL или Telegram Web App
-            const userData = getTelegramDataFromUrl();
-            debugLog(`📱 Дані з URL/Web App: ${userData ? '✅ отримано' : '❌ не отримано'}`, userData ? 'success' : 'warning');
+            // Пробуем получить данные
+            const userData = getTelegramData();
+            debugLog(`📱 Дані з Telegram: ${userData ? '✅ отримано' : '❌ не отримано'}`, userData ? 'success' : 'warning');
             
             if (userData?.id) {
-                debugLog(`✅ Дані користувача: ${userData.first_name} (ID: ${userData.id})`, 'success');
+                debugLog(`✅ Користувач: ${userData.first_name} (ID: ${userData.id})`, 'success');
                 await processUserData(userData);
                 return;
             }
             
-            // Если данных нет, показываем инструкцию
-            debugLog('ℹ️ Дані не отримано, показуємо інструкцію', 'info');
-            redirectToProperLogin();
+            showError('Не вдалося отримати дані з Telegram. Відкрийте сторінку через бота @UGgtavBot');
+        }
+        
+        function getTelegramData() {
+            try {
+                // Telegram Web App
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                    const tgUser = Telegram.WebApp.initDataUnsafe.user;
+                    return {
+                        id: tgUser.id.toString(),
+                        first_name: tgUser.first_name || 'Користувач',
+                        username: tgUser.username || '',
+                        auth_date: Telegram.WebApp.initDataUnsafe.auth_date
+                    };
+                }
+                
+                // URL hash
+                const hash = window.location.hash.substring(1);
+                if (!hash) return null;
+                
+                const params = new URLSearchParams(hash);
+                const id = params.get('id');
+                if (!id) return null;
+                
+                return {
+                    id: id,
+                    first_name: params.get('first_name') || 'Користувач',
+                    username: params.get('username') || ''
+                };
+                
+            } catch (e) {
+                debugLog(`❌ Помилка парсингу: ${e.message}`, 'error');
+                return null;
+            }
         }
         
         async function processUserData(userData) {
-            debugLog(`👤 Обробка даних користувача: ${userData.first_name} (ID: ${userData.id})`, 'info');
+            debugLog(`👤 Обробка користувача: ${userData.first_name}`, 'info');
             
-            // Если админ - сразу доступ
+            // Админ - сразу доступ
             if (userData.id === ADMIN_ID.toString()) {
-                debugLog('👑 Виявлено адміністратора, надаємо доступ', 'success');
+                debugLog('👑 Виявлено адміністратора', 'success');
                 await saveUser(userData, true);
                 grantAccess(userData, true);
                 return;
@@ -297,101 +182,61 @@
         
         async function checkUserAccess(userData) {
             try {
-                debugLog(`🔍 Перевіряємо доступ користувача ${userData.id} в Firebase...`, 'info');
+                debugLog(`🔍 Перевіряємо доступ для ${userData.id}`, 'info');
                 const userDoc = await getDoc(doc(db, "users", userData.id));
                 
                 if (userDoc.exists()) {
                     const data = userDoc.data();
-                    debugLog(`📋 Користувача знайдено, статус: ${data.status || 'невідомий'}`, 'info');
+                    debugLog(`📋 Статус: ${data.status}`, 'info');
                     
                     if (data.status === 'approved') {
-                        debugLog('✅ Доступ підтверджено', 'success');
                         grantAccess(userData, data.isAdmin || false);
                         return;
                     }
                     
                     if (data.status === 'pending') {
-                        debugLog('⏳ Очікує підтвердження...', 'warning');
                         showWaiting(userData);
                         listenForApproval(userData.id);
                         return;
                     }
                     
                     if (data.status === 'rejected') {
-                        debugLog('❌ Доступ відхилено адміністратором', 'error');
                         showError('Доступ відхилено адміністратором');
                         return;
                     }
                 }
                 
-                debugLog('🆕 Новий користувач, створюємо запис...', 'info');
+                debugLog('🆕 Новий користувач', 'info');
                 await saveUser(userData, false);
-                await sendRequestToAdmin(userData);
+                
+                // ВОТ САМОЕ ВАЖНОЕ - ОТПРАВЛЯЕМ КНОПКИ!
+                await sendTelegramRequestWithButtons(userData);
+                
                 showWaiting(userData);
                 listenForApproval(userData.id);
                 
             } catch (error) {
-                debugLog(`❌ Помилка перевірки доступу: ${error.message}`, 'error');
-                showError('Помилка перевірки доступу. Спробуйте пізніше.');
+                debugLog(`❌ Помилка: ${error.message}`, 'error');
+                showError('Помилка перевірки доступу');
             }
         }
         
-        async function saveUser(userData, isAdmin) {
-            try {
-                debugLog(`💾 Зберігаємо користувача ${userData.id}...`, 'info');
-                await setDoc(doc(db, "users", userData.id), {
-                    telegram_id: userData.id,
-                    first_name: userData.first_name,
-                    username: userData.username || '',
-                    status: isAdmin ? 'approved' : 'pending',
-                    isAdmin: isAdmin,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                });
-                debugLog(`✅ Користувача збережено: ${userData.id}`, 'success');
-            } catch (error) {
-                debugLog(`❌ Помилка збереження користувача: ${error.message}`, 'error');
-            }
-        }
-        
-        async function sendRequestToAdmin(userData) {
-            debugLog('📤 Надсилаємо запит адміну...', 'info');
-            
-            try {
-                // Сохраняем запрос в Firebase
-                await saveAccessRequestToFirebase(userData);
-                
-                // Пробуем отправить через Telegram API
-                const telegramSuccess = await trySendTelegramMessage(userData);
-                
-                if (!telegramSuccess) {
-                    showAlternativeNotification(userData);
-                }
-                
-                return true;
-                
-            } catch (error) {
-                debugLog(`❌ Помилка відправки запиту адміну: ${error.message}`, 'error');
-                return false;
-            }
-        }
-        
-        async function trySendTelegramMessage(userData) {
-            const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
-            const approveUrl = `${SITE_URL}bot-handler.html?action=approve&user_id=${userData.id}`;
-            const rejectUrl = `${SITE_URL}bot-handler.html?action=reject&user_id=${userData.id}`;
+        async function sendTelegramRequestWithButtons(userData) {
+            const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
             
             const message = `🔔 *НОВИЙ ЗАПИТ ДОСТУПУ*
 
-👤 *Користувач:* ${userData.first_name} (${usernameDisplay})
-🆔 *ID:* ${userData.id}
+👤 *Користувач:* ${userData.first_name}
+📱 *Telegram:* ${usernameDisplay}
+🆔 *ID:* \`${userData.id}\`
 ⏰ *Час:* ${new Date().toLocaleTimeString('uk-UA')}
 
 *Надати доступ до адмін-панелі Ukraine GTA 5?*`;
             
+            debugLog('📤 Надсилаємо запит адміну з кнопками...', 'info');
+            
             try {
-                debugLog('🔄 Спроба надіслати повідомлення через Telegram API...', 'info');
-                
+                // ОТПРАВЛЯЕМ СООБЩЕНИЕ С КНОПКАМИ!
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -401,8 +246,14 @@
                         parse_mode: 'Markdown',
                         reply_markup: {
                             inline_keyboard: [[
-                                { text: "✅ ПІДТВЕРДИТИ", url: approveUrl },
-                                { text: "❌ ВІДХИЛИТИ", url: rejectUrl }
+                                { 
+                                    text: "✅ ДАТИ ДОСТУП", 
+                                    callback_data: `approve_${userData.id}`
+                                },
+                                { 
+                                    text: "❌ ВІДМОВИТИ", 
+                                    callback_data: `reject_${userData.id}`
+                                }
                             ]]
                         }
                     })
@@ -411,121 +262,79 @@
                 const result = await response.json();
                 
                 if (result.ok) {
-                    debugLog('✅ Повідомлення успішно відправлено адміну', 'success');
-                    return true;
+                    debugLog('✅ Повідомлення з кнопками відправлено адміну!', 'success');
+                    debugLog(`📝 Message ID: ${result.result.message_id}`, 'info');
                 } else {
-                    debugLog(`❌ Помилка Telegram API: ${result.description}`, 'error');
-                    
-                    // Пробуем отправить простое сообщение без форматирования
-                    const simpleResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: ADMIN_ID,
-                            text: `🔔 Новий запит доступу від ${userData.first_name} (ID: ${userData.id})\n\nПідтвердити: ${approveUrl}\nВідхилити: ${rejectUrl}`
-                        })
-                    });
-                    
-                    const simpleResult = await simpleResponse.json();
-                    if (simpleResult.ok) {
-                        debugLog('✅ Просте повідомлення відправлено', 'success');
-                        return true;
-                    }
-                    
-                    return false;
+                    debugLog(`❌ Помилка Telegram: ${result.description}`, 'error');
+                    // Запасной вариант - обычное сообщение
+                    await sendSimpleTelegramMessage(userData);
                 }
                 
             } catch (error) {
-                debugLog(`❌ Помилка з'єднання з Telegram API: ${error.message}`, 'error');
-                return false;
+                debugLog(`❌ Помилка відправки: ${error.message}`, 'error');
+                await sendSimpleTelegramMessage(userData);
             }
         }
         
-        async function saveAccessRequestToFirebase(userData) {
+        async function sendSimpleTelegramMessage(userData) {
+            const simpleMessage = `🔔 НОВИЙ ЗАПИТ: ${userData.first_name} (ID: ${userData.id})`;
+            
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: ADMIN_ID,
+                    text: simpleMessage
+                })
+            });
+        }
+        
+        async function saveUser(userData, isAdmin) {
             try {
-                debugLog('💾 Зберігаємо запит доступу в Firebase...', 'info');
-                
-                // Сохраняем запрос в отдельной коллекции
-                await setDoc(doc(db, "access_requests", userData.id), {
+                await setDoc(doc(db, "users", userData.id), {
                     telegram_id: userData.id,
                     first_name: userData.first_name,
                     username: userData.username || '',
-                    status: 'pending',
+                    status: isAdmin ? 'approved' : 'pending',
+                    isAdmin: isAdmin,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 });
-                
-                debugLog('✅ Запит доступу збережено в Firebase', 'success');
-                
+                debugLog(`💾 Користувача збережено: ${userData.id}`, 'success');
             } catch (error) {
-                debugLog(`❌ Помилка збереження запиту: ${error.message}`, 'error');
+                debugLog(`❌ Помилка збереження: ${error.message}`, 'error');
             }
         }
         
-        function showAlternativeNotification(userData) {
-            setTimeout(() => {
-                document.getElementById('content').innerHTML += `
-                    <div style="margin-top: 15px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid #F59E0B; padding: 15px; border-radius: 8px;">
-                        <p style="color: #F59E0B; margin-bottom: 10px;">
-                            <strong>⚠️ Увага!</strong> Не вдалося надіслати запит через Telegram.
-                        </p>
-                        <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 10px;">
-                            Адмін може підтвердити доступ вручну через панель управління.
-                        </p>
-                        <div style="background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; margin-bottom: 10px;">
-                            <strong>ID користувача:</strong> ${userData.id}<br>
-                            <strong>Ім'я:</strong> ${userData.first_name}<br>
-                            <strong>Telegram:</strong> ${userData.username ? '@' + userData.username : 'немає'}
-                        </div>
-                        <button class="btn" onclick="copyUserData('${userData.id}', '${userData.first_name}', '${userData.username || ''}')" style="background: #F59E0B;">
-                            📋 Копіювати дані
-                        </button>
-                    </div>
-                `;
-            }, 1000);
-        }
-        
         function showWaiting(userData) {
-            const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
+            const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
             
             document.getElementById('content').innerHTML = `
                 <h2 class="warning">⏳ Очікуйте підтвердження</h2>
-                <p style="color: #94A3B8; margin-bottom: 20px;">Запит відправлено адміністратору</p>
+                <p style="color: #94A3B8; margin-bottom: 20px;">
+                    Запит відправлено адміністратору в Telegram
+                </p>
                 
                 <div class="user-info">
-                    <p><strong>👤 Користувач:</strong> ${userData.first_name} (${usernameDisplay})</p>
+                    <p><strong>👤 Користувач:</strong> ${userData.first_name}</p>
                     <p><strong>🆔 ID:</strong> ${userData.id}</p>
+                    <p><strong>📱 Telegram:</strong> ${usernameDisplay}</p>
                     <p><strong>📊 Статус:</strong> <span id="statusText">Очікує підтвердження...</span></p>
                 </div>
                 
                 <div class="spinner"></div>
                 
-                <div class="pulse-dots">
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                    <div class="dot"></div>
-                </div>
-                
-                <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 10px;">
-                    Адмін отримав повідомлення в Telegram бот<br>
+                <p style="color: #94A3B8; margin: 20px 0;">
+                    🔔 Адмін отримав повідомлення з кнопками<br>
                     Після підтвердження ви автоматично отримаєте доступ
                 </p>
                 
-                <p style="color: #F59E0B; font-size: 0.9rem; margin-bottom: 20px;">
-                    ⚠️ Не закривайте цю сторінку!
-                </p>
+                <button onclick="checkAccess('${userData.id}')" class="btn">
+                    🔄 Перевірити статус
+                </button>
                 
-                <div style="margin-top: 20px;">
-                    <button class="btn" onclick="checkStatus('${userData.id}')">
-                        🔄 Перевірити статус
-                    </button>
-                    <button class="btn" onclick="forceAccess('${userData.id}')" style="background: #F59E0B; margin-left: 10px;">
-                        🚀 Примусово увійти (тест)
-                    </button>
-                </div>
-                
-                <button class="btn" onclick="openBotHandler()" style="background: #10B981; margin-top: 10px;">
-                    📱 Відкрити панель управління
+                <button onclick="window.location.href='login.html'" class="btn" style="background: #2D3748;">
+                    ← На головну
                 </button>
             `;
             
@@ -538,28 +347,25 @@
             
             const texts = [
                 "Очікує підтвердження...",
-                "Перевіряємо статус...",
-                "Очікуємо рішення адміна...",
-                "Запит обробляється..."
+                "Адмін перевіряє запит...",
+                "Очікуємо рішення..."
             ];
             
             let index = 0;
             setInterval(() => {
                 statusElement.textContent = texts[index];
                 index = (index + 1) % texts.length;
-            }, 3000);
+            }, 2000);
         }
         
         function listenForApproval(userId) {
-            debugLog(`👂 Слухаємо зміни статусу для користувача ${userId}`, 'info');
+            debugLog(`👂 Слухаємо зміни для ${userId}`, 'info');
             
             const unsubscribe = onSnapshot(doc(db, "users", userId), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
-                    debugLog(`📝 Отримано оновлення статусу: ${data.status}`, 'info');
                     
                     if (data.status === 'approved') {
-                        debugLog('✅ Статус: approved - надаємо доступ', 'success');
                         unsubscribe();
                         grantAccess({
                             id: userId,
@@ -567,76 +373,41 @@
                             username: data.username
                         }, data.isAdmin || false);
                     } else if (data.status === 'rejected') {
-                        debugLog('❌ Статус: rejected - доступ відхилено', 'error');
                         unsubscribe();
                         showError('Доступ відхилено адміністратором');
                     }
                 }
-            }, (error) => {
-                debugLog(`❌ Помилка слухача Firebase: ${error.message}`, 'error');
-                setTimeout(() => checkStatusManually(userId), 3000);
             });
-            
-            const intervalId = setInterval(async () => {
-                try {
-                    const docSnap = await getDoc(doc(db, "users", userId));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        debugLog(`🔄 Інтервальна перевірка статусу: ${data.status}`, 'info');
-                        
-                        if (data.status === 'approved') {
-                            clearInterval(intervalId);
-                            grantAccess({
-                                id: userId,
-                                first_name: data.first_name,
-                                username: data.username
-                            }, data.isAdmin || false);
-                        } else if (data.status === 'rejected') {
-                            clearInterval(intervalId);
-                            showError('Доступ відхилено адміністратором');
-                        }
-                    }
-                } catch (error) {
-                    debugLog(`Помилка інтервальної перевірки: ${error.message}`, 'error');
-                }
-            }, 5000);
         }
         
-        async function checkStatus(userId) {
+        window.checkAccess = async function(userId) {
             try {
-                const docSnap = await getDoc(doc(db, "users", userId));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    alert(`📊 Статус: ${data.status || 'не визначено'}\n\n👤 Користувач: ${data.first_name || 'немає'}\n📱 Telegram: ${data.username ? '@' + data.username : 'немає'}`);
-                } else {
-                    alert('❌ Користувача не знайдено в базі даних');
-                }
-            } catch (error) {
-                alert('⚠️ Помилка перевірки статусу');
-            }
-        }
-        
-        async function checkStatusManually(userId) {
-            try {
-                const docSnap = await getDoc(doc(db, "users", userId));
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+                const userDoc = await getDoc(doc(db, "users", userId));
+                
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    
                     if (data.status === 'approved') {
                         grantAccess({
                             id: userId,
                             first_name: data.first_name,
                             username: data.username
                         }, data.isAdmin || false);
+                    } else if (data.status === 'pending') {
+                        alert('⏳ Адмін ще не підтвердив доступ');
+                    } else if (data.status === 'rejected') {
+                        alert('❌ Доступ відхилено');
                     }
                 }
             } catch (error) {
-                debugLog(`Помилка ручної перевірки: ${error.message}`, 'error');
+                alert('Помилка перевірки');
             }
-        }
+        };
         
         function grantAccess(userData, isAdmin) {
-            debugLog(`🎉 Надаємо доступ користувачу: ${userData.first_name} (ID: ${userData.id})`, 'success');
+            debugLog(`🎉 Надаємо доступ: ${userData.first_name}`, 'success');
             
+            // Сохраняем данные
             sessionStorage.setItem('user_id', userData.id);
             sessionStorage.setItem('user_name', userData.first_name);
             sessionStorage.setItem('user_username', userData.username || '');
@@ -645,13 +416,20 @@
             localStorage.setItem('authToken', Date.now().toString());
             localStorage.setItem('userData', JSON.stringify(userData));
             localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
-            localStorage.setItem(`access_${userData.id}`, 'approved');
             
+            // Показываем успех
             document.getElementById('content').innerHTML = `
                 <h2 class="success">✅ Доступ надано!</h2>
-                <p style="color: #94A3B8; margin-bottom: 20px;">Вітаємо, ${userData.first_name}! Ви успішно авторизувались.</p>
+                <div class="user-info">
+                    <p><strong>👤 Користувач:</strong> ${userData.first_name}</p>
+                    <p><strong>🆔 ID:</strong> ${userData.id}</p>
+                    <p><strong>👑 Роль:</strong> ${isAdmin ? 'Адміністратор' : 'Модератор'}</p>
+                </div>
+                
                 <div class="spinner"></div>
-                <p style="color: #94A3B8; margin-top: 20px;">Перенаправляємо до адмін-панелі...</p>
+                <p style="color: #94A3B8; margin-top: 20px;">
+                    Перенаправляємо до адмін-панелі...
+                </p>
             `;
             
             setTimeout(() => {
@@ -663,57 +441,19 @@
             debugLog(`❌ Помилка: ${message}`, 'error');
             
             document.getElementById('content').innerHTML = `
-                <h2 class="error">😕 Помилка авторизації</h2>
-                <p style="margin-bottom: 20px;">${message}</p>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+                <h2 class="error">❌ Помилка авторизації</h2>
+                <p>${message}</p>
+                
+                <div style="margin-top: 20px;">
                     <a href="login.html" class="btn">← Повернутися до входу</a>
-                    <button class="btn" onclick="testBotConnection()" style="background: #F59E0B; margin-left: 10px;">
+                    <button onclick="testBot()" class="btn" style="background: #F59E0B;">
                         🛠️ Тестувати бота
-                    </button>
-                    <button class="btn" onclick="openTelegramBot()" style="background: #0088cc; margin-left: 10px;">
-                        📱 Відкрити Telegram бота
                     </button>
                 </div>
             `;
         }
         
-        // Функція для відкриття Telegram бота
-        window.openTelegramBot = function() {
-            window.open('https://t.me/UGgtavBot', '_blank');
-        };
-        
-        // Ручная авторизация
-        window.manualAuth = function() {
-            const userId = prompt('Введіть ваш Telegram ID:');
-            const userName = prompt('Введіть ваше ім\'я:');
-            const userUsername = prompt('Введіть ваш Telegram username (без @):');
-            
-            if (userId && userName) {
-                processUserData({
-                    id: userId,
-                    first_name: userName,
-                    username: userUsername || ''
-                });
-            }
-        };
-        
-        window.forceAccess = function(userId) {
-            if (confirm('Примусово увійти? Це тільки для тестування!')) {
-                grantAccess({
-                    id: userId,
-                    first_name: 'Тестовий Користувач',
-                    username: 'test_user'
-                }, false);
-            }
-        };
-        
-        window.openBotHandler = function() {
-            window.open('bot-handler.html', '_blank');
-        };
-        
-        window.testBotConnection = async function() {
-            debugLog('🛠️ Тестуємо підключення до бота...', 'info');
-            
+        window.testBot = async function() {
             try {
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
                 const data = await response.json();
@@ -728,18 +468,8 @@
             }
         };
         
-        window.copyUserData = function(id, name, username) {
-            const text = `ID: ${id}\nІм'я: ${name}\nTelegram: ${username ? '@' + username : 'немає'}`;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('✅ Дані скопійовано!');
-            });
-        };
-        
-        window.checkStatus = checkStatus;
-        
+        // Запускаем
         document.addEventListener('DOMContentLoaded', processAuth);
     </script>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
