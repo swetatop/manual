@@ -134,6 +134,28 @@
             font-size: 12px;
             margin-left: 5px;
         }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 400px;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -823,34 +845,6 @@
             showNotification('🧹 Форму очищено', 'info');
         };
         
-        window.manualApprove = async function() {
-            const userId = document.getElementById('manualUserId').value.trim();
-            
-            if (!userId) {
-                alert('Введіть ID користувача');
-                return;
-            }
-            
-            const success = await approveUser(userId);
-            if (success) {
-                manualClearForm();
-            }
-        };
-        
-        window.manualReject = async function() {
-            const userId = document.getElementById('manualUserId').value.trim();
-            
-            if (!userId) {
-                alert('Введіть ID користувача');
-                return;
-            }
-            
-            const success = await rejectUser(userId);
-            if (success) {
-                manualClearForm();
-            }
-        };
-        
         function showNotification(message, type) {
             // Удаляем предыдущие уведомления
             const existingNotifications = document.querySelectorAll('.notification');
@@ -859,20 +853,8 @@
             const notification = document.createElement('div');
             notification.className = 'notification';
             notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
                 background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
                 color: white;
-                padding: 15px 25px;
-                border-radius: 8px;
-                z-index: 10000;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-                animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                max-width: 400px;
             `;
             
             const icons = {
@@ -895,20 +877,6 @@
                 }
             }, 3000);
         }
-        
-        // Добавляем стили для анимации
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(100%); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
         
         window.approveUser = approveUser;
         window.rejectUser = rejectUser;
