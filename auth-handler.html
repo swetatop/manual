@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Авторизація | Ukraine GTA 5</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -65,10 +64,8 @@
     </div>
 
     <script type="module">
-        import { db, ADMIN_ID } from './firebase-app.js';
+        import { db, ADMIN_ID, BOT_TOKEN } from './firebase-app.js';
         import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-        
-        const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
         
         async function processAuth() {
             const userData = getTelegramData();
@@ -92,29 +89,27 @@
         
         function getTelegramData() {
             try {
-                // Telegram Web App
-                if (window.Telegram && Telegram.WebApp?.initDataUnsafe?.user) {
-                    const tgUser = Telegram.WebApp.initDataUnsafe.user;
-                    return {
-                        id: tgUser.id.toString(),
-                        first_name: tgUser.first_name || 'Користувач',
-                        username: tgUser.username || '',
-                        auth_date: Telegram.WebApp.initDataUnsafe.auth_date
-                    };
-                }
-                
-                // URL hash
+                // Получаем данные из URL hash
                 const hash = window.location.hash.substring(1);
-                if (!hash) return null;
+                if (!hash) {
+                    showError('Немає даних авторизації.<br>Будь ласка, авторизуйтесь через Telegram.');
+                    return null;
+                }
                 
                 const params = new URLSearchParams(hash);
                 const id = params.get('id');
-                if (!id) return null;
+                
+                if (!id) {
+                    showError('Невірні дані авторизації.');
+                    return null;
+                }
                 
                 return {
                     id: id,
                     first_name: params.get('first_name') || 'Користувач',
-                    username: params.get('username') || ''
+                    username: params.get('username') || '',
+                    photo_url: params.get('photo_url'),
+                    auth_date: params.get('auth_date')
                 };
                 
             } catch (e) {
@@ -196,6 +191,8 @@
                 const result = await response.json();
                 
                 if (!result.ok) {
+                    console.error('Помилка відправки кнопок:', result.description);
+                    // Запасной вариант - обычное сообщение
                     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -222,6 +219,7 @@
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 });
+                console.log('💾 Користувача збережено:', userData.id);
             } catch (error) {
                 console.error('Помилка збереження:', error);
             }
@@ -246,7 +244,8 @@
                 <div class="spinner"></div>
                 
                 <p style="color: #94A3B8; margin: 20px 0;">
-                    🔔 Адмін отримав повідомлення з кнопками
+                    🔔 Адмін отримав повідомлення з кнопками<br>
+                    Після підтвердження ви автоматично отримаєте доступ
                 </p>
                 
                 <button onclick="checkAccess('${userData.id}')" class="btn">
@@ -359,6 +358,7 @@
             `;
         }
         
+        // Запускаем
         document.addEventListener('DOMContentLoaded', processAuth);
     </script>
 </body>
