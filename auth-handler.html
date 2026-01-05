@@ -87,6 +87,22 @@
             0%, 100% { opacity: 0.2; transform: scale(0.8); }
             50% { opacity: 1; transform: scale(1.1); }
         }
+        .telegram-btn {
+            background: #0088cc;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 10px;
+            font-weight: 600;
+        }
+        .telegram-btn:hover {
+            background: #0077b5;
+        }
     </style>
 </head>
 <body>
@@ -133,75 +149,67 @@
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
         }
         
-        async function processAuth() {
-            debugLog('🔍 Починаємо авторизацію...', 'info');
-            
-            setTimeout(() => {
-                document.getElementById('debugPanel').style.display = 'block';
-            }, 3000);
-            
-            // Пробуем получить данные из URL
-            const userData = getTelegramDataFromUrl();
-            debugLog(`📱 Дані з URL: ${userData ? '✅ отримано' : '❌ не отримано'}`, userData ? 'success' : 'warning');
-            
-            if (userData?.id) {
-                debugLog(`✅ Дані користувача: ${userData.first_name} (ID: ${userData.id})`, 'success');
-                await processUserData(userData);
-                return;
-            }
-            
-            showError('Не вдалося отримати дані з Telegram. Спробуйте ще раз.');
-            
-            setTimeout(() => {
-                document.getElementById('content').innerHTML += `
-                    <div style="margin-top: 20px;">
-                        <p style="color: #94A3B8;">Або увійдіть вручну:</p>
-                        <button class="btn" onclick="manualAuth()">
-                            🔑 Ручний вхід
-                        </button>
-                    </div>
-                `;
-            }, 2000);
-        }
-        
-      function getTelegramDataFromUrl() {
-    try {
-        // Спробуємо отримати дані з Telegram Web App SDK
-        if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-            const tgUser = Telegram.WebApp.initDataUnsafe.user;
-            debugLog('✅ Дані отримано з Telegram Web App SDK', 'success');
-            
-            return {
-                id: tgUser.id.toString(),
-                first_name: tgUser.first_name || 'Користувач',
-                username: tgUser.username || '',
-                auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
-                hash: Telegram.WebApp.initDataUnsafe.hash
-            };
-        }
-        
-        // Спробуємо отримати дані з URL hash
-        const hash = window.location.hash.substring(1);
-        debugLog(`Hash отримано: ${hash ? '✅ ' + hash.substring(0, 50) + '...' : '❌ порожній'}`, hash ? 'success' : 'warning');
-        
-        if (!hash) {
-            // Спробуємо отримати дані з query параметрів
-            const search = window.location.search.substring(1);
-            debugLog(`Search отримано: ${search ? '✅ ' + search.substring(0, 50) + '...' : '❌ порожній'}`, search ? 'success' : 'warning');
-            
-            if (!search) {
-                debugLog('❌ Не знайдено даних у URL', 'error');
-                return null;
-            }
-            
-            // Парсимо query параметри
-            const params = new URLSearchParams(search);
-            const id = params.get('id') || params.get('user_id') || params.get('tgid');
-            const first_name = params.get('first_name') || params.get('firstname') || params.get('name');
-            const username = params.get('username') || params.get('user_name') || params.get('login');
-            
-            if (id) {
-                debugLog(`✅ Дані знайдено в query параметрах`, 'success');
+        function getTelegramDataFromUrl() {
+            try {
+                // Спробуємо отримати дані з Telegram Web App SDK
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                    const tgUser = Telegram.WebApp.initDataUnsafe.user;
+                    debugLog('✅ Дані отримано з Telegram Web App SDK', 'success');
+                    
+                    return {
+                        id: tgUser.id.toString(),
+                        first_name: tgUser.first_name || 'Користувач',
+                        username: tgUser.username || '',
+                        auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
+                        hash: Telegram.WebApp.initDataUnsafe.hash
+                    };
+                }
+                
+                // Спробуємо отримати дані з URL hash
+                const hash = window.location.hash.substring(1);
+                debugLog(`Hash отримано: ${hash ? '✅ ' + hash.substring(0, 50) + '...' : '❌ порожній'}`, hash ? 'success' : 'warning');
+                
+                if (!hash) {
+                    // Спробуємо отримати дані з query параметрів
+                    const search = window.location.search.substring(1);
+                    debugLog(`Search отримано: ${search ? '✅ ' + search.substring(0, 50) + '...' : '❌ порожній'}`, search ? 'success' : 'warning');
+                    
+                    if (!search) {
+                        debugLog('❌ Не знайдено даних у URL', 'error');
+                        return null;
+                    }
+                    
+                    // Парсимо query параметри
+                    const params = new URLSearchParams(search);
+                    const id = params.get('id') || params.get('user_id') || params.get('tgid');
+                    const first_name = params.get('first_name') || params.get('firstname') || params.get('name');
+                    const username = params.get('username') || params.get('user_name') || params.get('login');
+                    
+                    if (id) {
+                        debugLog(`✅ Дані знайдено в query параметрах`, 'success');
+                        return {
+                            id: id,
+                            first_name: first_name || 'Користувач',
+                            username: username || '',
+                            auth_date: params.get('auth_date'),
+                            hash: params.get('hash')
+                        };
+                    }
+                    
+                    return null;
+                }
+                
+                // Парсимо hash
+                const params = new URLSearchParams(hash);
+                const id = params.get('id');
+                const first_name = params.get('first_name');
+                const username = params.get('username');
+                
+                if (!id) {
+                    debugLog('❌ ID не знайдено в hash', 'error');
+                    return null;
+                }
+                
                 return {
                     id: id,
                     first_name: first_name || 'Користувач',
@@ -209,35 +217,69 @@
                     auth_date: params.get('auth_date'),
                     hash: params.get('hash')
                 };
+                
+            } catch (e) {
+                debugLog(`❌ Помилка парсингу URL: ${e.message}`, 'error');
+                return null;
+            }
+        }
+        
+        function redirectToProperLogin() {
+            debugLog('🔄 Перенаправлення на сторінку входу...', 'info');
+            
+            document.getElementById('content').innerHTML = `
+                <h2>📱 Авторизація через Telegram</h2>
+                <p style="color: #94A3B8; margin-bottom: 30px;">
+                    Відкрийте цю сторінку через Telegram бота @UGgtavBot
+                </p>
+                
+                <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid #3B82F6; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #94A3B8; font-size: 0.9rem;">
+                        <strong>ℹ️ Як увійти:</strong><br>
+                        1. Відкрийте Telegram бота @UGgtavBot<br>
+                        2. Натисніть кнопку "Вхід" або "Admin Panel"<br>
+                        3. Дозвольте доступ до вашого Telegram акаунта<br>
+                        4. Чекайте підтвердження адміністратора
+                    </p>
+                </div>
+                
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; margin-top: 20px;">
+                    <a href="login.html" class="btn" style="margin: 10px;">
+                        ← Повернутися до входу
+                    </a>
+                    
+                    <button class="btn" onclick="openTelegramBot()" style="background: #0088cc; margin: 10px;">
+                        📱 Відкрити Telegram бота
+                    </button>
+                    
+                    <button class="btn" onclick="manualAuth()" style="background: #F59E0B; margin: 10px;">
+                        🔑 Ручний вхід (для адміністраторів)
+                    </button>
+                </div>
+            `;
+        }
+        
+        async function processAuth() {
+            debugLog('🔍 Починаємо авторизацію...', 'info');
+            
+            setTimeout(() => {
+                document.getElementById('debugPanel').style.display = 'block';
+            }, 3000);
+            
+            // Пробуем получить данные из URL или Telegram Web App
+            const userData = getTelegramDataFromUrl();
+            debugLog(`📱 Дані з URL/Web App: ${userData ? '✅ отримано' : '❌ не отримано'}`, userData ? 'success' : 'warning');
+            
+            if (userData?.id) {
+                debugLog(`✅ Дані користувача: ${userData.first_name} (ID: ${userData.id})`, 'success');
+                await processUserData(userData);
+                return;
             }
             
-            return null;
+            // Если данных нет, показываем инструкцию
+            debugLog('ℹ️ Дані не отримано, показуємо інструкцію', 'info');
+            redirectToProperLogin();
         }
-        
-        // Парсимо hash
-        const params = new URLSearchParams(hash);
-        const id = params.get('id');
-        const first_name = params.get('first_name');
-        const username = params.get('username');
-        
-        if (!id) {
-            debugLog('❌ ID не знайдено в hash', 'error');
-            return null;
-        }
-        
-        return {
-            id: id,
-            first_name: first_name || 'Користувач',
-            username: username || '',
-            auth_date: params.get('auth_date'),
-            hash: params.get('hash')
-        };
-        
-    } catch (e) {
-        debugLog(`❌ Помилка парсингу URL: ${e.message}`, 'error');
-        return null;
-    }
-}
         
         async function processUserData(userData) {
             debugLog(`👤 Обробка даних користувача: ${userData.first_name} (ID: ${userData.id})`, 'info');
@@ -623,12 +665,22 @@
             document.getElementById('content').innerHTML = `
                 <h2 class="error">😕 Помилка авторизації</h2>
                 <p style="margin-bottom: 20px;">${message}</p>
-                <a href="login.html" class="btn">← Повернутися до входу</a>
-                <button class="btn" onclick="testBotConnection()" style="background: #F59E0B; margin-left: 10px;">
-                    🛠️ Тестувати бота
-                </button>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+                    <a href="login.html" class="btn">← Повернутися до входу</a>
+                    <button class="btn" onclick="testBotConnection()" style="background: #F59E0B; margin-left: 10px;">
+                        🛠️ Тестувати бота
+                    </button>
+                    <button class="btn" onclick="openTelegramBot()" style="background: #0088cc; margin-left: 10px;">
+                        📱 Відкрити Telegram бота
+                    </button>
+                </div>
             `;
         }
+        
+        // Функція для відкриття Telegram бота
+        window.openTelegramBot = function() {
+            window.open('https://t.me/UGgtavBot', '_blank');
+        };
         
         // Ручная авторизация
         window.manualAuth = function() {
