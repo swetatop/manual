@@ -1,4 +1,4 @@
-// firebase-app.js - МОДУЛЬ для Firebase v12+
+// firebase-app.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
@@ -11,7 +11,6 @@ const firebaseConfig = {
     appId: "1:28969074318:web:ad85a4163a0d811de4d3df"
 };
 
-// Инициализируем и экспортируем
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
