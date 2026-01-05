@@ -990,7 +990,7 @@
                             <div><i class="fas fa-shield-alt"></i> Роль: <span id="userRole">...</span></div>
                         </div>
                     </div>
-                    <button class="link-button" id="tgManageBtn" style="padding: 10px 20px; font-size: 0.95rem;">
+                    <button class="link-button" id="tgManageBtn" style="padding: 10px 20px; font-size: 0.95rem;" onclick="window.open('bot-handler.html', '_blank')">
                         <i class="fas fa-cog"></i> Управління
                     </button>
                 </div>
@@ -1391,7 +1391,7 @@
     </footer>
 
     <!-- Кнопка управления Telegram (для админов) -->
-    <button class="tg-control-btn" id="tgControlBtn">
+    <button class="tg-control-btn" id="tgControlBtn" onclick="window.open('bot-handler.html', '_blank')">
         <i class="fab fa-telegram"></i> Telegram Управління
     </button>
 
@@ -1414,10 +1414,52 @@
 
     <!-- Основной скрипт приложения -->
     <script type="module">
-        import { checkAuth, clearAuthData } from './check-auth.js';
+        import { db } from './firebase-app.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        
+        // Проверка авторизации
+        async function checkAuth() {
+            const userId = sessionStorage.getItem('user_id');
+            const userName = sessionStorage.getItem('user_name');
+            
+            if (!userId || !userName) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            
+            try {
+                const userDoc = await getDoc(doc(db, "users", userId));
+                
+                if (!userDoc.exists()) {
+                    clearAuthData();
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                const userData = userDoc.data();
+                
+                if (userData.status !== 'approved' && !userData.isAdmin) {
+                    clearAuthData();
+                    window.location.href = 'login.html';
+                    return null;
+                }
+                
+                return userData;
+                
+            } catch (error) {
+                console.error('Помилка перевірки авторизації:', error);
+                return null;
+            }
+        }
+        
+        // Очистка данных авторизации
+        function clearAuthData() {
+            sessionStorage.clear();
+            localStorage.clear();
+        }
         
         // Функция для обновления информации о пользователе
-        window.updateUserInfo = function(userData) {
+        function updateUserInfo(userData) {
             console.log('🔄 Обновление информации пользователя:', userData);
             
             // Обновляем приветствие
@@ -1456,29 +1498,20 @@
             
             // Показываем кнопку управления для админов
             const tgControlBtn = document.getElementById('tgControlBtn');
-            const tgManageBtn = document.getElementById('tgManageBtn');
             
             if (userData.isAdmin) {
                 if (tgControlBtn) tgControlBtn.style.display = 'flex';
-                if (tgManageBtn) tgManageBtn.style.display = 'inline-block';
             }
             
             // Обновляем заголовок
             document.title = `Посібник модератора | ${userData.first_name}`;
-        };
+        }
         
         // Функция для выхода
-        window.performLogout = function() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                clearAuthData();
-                window.location.href = 'login.html';
-            }
-        };
-        
-        // Функция для открытия панели управления
-        window.openBotHandler = function() {
-            window.open('bot-handler.html', '_blank');
-        };
+        function performLogout() {
+            clearAuthData();
+            window.location.href = 'login.html';
+        }
         
         // Функция переключения страниц
         window.showPage = function(pageId) {
@@ -1528,8 +1561,6 @@
             const logoutModal = document.getElementById('logoutModal');
             const confirmLogout = document.getElementById('confirmLogout');
             const cancelLogout = document.getElementById('cancelLogout');
-            const tgControlBtn = document.getElementById('tgControlBtn');
-            const tgManageBtn = document.getElementById('tgManageBtn');
             const statsBtn = document.getElementById('statsBtn');
             const cabinetBtn = document.getElementById('cabinetBtn');
             
@@ -1559,27 +1590,11 @@
                 });
             }
             
-            // Управление Telegram
-            if (tgControlBtn) {
-                tgControlBtn.addEventListener('click', openBotHandler);
-            }
-            if (tgManageBtn) {
-                tgManageBtn.addEventListener('click', openBotHandler);
-            }
-            
             // Статистика (заглушка)
             if (statsBtn) {
                 statsBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     alert('📊 Система статистики знаходиться в розробці. Скоро буде доступна!');
-                });
-            }
-            
-            // Кабинет
-            if (cabinetBtn) {
-                cabinetBtn.addEventListener('click', function(e) {
-                    // Ссылка уже есть в href
-                    console.log('Переход к кабинету онлайн-смен');
                 });
             }
             
