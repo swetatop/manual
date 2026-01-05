@@ -39,6 +39,11 @@
             margin: 10px;
             text-decoration: none;
             display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: #0077b5;
+            transform: translateY(-2px);
         }
         .user-info {
             background: rgba(0, 136, 204, 0.1);
@@ -50,6 +55,37 @@
         .success { color: #10B981; }
         .warning { color: #F59E0B; }
         .error { color: #EF4444; }
+        .debug-panel {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #F59E0B;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .pulse-dots {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #0088cc;
+            border-radius: 50%;
+            margin: 0 5px;
+            animation: pulse 1s infinite;
+        }
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
     </style>
 </head>
 <body>
@@ -59,32 +95,62 @@
             <div class="spinner"></div>
             <h3>Обробка авторизації...</h3>
         </div>
+        
+        <div id="debugPanel" class="debug-panel" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong style="color: #F59E0B;">🛠️ Панель відладки</strong>
+                <button onclick="toggleDebug()" style="background: none; border: none; color: #94A3B8; cursor: pointer; font-size: 12px;">
+                    Закрити
+                </button>
+            </div>
+            <div id="debugLog"></div>
+        </div>
     </div>
 
     <script type="module">
         import { db, ADMIN_ID } from './firebase-app.js';
-        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { doc, getDoc, setDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
         const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
         const SITE_URL = "https://swetatop.github.io/manual/";
         
+        // Логирование в панель отладки
+        function debugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('uk-UA');
+            const colors = { info: '#94A3B8', success: '#10B981', error: '#EF4444', warning: '#F59E0B' };
+            const logDiv = document.getElementById('debugLog');
+            
+            if (logDiv) {
+                logDiv.innerHTML += `<div style="color: ${colors[type]}; margin-bottom: 5px;">[${timestamp}] ${message}</div>`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+        
         async function processAuth() {
-            console.log('🔍 Починаємо авторизацію...');
+            debugLog('🔍 Починаємо авторизацію...', 'info');
+            
+            setTimeout(() => {
+                document.getElementById('debugPanel').style.display = 'block';
+            }, 3000);
             
             // Пробуем получить данные из URL
             const userData = getTelegramDataFromUrl();
-            console.log('📱 Дані з URL:', userData);
+            debugLog(`📱 Дані з URL: ${userData ? '✅ отримано' : '❌ не отримано'}`, userData ? 'success' : 'warning');
             
             if (userData?.id) {
-                console.log('✅ Дані отримано з URL');
+                debugLog(`✅ Дані користувача: ${userData.first_name} (ID: ${userData.id})`, 'success');
                 await processUserData(userData);
                 return;
             }
             
-            // Если данные не получены
             showError('Не вдалося отримати дані з Telegram. Спробуйте ще раз.');
             
-            // Добавляем кнопку для ручного ввода
             setTimeout(() => {
                 document.getElementById('content').innerHTML += `
                     <div style="margin-top: 20px;">
@@ -97,16 +163,21 @@
             }, 2000);
         }
         
-        // Получение данных из URL
         function getTelegramDataFromUrl() {
             try {
                 const hash = window.location.hash.substring(1);
+                debugLog(`Hash отримано: ${hash ? '✅ ' + hash.substring(0, 50) + '...' : '❌ порожній'}`, hash ? 'success' : 'warning');
+                
                 if (!hash) return null;
                 
                 const params = new URLSearchParams(hash);
                 const id = params.get('id');
                 const first_name = params.get('first_name');
                 const username = params.get('username');
+                
+                debugLog(`ID: ${id || '❌ немає'}`, id ? 'success' : 'error');
+                debugLog(`Ім'я: ${first_name || '❌ немає'}`, first_name ? 'success' : 'error');
+                debugLog(`Username: ${username || '❌ немає'}`, username ? 'success' : 'warning');
                 
                 if (!id) return null;
                 
@@ -118,64 +189,69 @@
                     hash: params.get('hash')
                 };
             } catch (e) {
-                console.error('Помилка парсингу URL:', e);
+                debugLog(`❌ Помилка парсингу URL: ${e.message}`, 'error');
                 return null;
             }
         }
         
-        // Обработка данных пользователя
         async function processUserData(userData) {
-            console.log('👤 Обробка даних користувача:', userData);
+            debugLog(`👤 Обробка даних користувача: ${userData.first_name} (ID: ${userData.id})`, 'info');
             
             // Если админ - сразу доступ
             if (userData.id === ADMIN_ID.toString()) {
+                debugLog('👑 Виявлено адміністратора, надаємо доступ', 'success');
                 await saveUser(userData, true);
                 grantAccess(userData, true);
                 return;
             }
             
-            // Проверяем в Firebase
             await checkUserAccess(userData);
         }
         
         async function checkUserAccess(userData) {
             try {
+                debugLog(`🔍 Перевіряємо доступ користувача ${userData.id} в Firebase...`, 'info');
                 const userDoc = await getDoc(doc(db, "users", userData.id));
                 
                 if (userDoc.exists()) {
                     const data = userDoc.data();
+                    debugLog(`📋 Користувача знайдено, статус: ${data.status || 'невідомий'}`, 'info');
                     
                     if (data.status === 'approved') {
+                        debugLog('✅ Доступ підтверджено', 'success');
                         grantAccess(userData, data.isAdmin || false);
                         return;
                     }
                     
                     if (data.status === 'pending') {
+                        debugLog('⏳ Очікує підтвердження...', 'warning');
                         showWaiting(userData);
                         listenForApproval(userData.id);
                         return;
                     }
                     
                     if (data.status === 'rejected') {
+                        debugLog('❌ Доступ відхилено адміністратором', 'error');
                         showError('Доступ відхилено адміністратором');
                         return;
                     }
                 }
                 
-                // Новый пользователь
+                debugLog('🆕 Новий користувач, створюємо запис...', 'info');
                 await saveUser(userData, false);
                 await sendRequestToAdmin(userData);
                 showWaiting(userData);
                 listenForApproval(userData.id);
                 
             } catch (error) {
-                console.error('Помилка перевірки доступу:', error);
+                debugLog(`❌ Помилка перевірки доступу: ${error.message}`, 'error');
                 showError('Помилка перевірки доступу. Спробуйте пізніше.');
             }
         }
         
         async function saveUser(userData, isAdmin) {
             try {
+                debugLog(`💾 Зберігаємо користувача ${userData.id}...`, 'info');
                 await setDoc(doc(db, "users", userData.id), {
                     telegram_id: userData.id,
                     first_name: userData.first_name,
@@ -185,15 +261,38 @@
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 });
-                console.log('✅ Користувача збережено:', userData.id);
+                debugLog(`✅ Користувача збережено: ${userData.id}`, 'success');
             } catch (error) {
-                console.error('❌ Помилка збереження користувача:', error);
+                debugLog(`❌ Помилка збереження користувача: ${error.message}`, 'error');
             }
         }
         
         async function sendRequestToAdmin(userData) {
-            // Отображаем username через @
+            debugLog('📤 Надсилаємо запит адміну...', 'info');
+            
+            try {
+                // Сохраняем запрос в Firebase
+                await saveAccessRequestToFirebase(userData);
+                
+                // Пробуем отправить через Telegram API
+                const telegramSuccess = await trySendTelegramMessage(userData);
+                
+                if (!telegramSuccess) {
+                    showAlternativeNotification(userData);
+                }
+                
+                return true;
+                
+            } catch (error) {
+                debugLog(`❌ Помилка відправки запиту адміну: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function trySendTelegramMessage(userData) {
             const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
+            const approveUrl = `${SITE_URL}bot-handler.html?action=approve&user_id=${userData.id}`;
+            const rejectUrl = `${SITE_URL}bot-handler.html?action=reject&user_id=${userData.id}`;
             
             const message = `🔔 *НОВИЙ ЗАПИТ ДОСТУПУ*
 
@@ -204,13 +303,7 @@
 *Надати доступ до адмін-панелі Ukraine GTA 5?*`;
             
             try {
-                // Используем правильные ссылки
-                const approveUrl = `${SITE_URL}bot-handler.html?action=approve&user_id=${userData.id}`;
-                const rejectUrl = `${SITE_URL}bot-handler.html?action=reject&user_id=${userData.id}`;
-                
-                console.log('📤 Відправляємо запит адміну...');
-                console.log('   Approve URL:', approveUrl);
-                console.log('   Reject URL:', rejectUrl);
+                debugLog('🔄 Спроба надіслати повідомлення через Telegram API...', 'info');
                 
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -228,59 +321,158 @@
                     })
                 });
                 
-                if (response.ok) {
-                    console.log('✅ Запит успішно відправлено адміну');
+                const result = await response.json();
+                
+                if (result.ok) {
+                    debugLog('✅ Повідомлення успішно відправлено адміну', 'success');
                     return true;
                 } else {
-                    const errorText = await response.text();
-                    console.error('❌ Помилка відправки запиту:', errorText);
+                    debugLog(`❌ Помилка Telegram API: ${result.description}`, 'error');
+                    
+                    // Пробуем отправить простое сообщение без форматирования
+                    const simpleResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: ADMIN_ID,
+                            text: `🔔 Новий запит доступу від ${userData.first_name} (ID: ${userData.id})\n\nПідтвердити: ${approveUrl}\nВідхилити: ${rejectUrl}`
+                        })
+                    });
+                    
+                    const simpleResult = await simpleResponse.json();
+                    if (simpleResult.ok) {
+                        debugLog('✅ Просте повідомлення відправлено', 'success');
+                        return true;
+                    }
+                    
                     return false;
                 }
                 
             } catch (error) {
-                console.error('❌ Помилка відправки запиту адміну:', error);
+                debugLog(`❌ Помилка з'єднання з Telegram API: ${error.message}`, 'error');
                 return false;
             }
         }
         
+        async function saveAccessRequestToFirebase(userData) {
+            try {
+                debugLog('💾 Зберігаємо запит доступу в Firebase...', 'info');
+                
+                // Сохраняем запрос в отдельной коллекции
+                await setDoc(doc(db, "access_requests", userData.id), {
+                    telegram_id: userData.id,
+                    first_name: userData.first_name,
+                    username: userData.username || '',
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+                
+                debugLog('✅ Запит доступу збережено в Firebase', 'success');
+                
+            } catch (error) {
+                debugLog(`❌ Помилка збереження запиту: ${error.message}`, 'error');
+            }
+        }
+        
+        function showAlternativeNotification(userData) {
+            setTimeout(() => {
+                document.getElementById('content').innerHTML += `
+                    <div style="margin-top: 15px; background: rgba(245, 158, 11, 0.1); border-left: 3px solid #F59E0B; padding: 15px; border-radius: 8px;">
+                        <p style="color: #F59E0B; margin-bottom: 10px;">
+                            <strong>⚠️ Увага!</strong> Не вдалося надіслати запит через Telegram.
+                        </p>
+                        <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 10px;">
+                            Адмін може підтвердити доступ вручну через панель управління.
+                        </p>
+                        <div style="background: rgba(0, 0, 0, 0.2); padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px; margin-bottom: 10px;">
+                            <strong>ID користувача:</strong> ${userData.id}<br>
+                            <strong>Ім'я:</strong> ${userData.first_name}<br>
+                            <strong>Telegram:</strong> ${userData.username ? '@' + userData.username : 'немає'}
+                        </div>
+                        <button class="btn" onclick="copyUserData('${userData.id}', '${userData.first_name}', '${userData.username || ''}')" style="background: #F59E0B;">
+                            📋 Копіювати дані
+                        </button>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
         function showWaiting(userData) {
-            // Отображаем username через @
             const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
             
             document.getElementById('content').innerHTML = `
                 <h2 class="warning">⏳ Очікуйте підтвердження</h2>
+                <p style="color: #94A3B8; margin-bottom: 20px;">Запит відправлено адміністратору</p>
+                
                 <div class="user-info">
-                    <p><strong>Користувач:</strong> ${userData.first_name} (${usernameDisplay})</p>
-                    <p><strong>ID:</strong> ${userData.id}</p>
-                    <p><strong>Статус:</strong> Очікує підтвердження...</p>
+                    <p><strong>👤 Користувач:</strong> ${userData.first_name} (${usernameDisplay})</p>
+                    <p><strong>🆔 ID:</strong> ${userData.id}</p>
+                    <p><strong>📊 Статус:</strong> <span id="statusText">Очікує підтвердження...</span></p>
                 </div>
+                
                 <div class="spinner"></div>
-                <p style="color: #94A3B8; margin-top: 20px;">
-                    Адмін отримав повідомлення в Telegram<br>
+                
+                <div class="pulse-dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+                
+                <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 10px;">
+                    Адмін отримав повідомлення в Telegram бот<br>
                     Після підтвердження ви автоматично отримаєте доступ
                 </p>
-                <p style="color: #EF4444; font-size: 0.9rem; margin-top: 10px;">
+                
+                <p style="color: #F59E0B; font-size: 0.9rem; margin-bottom: 20px;">
                     ⚠️ Не закривайте цю сторінку!
                 </p>
-                <button class="btn" onclick="checkStatus('${userData.id}')" style="margin-top: 20px;">
-                    🔄 Перевірити статус
-                </button>
-                <button class="btn" onclick="forceAccess('${userData.id}')" style="margin-top: 10px; background: #F59E0B;">
-                    🚀 Примусово увійти
+                
+                <div style="margin-top: 20px;">
+                    <button class="btn" onclick="checkStatus('${userData.id}')">
+                        🔄 Перевірити статус
+                    </button>
+                    <button class="btn" onclick="forceAccess('${userData.id}')" style="background: #F59E0B; margin-left: 10px;">
+                        🚀 Примусово увійти (тест)
+                    </button>
+                </div>
+                
+                <button class="btn" onclick="openBotHandler()" style="background: #10B981; margin-top: 10px;">
+                    📱 Відкрити панель управління
                 </button>
             `;
+            
+            updateStatusText();
+        }
+        
+        function updateStatusText() {
+            const statusElement = document.getElementById('statusText');
+            if (!statusElement) return;
+            
+            const texts = [
+                "Очікує підтвердження...",
+                "Перевіряємо статус...",
+                "Очікуємо рішення адміна...",
+                "Запит обробляється..."
+            ];
+            
+            let index = 0;
+            setInterval(() => {
+                statusElement.textContent = texts[index];
+                index = (index + 1) % texts.length;
+            }, 3000);
         }
         
         function listenForApproval(userId) {
-            console.log('👂 Слухаємо зміни для користувача:', userId);
+            debugLog(`👂 Слухаємо зміни статусу для користувача ${userId}`, 'info');
             
             const unsubscribe = onSnapshot(doc(db, "users", userId), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
-                    console.log('📝 Отримано оновлення статусу:', data.status);
+                    debugLog(`📝 Отримано оновлення статусу: ${data.status}`, 'info');
                     
                     if (data.status === 'approved') {
-                        console.log('✅ Статус: approved - надаємо доступ');
+                        debugLog('✅ Статус: approved - надаємо доступ', 'success');
                         unsubscribe();
                         grantAccess({
                             id: userId,
@@ -288,24 +480,22 @@
                             username: data.username
                         }, data.isAdmin || false);
                     } else if (data.status === 'rejected') {
-                        console.log('❌ Статус: rejected - доступ відхилено');
+                        debugLog('❌ Статус: rejected - доступ відхилено', 'error');
                         unsubscribe();
                         showError('Доступ відхилено адміністратором');
                     }
                 }
             }, (error) => {
-                console.error('❌ Помилка слухача Firebase:', error);
-                // При ошибке Firebase пробуем проверять вручную
+                debugLog(`❌ Помилка слухача Firebase: ${error.message}`, 'error');
                 setTimeout(() => checkStatusManually(userId), 3000);
             });
             
-            // Также добавляем интервалную проверку на всякий случай
             const intervalId = setInterval(async () => {
                 try {
                     const docSnap = await getDoc(doc(db, "users", userId));
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        console.log('🔄 Інтервальна перевірка статусу:', data.status);
+                        debugLog(`🔄 Інтервальна перевірка статусу: ${data.status}`, 'info');
                         
                         if (data.status === 'approved') {
                             clearInterval(intervalId);
@@ -320,7 +510,7 @@
                         }
                     }
                 } catch (error) {
-                    console.error('Помилка інтервальної перевірки:', error);
+                    debugLog(`Помилка інтервальної перевірки: ${error.message}`, 'error');
                 }
             }, 5000);
         }
@@ -330,12 +520,12 @@
                 const docSnap = await getDoc(doc(db, "users", userId));
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    alert(`Статус: ${data.status || 'не визначено'}\n\nКористувач: ${data.first_name || 'немає'}\nTelegram: ${data.username ? '@' + data.username : 'немає'}`);
+                    alert(`📊 Статус: ${data.status || 'не визначено'}\n\n👤 Користувач: ${data.first_name || 'немає'}\n📱 Telegram: ${data.username ? '@' + data.username : 'немає'}`);
                 } else {
-                    alert('Користувача не знайдено в базі даних');
+                    alert('❌ Користувача не знайдено в базі даних');
                 }
             } catch (error) {
-                alert('Помилка перевірки статусу');
+                alert('⚠️ Помилка перевірки статусу');
             }
         }
         
@@ -353,20 +543,18 @@
                     }
                 }
             } catch (error) {
-                console.error('Помилка ручної перевірки:', error);
+                debugLog(`Помилка ручної перевірки: ${error.message}`, 'error');
             }
         }
         
         function grantAccess(userData, isAdmin) {
-            console.log('🎉 Надаємо доступ користувачу:', userData);
+            debugLog(`🎉 Надаємо доступ користувачу: ${userData.first_name} (ID: ${userData.id})`, 'success');
             
-            // Сохраняем в sessionStorage
             sessionStorage.setItem('user_id', userData.id);
             sessionStorage.setItem('user_name', userData.first_name);
             sessionStorage.setItem('user_username', userData.username || '');
             sessionStorage.setItem('is_admin', isAdmin ? 'true' : 'false');
             
-            // Сохраняем в localStorage для проверки auth
             localStorage.setItem('authToken', Date.now().toString());
             localStorage.setItem('userData', JSON.stringify(userData));
             localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
@@ -374,8 +562,9 @@
             
             document.getElementById('content').innerHTML = `
                 <h2 class="success">✅ Доступ надано!</h2>
-                <p>Перенаправляємо до адмін-панелі...</p>
+                <p style="color: #94A3B8; margin-bottom: 20px;">Вітаємо, ${userData.first_name}! Ви успішно авторизувались.</p>
                 <div class="spinner"></div>
+                <p style="color: #94A3B8; margin-top: 20px;">Перенаправляємо до адмін-панелі...</p>
             `;
             
             setTimeout(() => {
@@ -384,10 +573,15 @@
         }
         
         function showError(message) {
+            debugLog(`❌ Помилка: ${message}`, 'error');
+            
             document.getElementById('content').innerHTML = `
                 <h2 class="error">😕 Помилка авторизації</h2>
-                <p>${message}</p>
+                <p style="margin-bottom: 20px;">${message}</p>
                 <a href="login.html" class="btn">← Повернутися до входу</a>
+                <button class="btn" onclick="testBotConnection()" style="background: #F59E0B; margin-left: 10px;">
+                    🛠️ Тестувати бота
+                </button>
             `;
         }
         
@@ -406,7 +600,6 @@
             }
         };
         
-        // Принудительный вход (для тестирования)
         window.forceAccess = function(userId) {
             if (confirm('Примусово увійти? Це тільки для тестування!')) {
                 grantAccess({
@@ -417,10 +610,39 @@
             }
         };
         
+        window.openBotHandler = function() {
+            window.open('bot-handler.html', '_blank');
+        };
+        
+        window.testBotConnection = async function() {
+            debugLog('🛠️ Тестуємо підключення до бота...', 'info');
+            
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
+                const data = await response.json();
+                
+                if (data.ok) {
+                    alert(`✅ Бот працює!\n\nНазва: ${data.result.first_name}\nUsername: @${data.result.username}`);
+                } else {
+                    alert(`❌ Помилка бота: ${data.description}`);
+                }
+            } catch (error) {
+                alert(`❌ Помилка підключення: ${error.message}`);
+            }
+        };
+        
+        window.copyUserData = function(id, name, username) {
+            const text = `ID: ${id}\nІм'я: ${name}\nTelegram: ${username ? '@' + username : 'немає'}`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Дані скопійовано!');
+            });
+        };
+        
         window.checkStatus = checkStatus;
         
-        // Запускаем авторизацию при загрузке
         document.addEventListener('DOMContentLoaded', processAuth);
     </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
