@@ -42,16 +42,7 @@
             display: inline-block;
             transition: all 0.3s ease;
         }
-        .btn:hover {
-            background: #0077b5;
-            transform: translateY(-2px);
-        }
-        .btn-success { background: #10B981; }
-        .btn-success:hover { background: #059669; }
-        .btn-warning { background: #F59E0B; }
-        .btn-warning:hover { background: #D97706; }
-        .btn-dark { background: #2D3748; }
-        .btn-dark:hover { background: #1E293B; }
+        .btn:hover { background: #0077b5; transform: translateY(-2px); }
         .user-info {
             background: rgba(0, 136, 204, 0.1);
             padding: 15px;
@@ -62,18 +53,6 @@
         .success { color: #10B981; }
         .warning { color: #F59E0B; }
         .error { color: #EF4444; }
-        .debug-panel {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px solid #F59E0B;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 20px 0;
-            text-align: left;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
     </style>
 </head>
 <body>
@@ -83,66 +62,15 @@
             <div class="spinner"></div>
             <h3>Обробка авторизації...</h3>
         </div>
-        
-        <div id="debugPanel" class="debug-panel" style="display: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <strong style="color: #F59E0B;">🛠️ Панель відладки</strong>
-                <button onclick="toggleDebug()" style="background: none; border: none; color: #94A3B8; cursor: pointer; font-size: 12px;">
-                    Закрити
-                </button>
-            </div>
-            <div id="debugLog"></div>
-        </div>
     </div>
 
     <script type="module">
         import { db, ADMIN_ID } from './firebase-app.js';
-        import { doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
         const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
-        const SITE_URL = "https://swetatop.github.io/manual/";
         
-        // Режимы работы
-        const TEST_MODE = true; // true = тестовый режим, false = нормальный режим
-        const TEST_USER_ID = "123456789"; // ID для теста
-        
-        // Логирование
-        function debugLog(message, type = 'info') {
-            const timestamp = new Date().toLocaleTimeString('uk-UA');
-            const colors = { info: '#94A3B8', success: '#10B981', error: '#EF4444', warning: '#F59E0B' };
-            const logDiv = document.getElementById('debugLog');
-            
-            if (logDiv) {
-                logDiv.innerHTML += `<div style="color: ${colors[type]}; margin-bottom: 5px;">[${timestamp}] ${message}</div>`;
-                logDiv.scrollTop = logDiv.scrollHeight;
-            }
-            console.log(`[${type.toUpperCase()}] ${message}`);
-        }
-        
-        function toggleDebug() {
-            const panel = document.getElementById('debugPanel');
-            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        // Главная функция
         async function processAuth() {
-            debugLog('🔍 Починаємо авторизацію...', 'info');
-            
-            setTimeout(() => {
-                document.getElementById('debugPanel').style.display = 'block';
-            }, 1000);
-            
-            // Автоматически тестируем бота
-            await testBotConnectionSilent();
-            
-            // ТЕСТОВЫЙ РЕЖИМ
-            if (TEST_MODE) {
-                debugLog('🛠️ ТЕСТОВИЙ РЕЖИМ УВІМКНЕНО', 'warning');
-                showTestInterface();
-                return;
-            }
-            
-            // НОРМАЛЬНЫЙ РЕЖИМ
             const userData = getTelegramData();
             
             if (!userData?.id) {
@@ -150,177 +78,18 @@
                 return;
             }
             
-            await processUserData(userData);
+            console.log('📱 Дані користувача:', userData);
+            
+            // Админ - сразу доступ
+            if (userData.id === ADMIN_ID.toString()) {
+                await saveUser(userData, true);
+                grantAccess(userData, true);
+                return;
+            }
+            
+            await checkUserAccess(userData);
         }
         
-        // Тестовый интерфейс
-        function showTestInterface() {
-            document.getElementById('content').innerHTML = `
-                <h2>🛠️ ТЕСТОВИЙ РЕЖИМ</h2>
-                <p style="color: #94A3B8; margin-bottom: 20px;">
-                    Тестування системи авторизації
-                </p>
-                
-                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
-                    <button onclick="testSendButtons()" class="btn btn-success">
-                        📤 Тест: Надіслати кнопки в Telegram
-                    </button>
-                    
-                    <button onclick="testUserRegistration()" class="btn">
-                        👤 Тест: Реєстрація користувача
-                    </button>
-                    
-                    <button onclick="testBotConnection()" class="btn btn-warning">
-                        🤖 Тест: Перевірити бота
-                    </button>
-                    
-                    <button onclick="window.location.href='login.html'" class="btn btn-dark">
-                        ← До входу
-                    </button>
-                </div>
-                
-                <div style="color: #94A3B8; font-size: 0.9rem; margin-top: 20px;">
-                    <p>Тестові дані:</p>
-                    <p>ID: <strong>123456789</strong></p>
-                    <p>Ім'я: <strong>Тестовий Користувач</strong></p>
-                    <p>Telegram: <strong>@test_user</strong></p>
-                </div>
-            `;
-        }
-        
-        // Тест отправки кнопок
-        window.testSendButtons = async function() {
-            debugLog('🔄 Тестуємо відправку кнопок...', 'info');
-            
-            const userData = {
-                id: TEST_USER_ID,
-                first_name: "Тестовий Користувач",
-                username: "test_user"
-            };
-            
-            const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
-            
-            const message = `🔔 ТЕСТОВИЙ ЗАПИТ ДОСТУПУ
-
-👤 Користувач: ${userData.first_name}
-📱 Telegram: ${usernameDisplay}
-🆔 ID: ${userData.id}
-⏰ Час: ${new Date().toLocaleTimeString('uk-UA')}
-
-Це тестове повідомлення з кнопками!`;
-            
-            try {
-                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: ADMIN_ID,
-                        text: message,
-                        // БЕЗ parse_mode - обычный текст
-                        reply_markup: {
-                            inline_keyboard: [[
-                                { 
-                                    text: "✅ ТЕСТ: ДАТИ ДОСТУП", 
-                                    callback_data: `approve_${userData.id}`
-                                },
-                                { 
-                                    text: "❌ ТЕСТ: ВІДМОВИТИ", 
-                                    callback_data: `reject_${userData.id}`
-                                }
-                            ]]
-                        }
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.ok) {
-                    debugLog('✅ Тестове повідомлення з кнопками відправлено!', 'success');
-                    debugLog(`📝 Message ID: ${result.result.message_id}`, 'info');
-                    showMessage('✅ Кнопки відправлено! Перевір свого Telegram бота!', 'success');
-                } else {
-                    debugLog(`❌ Помилка Telegram: ${result.description}`, 'error');
-                    showMessage(`❌ Помилка: ${result.description}`, 'error');
-                }
-                
-            } catch (error) {
-                debugLog(`❌ Помилка відправки: ${error.message}`, 'error');
-                showMessage(`❌ Помилка: ${error.message}`, 'error');
-            }
-        };
-        
-        // Тест регистрации пользователя
-        window.testUserRegistration = async function() {
-            debugLog('👤 Тестуємо реєстрацію користувача...', 'info');
-            
-            const userData = {
-                id: TEST_USER_ID,
-                first_name: "Тестовий Користувач",
-                username: "test_user",
-                isAdmin: false
-            };
-            
-            try {
-                // Сохраняем в Firebase
-                await setDoc(doc(db, "users", userData.id), {
-                    telegram_id: userData.id,
-                    first_name: userData.first_name,
-                    username: userData.username,
-                    status: 'pending',
-                    isAdmin: false,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                });
-                
-                debugLog('✅ Тестового користувача збережено в Firebase', 'success');
-                
-                // Отправляем кнопки
-                await sendTelegramRequestWithButtons(userData);
-                
-                // Показываем ожидание
-                showWaiting(userData);
-                
-            } catch (error) {
-                debugLog(`❌ Помилка реєстрації: ${error.message}`, 'error');
-                showMessage(`❌ Помилка: ${error.message}`, 'error');
-            }
-        };
-        
-        // Тест подключения бота
-        window.testBotConnection = async function() {
-            try {
-                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
-                const data = await response.json();
-                
-                if (data.ok) {
-                    const message = `✅ Бот працює!\n\nНазва: ${data.result.first_name}\nUsername: @${data.result.username}\nID: ${data.result.id}`;
-                    debugLog(message, 'success');
-                    alert(message);
-                } else {
-                    alert(`❌ Помилка бота: ${data.description}`);
-                }
-            } catch (error) {
-                alert(`❌ Помилка підключення: ${error.message}`);
-            }
-        };
-        
-        // Тихий тест бота
-        async function testBotConnectionSilent() {
-            try {
-                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getMe`);
-                const data = await response.json();
-                
-                if (data.ok) {
-                    debugLog(`✅ Бот працює: @${data.result.username}`, 'success');
-                } else {
-                    debugLog(`❌ Помилка бота: ${data.description}`, 'error');
-                }
-            } catch (error) {
-                debugLog(`❌ Помилка підключення до бота: ${error.message}`, 'error');
-            }
-        }
-        
-        // Оригинальные функции
         function getTelegramData() {
             try {
                 // Telegram Web App
@@ -349,22 +118,9 @@
                 };
                 
             } catch (e) {
-                debugLog(`❌ Помилка отримання даних: ${e.message}`, 'error');
+                console.error('Помилка отримання даних:', e);
                 return null;
             }
-        }
-        
-        async function processUserData(userData) {
-            debugLog(`👤 Обробка користувача: ${userData.first_name}`, 'info');
-            
-            // Админ
-            if (userData.id === ADMIN_ID.toString()) {
-                await saveUser(userData, true);
-                grantAccess(userData, true);
-                return;
-            }
-            
-            await checkUserAccess(userData);
         }
         
         async function checkUserAccess(userData) {
@@ -393,17 +149,17 @@
                 
                 // Новый пользователь
                 await saveUser(userData, false);
-                await sendTelegramRequestWithButtons(userData);
+                await sendTelegramRequest(userData);
                 showWaiting(userData);
                 listenForApproval(userData.id);
                 
             } catch (error) {
-                debugLog(`❌ Помилка: ${error.message}`, 'error');
+                console.error('Помилка:', error);
                 showError('Помилка перевірки доступу');
             }
         }
         
-        async function sendTelegramRequestWithButtons(userData) {
+        async function sendTelegramRequest(userData) {
             const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
             
             const message = `🔔 НОВИЙ ЗАПИТ ДОСТУПУ
@@ -415,8 +171,6 @@
 
 Надати доступ до адмін-панелі Ukraine GTA 5?`;
             
-            debugLog('📤 Надсилаємо запит адміну з кнопками...', 'info');
-            
             try {
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
@@ -424,7 +178,6 @@
                     body: JSON.stringify({
                         chat_id: ADMIN_ID,
                         text: message,
-                        // УБРАЛ parse_mode - обычный текст
                         reply_markup: {
                             inline_keyboard: [[
                                 { 
@@ -442,31 +195,20 @@
                 
                 const result = await response.json();
                 
-                if (result.ok) {
-                    debugLog('✅ Повідомлення з кнопками відправлено!', 'success');
-                } else {
-                    debugLog(`❌ Помилка: ${result.description}`, 'error');
-                    // Запасной вариант без кнопок
-                    await sendSimpleTelegramMessage(userData);
+                if (!result.ok) {
+                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: ADMIN_ID,
+                            text: `🔔 НОВИЙ ЗАПИТ: ${userData.first_name} (ID: ${userData.id})`
+                        })
+                    });
                 }
                 
             } catch (error) {
-                debugLog(`❌ Помилка відправки: ${error.message}`, 'error');
-                await sendSimpleTelegramMessage(userData);
+                console.error('Помилка відправки:', error);
             }
-        }
-        
-        async function sendSimpleTelegramMessage(userData) {
-            const simpleMessage = `🔔 НОВИЙ ЗАПИТ: ${userData.first_name} (ID: ${userData.id})`;
-            
-            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: ADMIN_ID,
-                    text: simpleMessage
-                })
-            });
         }
         
         async function saveUser(userData, isAdmin) {
@@ -480,9 +222,8 @@
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 });
-                debugLog(`💾 Користувача збережено: ${userData.id}`, 'success');
             } catch (error) {
-                debugLog(`❌ Помилка збереження: ${error.message}`, 'error');
+                console.error('Помилка збереження:', error);
             }
         }
         
@@ -492,7 +233,7 @@
             document.getElementById('content').innerHTML = `
                 <h2 class="warning">⏳ Очікуйте підтвердження</h2>
                 <p style="color: #94A3B8; margin-bottom: 20px;">
-                    Запит відправлено адміністратору в Telegram
+                    Запит відправлено адміністратору
                 </p>
                 
                 <div class="user-info">
@@ -505,33 +246,26 @@
                 <div class="spinner"></div>
                 
                 <p style="color: #94A3B8; margin: 20px 0;">
-                    🔔 Адмін отримав повідомлення з кнопками<br>
-                    Після підтвердження ви автоматично отримаєте доступ
+                    🔔 Адмін отримав повідомлення з кнопками
                 </p>
                 
-                <button onclick="checkUserAccessFromUI('${userData.id}')" class="btn">
+                <button onclick="checkAccess('${userData.id}')" class="btn">
                     🔄 Перевірити статус
                 </button>
                 
-                <button onclick="window.location.href='login.html'" class="btn btn-dark">
+                <button onclick="window.location.href='login.html'" class="btn" style="background: #2D3748;">
                     ← На головну
                 </button>
             `;
             
             updateStatusText();
-            listenForApproval(userData.id);
         }
         
         function updateStatusText() {
             const statusElement = document.getElementById('statusText');
             if (!statusElement) return;
             
-            const texts = [
-                "Очікує підтвердження...",
-                "Адмін перевіряє запит...",
-                "Очікуємо рішення..."
-            ];
-            
+            const texts = ["Очікує підтвердження...", "Адмін перевіряє запит..."];
             let index = 0;
             setInterval(() => {
                 statusElement.textContent = texts[index];
@@ -540,8 +274,6 @@
         }
         
         function listenForApproval(userId) {
-            debugLog(`👂 Слухаємо зміни для ${userId}`, 'info');
-            
             const unsubscribe = onSnapshot(doc(db, "users", userId), (doc) => {
                 if (doc.exists()) {
                     const data = doc.data();
@@ -561,7 +293,7 @@
             });
         }
         
-        window.checkUserAccessFromUI = async function(userId) {
+        window.checkAccess = async function(userId) {
             try {
                 const userDoc = await getDoc(doc(db, "users", userId));
                 
@@ -575,21 +307,17 @@
                             username: data.username
                         }, data.isAdmin || false);
                     } else if (data.status === 'pending') {
-                        showMessage('⏳ Адмін ще не підтвердив доступ', 'warning');
+                        alert('⏳ Адмін ще не підтвердив доступ');
                     } else if (data.status === 'rejected') {
-                        showMessage('❌ Доступ відхилено адміністратором', 'error');
+                        alert('❌ Доступ відхилено');
                     }
-                } else {
-                    showMessage('❌ Користувача не знайдено', 'error');
                 }
             } catch (error) {
-                showMessage('❌ Помилка перевірки', 'error');
+                alert('Помилка перевірки');
             }
         };
         
         function grantAccess(userData, isAdmin) {
-            debugLog(`🎉 Надаємо доступ: ${userData.first_name}`, 'success');
-            
             // Сохраняем данные
             sessionStorage.setItem('user_id', userData.id);
             sessionStorage.setItem('user_name', userData.first_name);
@@ -621,36 +349,16 @@
         }
         
         function showError(message) {
-            debugLog(`❌ Помилка: ${message}`, 'error');
-            
             document.getElementById('content').innerHTML = `
                 <h2 class="error">❌ Помилка авторизації</h2>
                 <p>${message}</p>
                 
                 <div style="margin-top: 20px;">
                     <a href="login.html" class="btn">← Повернутися до входу</a>
-                    <button onclick="testBotConnection()" class="btn btn-warning">
-                        🛠️ Тестувати бота
-                    </button>
                 </div>
             `;
         }
         
-        function showMessage(message, type = 'info') {
-            const color = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#F59E0B';
-            
-            document.getElementById('content').innerHTML = `
-                <h2 style="color: ${color};">${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}</h2>
-                
-                <div style="margin-top: 20px;">
-                    <button onclick="showTestInterface()" class="btn">
-                        ← Назад
-                    </button>
-                </div>
-            `;
-        }
-        
-        // Запускаем
         document.addEventListener('DOMContentLoaded', processAuth);
     </script>
 </body>
