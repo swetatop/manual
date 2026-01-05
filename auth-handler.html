@@ -261,6 +261,7 @@
                     
                     if (data.status === 'pending') {
                         showWaiting(userData);
+                        // СРАЗУ ПОДПИСЫВАЕМСЯ НА ИЗМЕНЕНИЯ
                         listenForApproval(userData.id);
                         return;
                     }
@@ -275,6 +276,7 @@
                 await saveUser(userData, false);
                 await sendTelegramRequest(userData);
                 showWaiting(userData);
+                // СРАЗУ ПОДПИСЫВАЕМСЯ НА ИЗМЕНЕНИЯ
                 listenForApproval(userData.id);
                 
             } catch (error) {
@@ -365,12 +367,14 @@
                     <p><strong>🆔 ID:</strong> ${userData.id}</p>
                     <p><strong>📱 Telegram:</strong> ${usernameDisplay}</p>
                     <p><strong>📊 Статус:</strong> <span id="statusText">Очікує підтвердження...</span></p>
+                    <p><strong>🔄 Оновлення:</strong> <span id="updateStatus">Активне</span></p>
                 </div>
                 
                 <div class="spinner"></div>
                 
                 <p style="color: #94A3B8; margin: 20px 0;">
-                    🔔 Адмін отримав повідомлення з кнопками
+                    🔔 Адмін отримав повідомлення з кнопками<br>
+                    📱 Натисніть кнопку в Telegram
                 </p>
                 
                 <button onclick="checkAccess('${userData.id}')" class="btn">
@@ -389,7 +393,11 @@
             const statusElement = document.getElementById('statusText');
             if (!statusElement) return;
             
-            const texts = ["Очікує підтвердження...", "Адмін перевіряє запит..."];
+            const texts = [
+                "Очікує підтвердження...", 
+                "Адмін перевіряє запит...",
+                "Перевірка статусу..."
+            ];
             let index = 0;
             setInterval(() => {
                 statusElement.textContent = texts[index];
@@ -397,24 +405,71 @@
             }, 2000);
         }
         
+        // ФУНКЦИЯ КОТОРАЯ РАБОТАЕТ - слушает изменения в Firebase
         function listenForApproval(userId) {
-            const unsubscribe = onSnapshot(doc(db, "users", userId), (doc) => {
-                if (doc.exists()) {
-                    const data = doc.data();
+            console.log(`🔍 Слушаем изменения для ${userId}`);
+            
+            const unsubscribe = onSnapshot(doc(db, "users", userId), (docSnapshot) => {
+                console.log(`📡 Получено обновление для ${userId}:`, docSnapshot.exists());
+                
+                if (docSnapshot.exists()) {
+                    const data = docSnapshot.data();
+                    console.log(`📊 Данные:`, data);
+                    
+                    const updateElement = document.getElementById('updateStatus');
+                    if (updateElement) {
+                        updateElement.textContent = `Оновлено: ${new Date().toLocaleTimeString()}`;
+                    }
                     
                     if (data.status === 'approved') {
-                        unsubscribe();
+                        console.log(`✅ Пользователь ${userId} одобрен!`);
+                        unsubscribe(); // Останавливаем слушатель
+                        
                         grantAccess({
                             id: userId,
                             first_name: data.first_name,
                             username: data.username
                         }, data.isAdmin || false);
+                        
                     } else if (data.status === 'rejected') {
-                        unsubscribe();
+                        console.log(`❌ Пользователь ${userId} отклонен!`);
+                        unsubscribe(); // Останавливаем слушатель
+                        
                         showError('Доступ відхилено адміністратором');
                     }
                 }
+            }, (error) => {
+                console.error('❌ Ошибка слушателя:', error);
             });
+            
+            // Автоматическая проверка каждые 5 секунд (на всякий случай)
+            const intervalId = setInterval(async () => {
+                try {
+                    const userDoc = await getDoc(doc(db, "users", userId));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        
+                        const updateElement = document.getElementById('updateStatus');
+                        if (updateElement) {
+                            updateElement.textContent = `Автоперевірка: ${new Date().toLocaleTimeString()}`;
+                        }
+                        
+                        if (data.status === 'approved') {
+                            clearInterval(intervalId);
+                            grantAccess({
+                                id: userId,
+                                first_name: data.first_name,
+                                username: data.username
+                            }, data.isAdmin || false);
+                        } else if (data.status === 'rejected') {
+                            clearInterval(intervalId);
+                            showError('Доступ відхилено адміністратором');
+                        }
+                    }
+                } catch (error) {
+                    console.log('Автоперевірка:', error);
+                }
+            }, 5000);
         }
         
         window.checkAccess = async function(userId) {
@@ -431,17 +486,21 @@
                             username: data.username
                         }, data.isAdmin || false);
                     } else if (data.status === 'pending') {
-                        alert('⏳ Адмін ще не підтвердив доступ');
+                        alert('⏳ Адмін ще не підтвердив доступ\n\nПеревірте Telegram бота - там повинні бути кнопки для підтвердження.');
                     } else if (data.status === 'rejected') {
-                        alert('❌ Доступ відхилено');
+                        alert('❌ Доступ відхилено адміністратором');
                     }
+                } else {
+                    alert('❌ Користувача не знайдено в базі');
                 }
             } catch (error) {
-                alert('Помилка перевірки');
+                alert('❌ Помилка перевірки: ' + error.message);
             }
         };
         
         function grantAccess(userData, isAdmin) {
+            console.log(`🎉 Предоставляем доступ:`, userData);
+            
             // Сохраняем данные
             sessionStorage.setItem('user_id', userData.id);
             sessionStorage.setItem('user_name', userData.first_name);
@@ -459,12 +518,19 @@
                     <p><strong>👤 Користувач:</strong> ${userData.first_name}</p>
                     <p><strong>🆔 ID:</strong> ${userData.id}</p>
                     <p><strong>👑 Роль:</strong> ${isAdmin ? 'Адміністратор' : 'Модератор'}</p>
+                    <p><strong>✅ Статус:</strong> Підтверджено адміністратором</p>
                 </div>
                 
-                <div class="spinner"></div>
+                <div class="spinner" style="border-top-color: #10B981;"></div>
                 <p style="color: #94A3B8; margin-top: 20px;">
                     Перенаправляємо до адмін-панелі...
                 </p>
+                
+                <script>
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                </script>
             `;
             
             setTimeout(() => {
