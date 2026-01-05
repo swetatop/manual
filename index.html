@@ -9,6 +9,8 @@
     
     <!-- Firebase SDK -->
     <script type="module" src="firebase-app.js"></script>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
         /* Базовые стили */
@@ -1417,21 +1419,49 @@
         import { db } from './firebase-app.js';
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
-        // Проверка авторизации
-        async function checkAuth() {
-            const userId = sessionStorage.getItem('user_id');
-            const userName = sessionStorage.getItem('user_name');
+        // ========== ФУНКЦИИ АВТОРИЗАЦИИ ==========
+        
+        // Функция получения данных из Telegram Web App
+        function getTelegramUserData() {
+            try {
+                if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                    const tgUser = Telegram.WebApp.initDataUnsafe.user;
+                    return {
+                        id: tgUser.id.toString(),
+                        first_name: tgUser.first_name || 'Користувач',
+                        username: tgUser.username || '',
+                        photo_url: tgUser.photo_url,
+                        auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
+                        hash: Telegram.WebApp.initDataUnsafe.hash
+                    };
+                }
+                return null;
+            } catch (e) {
+                console.error('Помилка отримання даних з Telegram:', e);
+                return null;
+            }
+        }
+        
+        // Проверка авторизации через Telegram Web App
+        async function checkTelegramAuth() {
+            console.log('🔍 Перевірка авторизації Telegram Web App...');
             
-            if (!userId || !userName) {
+            const telegramUser = getTelegramUserData();
+            
+            if (!telegramUser?.id) {
+                console.log('❌ Немає даних Telegram, перенаправляємо до входу...');
                 window.location.href = 'login.html';
                 return null;
             }
             
+            console.log('✅ Telegram дані отримано:', telegramUser.first_name, telegramUser.id);
+            
             try {
-                const userDoc = await getDoc(doc(db, "users", userId));
+                // Проверяем в Firebase
+                const userDoc = await getDoc(doc(db, "users", telegramUser.id));
                 
                 if (!userDoc.exists()) {
-                    clearAuthData();
+                    console.log('❌ Користувача немає в базі');
                     window.location.href = 'login.html';
                     return null;
                 }
@@ -1439,15 +1469,17 @@
                 const userData = userDoc.data();
                 
                 if (userData.status !== 'approved' && !userData.isAdmin) {
-                    clearAuthData();
+                    console.log('❌ Користувач не підтверджений');
                     window.location.href = 'login.html';
                     return null;
                 }
                 
+                console.log('✅ Авторизація успішна!');
                 return userData;
                 
             } catch (error) {
-                console.error('Помилка перевірки авторизації:', error);
+                console.error('❌ Помилка перевірки авторизації:', error);
+                window.location.href = 'login.html';
                 return null;
             }
         }
@@ -1457,6 +1489,8 @@
             sessionStorage.clear();
             localStorage.clear();
         }
+        
+        // ========== ФУНКЦИИ ИНТЕРФЕЙСА ==========
         
         // Функция для обновления информации о пользователе
         function updateUserInfo(userData) {
@@ -1470,7 +1504,7 @@
             
             // Обновляем ID
             const userIdElement = document.getElementById('userId');
-            if (userIdElement) userIdElement.textContent = userData.telegram_id || 'немає';
+            if (userIdElement) userIdElement.textContent = userData.telegram_id || userData.id || 'немає';
             
             // Обновляем Telegram
             const userTelegramElement = document.getElementById('userTelegram');
@@ -1601,27 +1635,38 @@
             console.log('✅ Интерфейс инициализирован');
         }
         
-        // Инициализация при загрузке
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🚀 Инициализация адмін-панелі...');
+            console.log('🚀 Ініціалізація адмін-панелі...');
             
-            const userData = await checkAuth();
+            // Проверяем авторизацию через Telegram Web App
+            const userData = await checkTelegramAuth();
             
             if (!userData) {
-                console.log('❌ Нет авторизации, перенаправляем...');
+                console.log('❌ Немає авторизації, перенаправляємо...');
                 return;
             }
             
-            console.log('✅ Пользователь авторизован:', userData.first_name);
+            console.log('✅ Користувач авторизований:', userData.first_name);
             
             // Обновляем информацию на странице
             updateUserInfo(userData);
             
-            // Инициализируем остальные функции интерфейса
+            // Инициализируем интерфейс
             initializePage();
             
             // Показываем страницу "Главная" по умолчанию
             showPage('home');
+            
+            // Инициализируем Telegram Web App
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+                Telegram.WebApp.enableClosingConfirmation();
+                
+                console.log('📱 Telegram Web App ініціалізовано');
+            }
         });
     </script>
 </body>
