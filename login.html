@@ -62,6 +62,17 @@
             font-size: 1rem;
             cursor: pointer;
             margin: 5px;
+            transition: 0.3s;
+        }
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245,158,11,0.3);
+        }
+        .demo-btn.admin {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+        }
+        .demo-btn.user {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
         }
         .status {
             margin-top: 20px;
@@ -70,6 +81,14 @@
             font-size: 0.9rem;
         }
         .success { background: rgba(16, 185, 129, 0.1); border: 1px solid #10B981; color: #10B981; }
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3B82F6;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -95,16 +114,30 @@
                 </script>
             </div>
             
+            <div class="info-box">
+                <p style="margin: 0; color: #94A3B8; font-size: 0.9rem;">
+                    <strong>ℹ️ Як працює вхід:</strong><br>
+                    1. Натисніть кнопку "Login with Telegram"<br>
+                    2. Дозвольте доступ до вашого Telegram акаунта<br>
+                    3. Підтвердіть номер телефону (якщо потрібно)<br>
+                    4. Чекайте підтвердження адміністратора
+                </p>
+            </div>
+            
             <!-- Демо вход -->
             <div style="margin-top: 30px; border-top: 1px solid #2D3748; padding-top: 20px;">
-                <p style="color: #94A3B8; margin-bottom: 10px;">Демо режим:</p>
-                <button class="demo-btn" onclick="demoLogin('admin')">
+                <p style="color: #94A3B8; margin-bottom: 10px;">Демо режим (для тестування):</p>
+                <button class="demo-btn admin" onclick="demoLogin('admin')">
                     👑 Демо вход (Адмін)
                 </button>
-                <button class="demo-btn" onclick="demoLogin('user')" style="background: linear-gradient(135deg, #3B82F6, #2563EB);">
+                <button class="demo-btn user" onclick="demoLogin('user')">
                     👤 Демо вход (Користувач)
                 </button>
             </div>
+            
+            <p style="color: #64748B; font-size: 0.9rem; margin-top: 30px;">
+                Якщо виникли проблеми з входом, зверніться до адміністратора.
+            </p>
         </div>
     </div>
 
@@ -131,33 +164,47 @@
             
             const user = users[type];
             
+            // Очищаем старые данные
+            sessionStorage.clear();
+            
             // Сохраняем в sessionStorage
             sessionStorage.setItem('user_id', user.id);
             sessionStorage.setItem('user_name', user.first_name);
             sessionStorage.setItem('user_username', user.username);
             sessionStorage.setItem('is_admin', user.isAdmin ? 'true' : 'false');
             
+            // Сохраняем в localStorage для проверки auth
+            localStorage.setItem('authToken', Date.now().toString());
+            localStorage.setItem('userData', JSON.stringify(user));
+            localStorage.setItem('isAdmin', user.isAdmin ? 'true' : 'false');
+            
             // Сохраняем в Firebase
             try {
-                const docRef = doc(db, "users", user.id);
-                await setDoc(docRef, {
+                const userDoc = doc(db, "users", user.id);
+                await setDoc(userDoc, {
                     telegram_id: user.id,
                     first_name: user.first_name,
                     username: user.username,
                     status: 'approved',
                     isAdmin: user.isAdmin,
-                    created_at: new Date().toISOString()
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
                 });
+                
+                console.log('✅ Демо-пользователь сохранен в Firebase');
                 window.location.href = 'index.html';
+                
             } catch (error) {
-                console.error('Помилка:', error);
+                console.error('❌ Ошибка сохранения в Firebase:', error);
+                // Все равно переходим на главную
                 window.location.href = 'index.html';
             }
         };
         
         // Запасная кнопка Telegram
         setTimeout(() => {
-            if (!document.querySelector('[data-telegram-login]')) {
+            const widget = document.querySelector('[data-telegram-login]');
+            if (!widget) {
                 document.getElementById('tgWidget').innerHTML = `
                     <a href="tg://resolve?domain=UGgtavBot&start=auth_${Date.now()}" class="tg-btn">
                         <svg width="20" height="20" viewBox="0 0 240 240">
@@ -166,9 +213,36 @@
                         </svg>
                         Увійти через Telegram
                     </a>
+                    <p style="color: #94A3B8; font-size: 0.9rem; margin-top: 10px;">
+                        Або відкрийте в Telegram: @UGgtavBot
+                    </p>
                 `;
             }
-        }, 3000);
+        }, 5000);
+        
+        // Проверяем, если пользователь уже авторизован
+        document.addEventListener('DOMContentLoaded', () => {
+            const userId = sessionStorage.getItem('user_id');
+            const authToken = localStorage.getItem('authToken');
+            
+            if (userId && authToken) {
+                console.log('👤 Пользователь уже авторизован, проверяем доступ...');
+                
+                // Проверяем доступ через setTimeout, чтобы не блокировать загрузку
+                setTimeout(() => {
+                    fetch(`https://api.telegram.org/bot8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA/getMe`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.ok) {
+                                console.log('✅ Бот доступен');
+                            }
+                        })
+                        .catch(() => {
+                            console.log('⚠️ Бот недоступен, используем демо-режим');
+                        });
+                }, 1000);
+            }
+        });
     </script>
 </body>
 </html>
