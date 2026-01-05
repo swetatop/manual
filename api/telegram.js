@@ -1,22 +1,16 @@
 // api/telegram.js
-export default async function handler(request) {
+export default async function handler(req, res) {
   try {
-    const update = await request.json();
-    console.log('📱 Telegram webhook:', JSON.stringify(update).substring(0, 200));
+    console.log('📱 Telegram webhook received');
     
-    // Только для теста - всегда отвечаем OK
-    return new Response(JSON.stringify({ 
+    // Для теста - всегда OK
+    return res.status(200).json({ 
       ok: true, 
-      message: 'Webhook received' 
-    }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      message: 'Webhook working' 
     });
     
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    console.error('Error:', error);
+    return res.status(500).json({ error: error.message });
   }
 }
