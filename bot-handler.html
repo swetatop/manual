@@ -12,7 +12,7 @@
             font-family: sans-serif;
             padding: 20px;
         }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         h1 { color: #0088cc; text-align: center; margin-bottom: 30px; }
         .back-btn {
             background: #2D3748;
@@ -24,6 +24,10 @@
             text-decoration: none;
             display: inline-block;
             margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: #1E293B;
         }
         .requests-list {
             background: #1E293B;
@@ -37,6 +41,11 @@
             border-radius: 8px;
             margin-bottom: 10px;
             border-left: 4px solid #F59E0B;
+            transition: all 0.3s ease;
+        }
+        .request-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .btn {
             padding: 8px 16px;
@@ -45,9 +54,16 @@
             cursor: pointer;
             margin-right: 10px;
             font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
         }
         .btn-approve { background: #10B981; color: white; }
+        .btn-approve:hover { background: #059669; }
         .btn-reject { background: #EF4444; color: white; }
+        .btn-reject:hover { background: #DC2626; }
         .logs {
             background: #1E293B;
             padding: 15px;
@@ -73,6 +89,51 @@
             width: 100%;
             margin: 10px 0;
         }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status-pending { background: #F59E0B; color: white; }
+        .status-approved { background: #10B981; color: white; }
+        .status-rejected { background: #EF4444; color: white; }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #2D3748;
+            padding-bottom: 10px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: #2D3748;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .tab:hover {
+            background: #1E293B;
+        }
+        .tab.active {
+            background: #0088cc;
+        }
+        .counter {
+            display: inline-block;
+            background: #EF4444;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            text-align: center;
+            line-height: 24px;
+            font-size: 12px;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
@@ -80,105 +141,242 @@
         <a href="index.html" class="back-btn">← Назад до адмін-панелі</a>
         <h1>Управління доступом Telegram</h1>
         
-        <div class="requests-list" id="requestsList">
-            <h3>Запити на доступ:</h3>
-            <p id="noRequests">Завантаження...</p>
+        <div style="background: rgba(0, 136, 204, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <p style="margin: 0; color: #94A3B8;">
+                <strong>Бот:</strong> @UGgtavBot | 
+                <strong>Адмін ID:</strong> 5316593741 | 
+                <strong>Запитів очікує:</strong> <span id="pendingCount">0</span>
+            </p>
         </div>
         
-        <div class="manual-section">
-            <h3>Ручне підтвердження:</h3>
-            <input type="text" id="manualUserId" class="manual-input" placeholder="Введіть ID користувача">
-            <input type="text" id="manualUserName" class="manual-input" placeholder="Введіть ім'я (опціонально)">
-            <div>
-                <button class="btn btn-approve" onclick="manualApprove()">✅ Підтвердити</button>
-                <button class="btn btn-reject" onclick="manualReject()">❌ Відхилити</button>
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('requests')" id="tabRequests">
+                📋 Запити на доступ <span id="requestsCounter" class="counter">0</span>
+            </button>
+            <button class="tab" onclick="showTab('users')" id="tabUsers">
+                👥 Всі користувачі
+            </button>
+            <button class="tab" onclick="showTab('manual')" id="tabManual">
+                ✏️ Ручне керування
+            </button>
+        </div>
+        
+        <div id="requestsTab" class="tab-content">
+            <div class="requests-list" id="requestsList">
+                <h3>Запити на доступ:</h3>
+                <p id="noRequests">Завантаження...</p>
+            </div>
+        </div>
+        
+        <div id="usersTab" class="tab-content" style="display: none;">
+            <div class="requests-list" id="allUsersList">
+                <h3>Всі користувачі:</h3>
+                <p>Завантаження...</p>
+            </div>
+        </div>
+        
+        <div id="manualTab" class="tab-content" style="display: none;">
+            <div class="manual-section">
+                <h3>Ручне керування користувачами:</h3>
+                <input type="text" id="manualUserId" class="manual-input" placeholder="Введіть ID користувача">
+                <input type="text" id="manualUserName" class="manual-input" placeholder="Введіть ім'я (опціонально)">
+                <input type="text" id="manualUserUsername" class="manual-input" placeholder="Введіть Telegram username (без @)">
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 5px; color: #94A3B8;">Статус:</label>
+                    <select id="manualUserStatus" class="manual-input">
+                        <option value="pending">⏳ Очікує</option>
+                        <option value="approved">✅ Підтверджено</option>
+                        <option value="rejected">❌ Відхилено</option>
+                    </select>
+                </div>
+                
+                <div style="margin: 15px 0;">
+                    <label style="display: block; margin-bottom: 5px; color: #94A3B8;">
+                        <input type="checkbox" id="manualIsAdmin"> 👑 Зробити адміністратором
+                    </label>
+                </div>
+                
+                <div>
+                    <button class="btn btn-approve" onclick="manualSaveUser()">💾 Зберегти користувача</button>
+                    <button class="btn btn-reject" onclick="manualDeleteUser()">🗑️ Видалити користувача</button>
+                    <button class="btn" onclick="manualClearForm()" style="background: #2D3748;">🧹 Очистити форму</button>
+                </div>
             </div>
         </div>
         
         <div class="logs">
-            <h4>Логи:</h4>
+            <h4>Логи системи:</h4>
             <div id="logOutput"></div>
         </div>
     </div>
 
     <script type="module">
         import { db, ADMIN_ID } from './firebase-app.js';
-        import { doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { doc, getDoc, updateDoc, collection, query, where, getDocs, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
-        // Проверяем параметры URL для быстрого подтверждения
+        let currentTab = 'requests';
+        let allUsers = [];
+        
+        function addLog(message, type = 'info') {
+            const logDiv = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString('uk-UA');
+            const colors = { info: '#94A3B8', success: '#10B981', error: '#EF4444', warning: '#F59E0B' };
+            
+            logDiv.innerHTML = `<div style="color: ${colors[type]}; margin-bottom: 5px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">[${timestamp}] ${message}</div>` + logDiv.innerHTML;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function showTab(tabName) {
+            currentTab = tabName;
+            
+            // Обновляем активную вкладку
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Показываем соответствующий контент
+            document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+            document.getElementById(tabName + 'Tab').style.display = 'block';
+            
+            if (tabName === 'users') {
+                loadAllUsers();
+            }
+        }
+        
         async function checkUrlParams() {
             const params = new URLSearchParams(window.location.search);
             const action = params.get('action');
             const userId = params.get('user_id');
             
-            console.log('🔍 Перевірка параметрів URL:', { action, userId });
+            addLog(`🔍 Перевірка параметрів URL: action=${action}, user_id=${userId}`, 'info');
             
             if (action && userId) {
-                addLog(`📱 Отримано запит: ${action} для користувача ${userId}`);
+                addLog(`📱 Отримано запит: ${action} для користувача ${userId}`, 'info');
                 
                 if (action === 'approve') {
                     const success = await approveUser(userId);
                     if (success) {
-                        addLog(`✅ Автоматично підтверджено доступ для ID: ${userId}`);
-                        alert('✅ Доступ підтверджено!');
-                        // Закрываем окно через 2 секунды
+                        showNotification('✅ Доступ підтверджено!', 'success');
                         setTimeout(() => {
                             if (window.opener) {
                                 window.close();
                             }
-                        }, 2000);
+                        }, 3000);
                     }
                 } else if (action === 'reject') {
                     const success = await rejectUser(userId);
                     if (success) {
-                        addLog(`❌ Автоматично відхилено доступ для ID: ${userId}`);
-                        alert('❌ Доступ відхилено!');
+                        showNotification('❌ Доступ відхилено!', 'error');
                         setTimeout(() => {
                             if (window.opener) {
                                 window.close();
                             }
-                        }, 2000);
+                        }, 3000);
                     }
                 }
                 
-                // Очищаем параметры URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
         
-        // Загружаем запросы
         async function loadRequests() {
             try {
-                const q = query(collection(db, "users"), where("status", "==", "pending"));
-                const snapshot = await getDocs(q);
+                // Запросы из access_requests
+                const q1 = query(collection(db, "access_requests"), where("status", "==", "pending"));
+                const snapshot1 = await getDocs(q1);
+                
+                // Пользователи со статусом pending
+                const q2 = query(collection(db, "users"), where("status", "==", "pending"));
+                const snapshot2 = await getDocs(q2);
                 
                 const requests = [];
-                snapshot.forEach(docSnap => {
-                    requests.push({ id: docSnap.id, ...docSnap.data() });
+                
+                // Обрабатываем access_requests
+                snapshot1.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.status === 'pending') {
+                        requests.push({ 
+                            id: docSnap.id, 
+                            ...data,
+                            source: 'access_requests'
+                        });
+                    }
                 });
                 
+                // Обрабатываем пользователей со статусом pending
+                snapshot2.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.status === 'pending') {
+                        // Проверяем, нет ли уже такого запроса
+                        if (!requests.find(r => r.id === docSnap.id)) {
+                            requests.push({ 
+                                id: docSnap.id, 
+                                telegram_id: data.telegram_id || docSnap.id,
+                                first_name: data.first_name || 'Користувач',
+                                username: data.username || '',
+                                status: 'pending',
+                                created_at: data.created_at,
+                                source: 'users'
+                            });
+                        }
+                    }
+                });
+                
+                // Обновляем счетчик
+                const counter = document.getElementById('requestsCounter');
+                if (counter) {
+                    counter.textContent = requests.length;
+                    counter.style.display = requests.length > 0 ? 'inline-block' : 'none';
+                }
+                
+                document.getElementById('pendingCount').textContent = requests.length;
+                
                 if (requests.length === 0) {
-                    document.getElementById('noRequests').textContent = 'Немає активних запитів';
+                    document.getElementById('noRequests').innerHTML = '<span style="color: #94A3B8;">🎉 Немає активних запитів на доступ</span>';
                     return;
                 }
                 
+                // Сортируем по дате создания (новые первыми)
+                requests.sort((a, b) => {
+                    const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+                    const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+                    return dateB - dateA;
+                });
+                
                 let html = '';
-                requests.forEach(user => {
-                    // Отображаем username через @
+                requests.forEach((user, index) => {
                     const usernameDisplay = user.username ? `@${user.username}` : 'немає';
+                    const time = user.created_at ? new Date(user.created_at).toLocaleTimeString('uk-UA') : 'щойно';
+                    const date = user.created_at ? new Date(user.created_at).toLocaleDateString('uk-UA') : 'сьогодні';
+                    const sourceBadge = user.source === 'access_requests' ? '<span class="status-badge status-pending" style="background: #8B5CF6;">🆕</span>' : '';
                     
                     html += `
-                        <div class="request-item">
-                            <p><strong>👤 ${user.first_name}</strong> (${usernameDisplay})</p>
-                            <p>🆔 ID: ${user.id}</p>
-                            <p>⏰ ${new Date(user.created_at).toLocaleTimeString('uk-UA')}</p>
-                            <div style="margin-top: 10px;">
-                                <button class="btn btn-approve" onclick="approveUser('${user.id}')">
-                                    ✅ Підтвердити
-                                </button>
-                                <button class="btn btn-reject" onclick="rejectUser('${user.id}')">
-                                    ❌ Відхилити
-                                </button>
+                        <div class="request-item" id="request-${user.id}">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <div style="flex: 1;">
+                                    <p style="margin-bottom: 8px;">
+                                        <strong>👤 ${user.first_name}</strong> (${usernameDisplay}) 
+                                        ${sourceBadge}
+                                        <span class="status-badge status-pending">ОЧІКУЄ</span>
+                                    </p>
+                                    <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 5px;">
+                                        🆔 ID: <code>${user.id}</code>
+                                    </p>
+                                    <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 5px;">
+                                        📅 ${date} ⏰ ${time}
+                                    </p>
+                                    <p style="color: #94A3B8; font-size: 0.8rem;">
+                                        📂 Джерело: ${user.source === 'access_requests' ? 'Система запитів' : 'База користувачів'}
+                                    </p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <button class="btn btn-approve" onclick="approveUser('${user.id}', '${user.source}')">
+                                        ✅ Підтвердити
+                                    </button>
+                                    <button class="btn btn-reject" onclick="rejectUser('${user.id}', '${user.source}')">
+                                        ❌ Відхилити
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -191,73 +389,150 @@
                 
             } catch (error) {
                 console.error('Помилка завантаження:', error);
-                addLog(`❌ Помилка: ${error.message}`);
+                addLog(`❌ Помилка: ${error.message}`, 'error');
             }
         }
         
-        // Подтвердить пользователя
-        async function approveUser(userId) {
+        async function approveUser(userId, source = 'users') {
             try {
-                // Получаем данные пользователя
-                const userDoc = await getDoc(doc(db, "users", userId));
-                if (!userDoc.exists()) {
-                    addLog(`❌ Користувача з ID ${userId} не знайдено`);
-                    return false;
+                addLog(`✅ Намагаємось підтвердити користувача ${userId}...`, 'info');
+                
+                // Получаем данные пользователя из разных источников
+                let userData = null;
+                
+                if (source === 'access_requests') {
+                    const requestDoc = await getDoc(doc(db, "access_requests", userId));
+                    if (requestDoc.exists()) {
+                        userData = requestDoc.data();
+                    }
                 }
                 
-                const userData = userDoc.data();
+                // Проверяем, существует ли уже пользователь
+                const userDoc = await getDoc(doc(db, "users", userId));
                 
-                // Обновляем статус
-                await updateDoc(doc(db, "users", userId), {
-                    status: 'approved',
-                    updated_at: new Date().toISOString()
-                });
+                if (userDoc.exists()) {
+                    // Обновляем существующего пользователя
+                    await updateDoc(doc(db, "users", userId), {
+                        status: 'approved',
+                        updated_at: new Date().toISOString()
+                    });
+                    addLog(`✅ Оновлено статус існуючого користувача: ${userId}`, 'success');
+                } else {
+                    // Создаем нового пользователя
+                    await setDoc(doc(db, "users", userId), {
+                        telegram_id: userId,
+                        first_name: userData?.first_name || 'Користувач',
+                        username: userData?.username || '',
+                        status: 'approved',
+                        isAdmin: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+                    addLog(`✅ Створено нового користувача: ${userId}`, 'success');
+                }
                 
-                // Отправляем уведомление через бота
-                await sendTelegramNotification(userId, 'approved', userData);
+                // Удаляем запрос из access_requests если он там есть
+                try {
+                    await deleteDoc(doc(db, "access_requests", userId));
+                    addLog(`🗑️ Видалено запит з access_requests: ${userId}`, 'info');
+                } catch (e) {
+                    // Игнорируем ошибку если записи нет
+                }
                 
-                addLog(`✅ Доступ надано для: ${userData.first_name} (ID: ${userId})`);
-                loadRequests();
+                // Пробуем отправить уведомление пользователю через бота
+                await sendTelegramNotification(userId, 'approved', userData || { first_name: 'Користувач' });
+                
+                // Обновляем UI
+                const requestElement = document.getElementById(`request-${userId}`);
+                if (requestElement) {
+                    requestElement.style.borderLeftColor = '#10B981';
+                    requestElement.style.opacity = '0.5';
+                    setTimeout(() => requestElement.remove(), 500);
+                }
+                
+                addLog(`✅ Доступ надано для ID: ${userId}`, 'success');
+                showNotification('✅ Доступ підтверджено!', 'success');
+                
+                // Обновляем счетчики и списки
+                setTimeout(() => {
+                    loadRequests();
+                    if (currentTab === 'users') loadAllUsers();
+                }, 500);
+                
                 return true;
                 
             } catch (error) {
                 console.error('Помилка:', error);
-                addLog(`❌ Помилка підтвердження: ${error.message}`);
+                addLog(`❌ Помилка підтвердження: ${error.message}`, 'error');
+                showNotification('❌ Помилка підтвердження!', 'error');
                 return false;
             }
         }
         
-        // Отклонить пользователя
-        async function rejectUser(userId) {
+        async function rejectUser(userId, source = 'users') {
             try {
+                addLog(`❌ Намагаємось відхилити користувача ${userId}...`, 'info');
+                
                 const userDoc = await getDoc(doc(db, "users", userId));
-                if (!userDoc.exists()) {
-                    addLog(`❌ Користувача з ID ${userId} не знайдено`);
-                    return false;
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    await updateDoc(doc(db, "users", userId), {
+                        status: 'rejected',
+                        updated_at: new Date().toISOString()
+                    });
+                    
+                    // Пробуем отправить уведомление через бота
+                    await sendTelegramNotification(userId, 'rejected', userData);
+                } else {
+                    // Если пользователя нет, создаем с статусом rejected
+                    await setDoc(doc(db, "users", userId), {
+                        telegram_id: userId,
+                        first_name: 'Користувач',
+                        username: '',
+                        status: 'rejected',
+                        isAdmin: false,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
                 }
                 
-                const userData = userDoc.data();
+                // Удаляем запрос из access_requests если он там есть
+                try {
+                    await deleteDoc(doc(db, "access_requests", userId));
+                    addLog(`🗑️ Видалено запит з access_requests: ${userId}`, 'info');
+                } catch (e) {
+                    // Игнорируем ошибку если записи нет
+                }
                 
-                await updateDoc(doc(db, "users", userId), {
-                    status: 'rejected',
-                    updated_at: new Date().toISOString()
-                });
+                // Обновляем UI
+                const requestElement = document.getElementById(`request-${userId}`);
+                if (requestElement) {
+                    requestElement.style.borderLeftColor = '#EF4444';
+                    requestElement.style.opacity = '0.5';
+                    setTimeout(() => requestElement.remove(), 500);
+                }
                 
-                // Отправляем уведомление через бота
-                await sendTelegramNotification(userId, 'rejected', userData);
+                addLog(`❌ Доступ відхилено для ID: ${userId}`, 'error');
+                showNotification('❌ Доступ відхилено!', 'error');
                 
-                addLog(`❌ Доступ відхилено для: ${userData.first_name} (ID: ${userId})`);
-                loadRequests();
+                // Обновляем счетчики и списки
+                setTimeout(() => {
+                    loadRequests();
+                    if (currentTab === 'users') loadAllUsers();
+                }, 500);
+                
                 return true;
                 
             } catch (error) {
                 console.error('Помилка:', error);
-                addLog(`❌ Помилка відхилення: ${error.message}`);
+                addLog(`❌ Помилка відхилення: ${error.message}`, 'error');
+                showNotification('❌ Помилка відхилення!', 'error');
                 return false;
             }
         }
         
-        // Отправка уведомления в Telegram
         async function sendTelegramNotification(userId, action, userData) {
             const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
             const usernameDisplay = userData.username ? `@${userData.username}` : 'немає';
@@ -269,17 +544,19 @@
 🆔 *ID:* ${userId}
 ✅ *Статус:* Доступ надано
 
-Користувач тепер може увійти до адмін-панелі.`
+Ви тепер можете увійти до адмін-панелі Ukraine GTA 5.
+
+🔗 Посилання: https://swetatop.github.io/manual/`
                 : `🚫 *ДОСТУП ВІДХИЛЕНО*
 
 👤 *Користувач:* ${userData.first_name} (${usernameDisplay})
 🆔 *ID:* ${userId}
 ❌ *Статус:* Доступ відхилено
 
-Користувачу відмовлено в доступі до адмін-панелі.`;
+Вам відмовлено в доступі до адмін-панелі Ukraine GTA 5.`;
             
             try {
-                await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -288,16 +565,266 @@
                         parse_mode: 'Markdown'
                     })
                 });
-                addLog(`📤 Уведомление отправлено пользователю ${userId}`);
+                
+                const result = await response.json();
+                if (result.ok) {
+                    addLog(`📤 Уведомлення отправлено пользователю ${userId}`, 'success');
+                } else {
+                    addLog(`⚠️ Не удалось отправить уведомление: ${result.description}`, 'error');
+                }
             } catch (error) {
-                console.error('Ошибка отправки уведомления:', error);
+                addLog(`❌ Ошибка отправки уведомления: ${error.message}`, 'error');
             }
         }
         
-        // Ручное подтверждение
-        window.manualApprove = async function() {
+        async function loadAllUsers() {
+            try {
+                const snapshot = await getDocs(collection(db, "users"));
+                allUsers = [];
+                
+                snapshot.forEach(docSnap => {
+                    allUsers.push({
+                        id: docSnap.id,
+                        ...docSnap.data()
+                    });
+                });
+                
+                // Сортируем по дате создания (новые первыми)
+                allUsers.sort((a, b) => {
+                    const dateA = a.created_at ? new Date(a.created_at) : new Date(0);
+                    const dateB = b.created_at ? new Date(b.created_at) : new Date(0);
+                    return dateB - dateA;
+                });
+                
+                let html = '';
+                
+                if (allUsers.length === 0) {
+                    html = '<p style="color: #94A3B8;">👥 Немає користувачів в системі</p>';
+                } else {
+                    html = `<h3>Всі користувачі (${allUsers.length}):</h3>`;
+                    
+                    allUsers.forEach(user => {
+                        const statusClass = `status-${user.status || 'pending'}`;
+                        const usernameDisplay = user.username ? `@${user.username}` : 'немає';
+                        const createdAt = user.created_at ? new Date(user.created_at).toLocaleString('uk-UA') : 'невідомо';
+                        const updatedAt = user.updated_at ? new Date(user.updated_at).toLocaleString('uk-UA') : 'ніколи';
+                        
+                        html += `
+                            <div class="request-item" style="border-left-color: ${user.status === 'approved' ? '#10B981' : user.status === 'rejected' ? '#EF4444' : '#F59E0B'}" id="user-${user.id}">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                    <div style="flex: 1;">
+                                        <p style="margin-bottom: 8px;">
+                                            <strong>👤 ${user.first_name}</strong> (${usernameDisplay}) 
+                                            <span class="status-badge ${statusClass}">${user.status || 'pending'}</span>
+                                            ${user.isAdmin ? '<span class="status-badge" style="background: #8B5CF6;">👑 АДМІН</span>' : ''}
+                                        </p>
+                                        <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 5px;">
+                                            🆔 ID: <code>${user.id}</code>
+                                        </p>
+                                        <p style="color: #94A3B8; font-size: 0.9rem; margin-bottom: 5px;">
+                                            📅 Створено: ${createdAt}
+                                        </p>
+                                        <p style="color: #94A3B8; font-size: 0.9rem;">
+                                            🔄 Оновлено: ${updatedAt}
+                                        </p>
+                                    </div>
+                                    <div style="text-align: right; display: flex; flex-direction: column; gap: 5px;">
+                                        <div>
+                                            <button class="btn" onclick="changeUserStatus('${user.id}', 'approved')" style="background: #10B981; padding: 6px 12px; font-size: 0.9rem;">
+                                                ✅
+                                            </button>
+                                            <button class="btn" onclick="changeUserStatus('${user.id}', 'pending')" style="background: #F59E0B; padding: 6px 12px; font-size: 0.9rem;">
+                                                ⏳
+                                            </button>
+                                            <button class="btn" onclick="changeUserStatus('${user.id}', 'rejected')" style="background: #EF4444; padding: 6px 12px; font-size: 0.9rem;">
+                                                ❌
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <button class="btn" onclick="toggleAdmin('${user.id}', ${!user.isAdmin})" style="background: #8B5CF6; padding: 6px 12px; font-size: 0.9rem;">
+                                                ${user.isAdmin ? '👑 Забрати' : '👑 Дати'}
+                                            </button>
+                                            <button class="btn" onclick="editUser('${user.id}')" style="background: #3B82F6; padding: 6px 12px; font-size: 0.9rem;">
+                                                ✏️
+                                            </button>
+                                            <button class="btn" onclick="deleteUser('${user.id}')" style="background: #DC2626; padding: 6px 12px; font-size: 0.9rem;">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('allUsersList').innerHTML = html;
+                addLog(`📋 Завантажено ${allUsers.length} користувачів`, 'success');
+                
+            } catch (error) {
+                addLog(`❌ Помилка завантаження користувачів: ${error.message}`, 'error');
+            }
+        }
+        
+        window.changeUserStatus = async function(userId, status) {
+            try {
+                await updateDoc(doc(db, "users", userId), {
+                    status: status,
+                    updated_at: new Date().toISOString()
+                });
+                
+                addLog(`📝 Змінено статус користувача ${userId} на ${status}`, 'success');
+                showNotification(`✅ Статус змінено на ${status}`, 'success');
+                
+                // Обновляем списки
+                setTimeout(() => {
+                    loadAllUsers();
+                    loadRequests();
+                }, 500);
+                
+            } catch (error) {
+                addLog(`❌ Помилка зміни статусу: ${error.message}`, 'error');
+                showNotification('❌ Помилка зміни статусу!', 'error');
+            }
+        };
+        
+        window.toggleAdmin = async function(userId, makeAdmin) {
+            try {
+                await updateDoc(doc(db, "users", userId), {
+                    isAdmin: makeAdmin,
+                    updated_at: new Date().toISOString()
+                });
+                
+                addLog(`👑 ${makeAdmin ? 'Надано' : 'Забрано'} права адміна для ${userId}`, 'success');
+                showNotification(`✅ ${makeAdmin ? 'Надано' : 'Забрано'} права адміна`, 'success');
+                
+                // Обновляем списки
+                setTimeout(() => {
+                    loadAllUsers();
+                    loadRequests();
+                }, 500);
+                
+            } catch (error) {
+                addLog(`❌ Помилка зміни прав: ${error.message}`, 'error');
+                showNotification('❌ Помилка зміни прав!', 'error');
+            }
+        };
+        
+        window.editUser = function(userId) {
+            const user = allUsers.find(u => u.id === userId);
+            if (!user) return;
+            
+            document.getElementById('manualUserId').value = user.id;
+            document.getElementById('manualUserName').value = user.first_name || '';
+            document.getElementById('manualUserUsername').value = user.username || '';
+            document.getElementById('manualUserStatus').value = user.status || 'pending';
+            document.getElementById('manualIsAdmin').checked = user.isAdmin || false;
+            
+            showTab('manual');
+            showNotification('✏️ Заповнено форму для редагування', 'info');
+        };
+        
+        window.deleteUser = async function(userId) {
+            if (!confirm(`Видалити користувача ${userId}? Цю дію не можна скасувати!`)) return;
+            
+            try {
+                await deleteDoc(doc(db, "users", userId));
+                
+                // Также удаляем из access_requests если есть
+                try {
+                    await deleteDoc(doc(db, "access_requests", userId));
+                } catch (e) {}
+                
+                addLog(`🗑️ Видалено користувача ${userId}`, 'success');
+                showNotification('✅ Користувача видалено!', 'success');
+                
+                // Обновляем списки
+                setTimeout(() => {
+                    loadAllUsers();
+                    loadRequests();
+                }, 500);
+                
+            } catch (error) {
+                addLog(`❌ Помилка видалення: ${error.message}`, 'error');
+                showNotification('❌ Помилка видалення!', 'error');
+            }
+        };
+        
+        window.manualSaveUser = async function() {
             const userId = document.getElementById('manualUserId').value.trim();
             const userName = document.getElementById('manualUserName').value.trim() || 'Користувач';
+            const userUsername = document.getElementById('manualUserUsername').value.trim();
+            const userStatus = document.getElementById('manualUserStatus').value;
+            const isAdmin = document.getElementById('manualIsAdmin').checked;
+            
+            if (!userId) {
+                showNotification('❌ Введіть ID користувача!', 'error');
+                return;
+            }
+            
+            try {
+                const userDoc = await getDoc(doc(db, "users", userId));
+                
+                if (userDoc.exists()) {
+                    // Обновляем существующего пользователя
+                    await updateDoc(doc(db, "users", userId), {
+                        first_name: userName,
+                        username: userUsername,
+                        status: userStatus,
+                        isAdmin: isAdmin,
+                        updated_at: new Date().toISOString()
+                    });
+                    addLog(`✏️ Оновлено користувача ${userId}`, 'success');
+                } else {
+                    // Создаем нового пользователя
+                    await setDoc(doc(db, "users", userId), {
+                        telegram_id: userId,
+                        first_name: userName,
+                        username: userUsername,
+                        status: userStatus,
+                        isAdmin: isAdmin,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    });
+                    addLog(`🆕 Створено користувача ${userId}`, 'success');
+                }
+                
+                showNotification('✅ Користувача збережено!', 'success');
+                
+                // Обновляем списки
+                setTimeout(() => {
+                    loadAllUsers();
+                    loadRequests();
+                }, 500);
+                
+            } catch (error) {
+                addLog(`❌ Помилка збереження: ${error.message}`, 'error');
+                showNotification('❌ Помилка збереження!', 'error');
+            }
+        };
+        
+        window.manualDeleteUser = async function() {
+            const userId = document.getElementById('manualUserId').value.trim();
+            
+            if (!userId) {
+                showNotification('❌ Введіть ID користувача для видалення!', 'error');
+                return;
+            }
+            
+            await deleteUser(userId);
+        };
+        
+        window.manualClearForm = function() {
+            document.getElementById('manualUserId').value = '';
+            document.getElementById('manualUserName').value = '';
+            document.getElementById('manualUserUsername').value = '';
+            document.getElementById('manualUserStatus').value = 'pending';
+            document.getElementById('manualIsAdmin').checked = false;
+            showNotification('🧹 Форму очищено', 'info');
+        };
+        
+        window.manualApprove = async function() {
+            const userId = document.getElementById('manualUserId').value.trim();
             
             if (!userId) {
                 alert('Введіть ID користувача');
@@ -306,12 +833,10 @@
             
             const success = await approveUser(userId);
             if (success) {
-                document.getElementById('manualUserId').value = '';
-                document.getElementById('manualUserName').value = '';
+                manualClearForm();
             }
         };
         
-        // Ручное отклонение
         window.manualReject = async function() {
             const userId = document.getElementById('manualUserId').value.trim();
             
@@ -322,30 +847,85 @@
             
             const success = await rejectUser(userId);
             if (success) {
-                document.getElementById('manualUserId').value = '';
-                document.getElementById('manualUserName').value = '';
+                manualClearForm();
             }
         };
         
-        // Логи
-        function addLog(message) {
-            const logDiv = document.getElementById('logOutput');
-            const timestamp = new Date().toLocaleTimeString('uk-UA');
-            logDiv.innerHTML = `<div>[${timestamp}] ${message}</div>` + logDiv.innerHTML;
+        function showNotification(message, type) {
+            // Удаляем предыдущие уведомления
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(n => n.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease, slideOut 0.3s ease 2.7s;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                max-width: 400px;
+            `;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            
+            notification.innerHTML = `
+                <span style="font-size: 1.2rem;">${icons[type] || icons.info}</span>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
         }
         
-        // Делаем функции глобальными
+        // Добавляем стили для анимации
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        
         window.approveUser = approveUser;
         window.rejectUser = rejectUser;
         
-        // Автообновление и инициализация
-        setInterval(loadRequests, 3000);
+        // Автообновление
+        setInterval(loadRequests, 10000);
         
         window.onload = async function() {
-            addLog('🚀 Панель управління запущена');
+            addLog('🚀 Панель управління запущена', 'success');
             await checkUrlParams();
             await loadRequests();
+            
+            // Обновляем счетчик каждые 30 секунд
+            setInterval(loadRequests, 30000);
         };
     </script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </body>
 </html>
