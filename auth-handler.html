@@ -164,24 +164,44 @@
             }, 2000);
         }
         
-        function getTelegramDataFromUrl() {
-            try {
-                const hash = window.location.hash.substring(1);
-                debugLog(`Hash отримано: ${hash ? '✅ ' + hash.substring(0, 50) + '...' : '❌ порожній'}`, hash ? 'success' : 'warning');
-                
-                if (!hash) return null;
-                
-                const params = new URLSearchParams(hash);
-                const id = params.get('id');
-                const first_name = params.get('first_name');
-                const username = params.get('username');
-                
-                debugLog(`ID: ${id || '❌ немає'}`, id ? 'success' : 'error');
-                debugLog(`Ім'я: ${first_name || '❌ немає'}`, first_name ? 'success' : 'error');
-                debugLog(`Username: ${username || '❌ немає'}`, username ? 'success' : 'warning');
-                
-                if (!id) return null;
-                
+      function getTelegramDataFromUrl() {
+    try {
+        // Спробуємо отримати дані з Telegram Web App SDK
+        if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+            const tgUser = Telegram.WebApp.initDataUnsafe.user;
+            debugLog('✅ Дані отримано з Telegram Web App SDK', 'success');
+            
+            return {
+                id: tgUser.id.toString(),
+                first_name: tgUser.first_name || 'Користувач',
+                username: tgUser.username || '',
+                auth_date: Telegram.WebApp.initDataUnsafe.auth_date,
+                hash: Telegram.WebApp.initDataUnsafe.hash
+            };
+        }
+        
+        // Спробуємо отримати дані з URL hash
+        const hash = window.location.hash.substring(1);
+        debugLog(`Hash отримано: ${hash ? '✅ ' + hash.substring(0, 50) + '...' : '❌ порожній'}`, hash ? 'success' : 'warning');
+        
+        if (!hash) {
+            // Спробуємо отримати дані з query параметрів
+            const search = window.location.search.substring(1);
+            debugLog(`Search отримано: ${search ? '✅ ' + search.substring(0, 50) + '...' : '❌ порожній'}`, search ? 'success' : 'warning');
+            
+            if (!search) {
+                debugLog('❌ Не знайдено даних у URL', 'error');
+                return null;
+            }
+            
+            // Парсимо query параметри
+            const params = new URLSearchParams(search);
+            const id = params.get('id') || params.get('user_id') || params.get('tgid');
+            const first_name = params.get('first_name') || params.get('firstname') || params.get('name');
+            const username = params.get('username') || params.get('user_name') || params.get('login');
+            
+            if (id) {
+                debugLog(`✅ Дані знайдено в query параметрах`, 'success');
                 return {
                     id: id,
                     first_name: first_name || 'Користувач',
@@ -189,11 +209,35 @@
                     auth_date: params.get('auth_date'),
                     hash: params.get('hash')
                 };
-            } catch (e) {
-                debugLog(`❌ Помилка парсингу URL: ${e.message}`, 'error');
-                return null;
             }
+            
+            return null;
         }
+        
+        // Парсимо hash
+        const params = new URLSearchParams(hash);
+        const id = params.get('id');
+        const first_name = params.get('first_name');
+        const username = params.get('username');
+        
+        if (!id) {
+            debugLog('❌ ID не знайдено в hash', 'error');
+            return null;
+        }
+        
+        return {
+            id: id,
+            first_name: first_name || 'Користувач',
+            username: username || '',
+            auth_date: params.get('auth_date'),
+            hash: params.get('hash')
+        };
+        
+    } catch (e) {
+        debugLog(`❌ Помилка парсингу URL: ${e.message}`, 'error');
+        return null;
+    }
+}
         
         async function processUserData(userData) {
             debugLog(`👤 Обробка даних користувача: ${userData.first_name} (ID: ${userData.id})`, 'info');
