@@ -1,4 +1,4 @@
-// telegram-webhook.js - Обработчик callback кнопок
+// api/telegram-webhook.js
 export default async function handler(req, res) {
     console.log('🔔 Webhook получен');
     
