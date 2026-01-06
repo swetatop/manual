@@ -1,4 +1,4 @@
-// api/telegram-webhook.js - ПРОСТАЯ ВЕРСИЯ
+// api/telegram-webhook.js - ОБНОВЛЕННЫЙ
 export default async function handler(req, res) {
   console.log('🔔 Webhook получен');
   
@@ -31,10 +31,48 @@ export default async function handler(req, res) {
         })
       });
 
-      // 2. Редактируем сообщение админу
+      // 2. ОБНОВЛЯЕМ FIREBASE через твою функцию
+      try {
+        const firebaseResponse = await fetch('https://manual-moderds.vercel.app/api/update-firebase', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userId,
+            status: action === 'approve' ? 'approved' : 'rejected',
+            userName: callback.from?.first_name || 'User'
+          })
+        });
+        
+        const firebaseResult = await firebaseResponse.json();
+        console.log(`✅ Firebase update result:`, firebaseResult);
+        
+        // Если Firebase успешно обновлен, отправляем уведомление пользователю
+        if (firebaseResult.success) {
+          try {
+            await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: userId,
+                text: action === 'approve' 
+                  ? `🎉 *ВІТАЮ! ДОСТУП НАДАНО!*\n\nВаш запит до адмін-панелі Ukraine GTA 5 підтверджено!\n\n✅ Статус: Активний\n\nСторінка авторизації автоматично оновиться.`
+                  : `❌ *ДОСТУП ВІДХИЛЕНО*\n\nВаш запит до адмін-панелі Ukraine GTA 5 відхилено.\n\n📞 Для деталей зверніться до адміністратора.`,
+                parse_mode: 'Markdown'
+              })
+            });
+          } catch (telegramError) {
+            console.log('⚠️ Не удалось отправить уведомление пользователю:', telegramError.message);
+          }
+        }
+        
+      } catch (firebaseError) {
+        console.error('❌ Firebase update failed:', firebaseError.message);
+      }
+
+      // 3. Редактируем сообщение админу
       const newText = action === 'approve' 
-        ? `✅ *ДОСТУП НАДАНО*\n\nКористувачу ${userId} надано доступ до адмін-панелі.\n\nСтатус оновлено в системі.`
-        : `❌ *ДОСТУП ВІДХИЛЕНО*\n\nКористувачу ${userId} відхилено доступ.\n\nСтатус оновлено в системі.`;
+        ? `✅ *ДОСТУП НАДАНО*\n\nКористувачу ${userId} надано доступ до адмін-панелі.\n\n📊 Статус оновлено в базі даних.\n👤 Користувач отримав сповіщення.`
+        : `❌ *ДОСТУП ВІДХИЛЕНО*\n\nКористувачу ${userId} відхилено доступ.\n\n📊 Статус оновлено в базі даних.\n👤 Користувач отримав сповіщення.`;
       
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`, {
         method: 'POST',
