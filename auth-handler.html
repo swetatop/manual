@@ -3,329 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизація | Ukraine GTA 5</title>
-    <style>* { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #0C1016; color: white; font-family: sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .container { max-width: 500px; width: 100%; }
-        .spinner { border: 4px solid rgba(0, 136, 204, 0.1); border-top: 4px solid #0088cc; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 20px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .btn { background: #0088cc; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 1rem; cursor: pointer; margin: 10px; text-decoration: none; display: inline-block; transition: all 0.3s ease; }
-        .btn:hover { background: #0077b5; transform: translateY(-2px); }
-        .btn-success { background: #10B981; } .btn-success:hover { background: #059669; }
-        .btn-warning { background: #F59E0B; } .btn-warning:hover { background: #D97706; }
-        .btn-dark { background: #2D3748; } .btn-dark:hover { background: #1E293B; }
-        .user-info { background: rgba(0, 136, 204, 0.1); padding: 15px; border-radius: 10px; margin: 20px 0; text-align: left; }
-        .success { color: #10B981; } .warning { color: #F59E0B; } .error { color: #EF4444; }
+    <title>Вхід | Ukraine GTA 5</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0C1016;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container { max-width: 400px; width: 100%; }
+        .card {
+            background: linear-gradient(135deg, #141A24, #1E293B);
+            border-radius: 20px;
+            padding: 40px 30px;
+            border: 1px solid #2D3748;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0088cc, #60A5FA);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+        }
+        h1 {
+            color: white;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #94A3B8;
+            margin-bottom: 40px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .telegram-btn {
+            background: linear-gradient(135deg, #0088cc, #00A2FF);
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            transition: all 0.3s;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
+        }
+        .telegram-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.6);
+        }
+        .telegram-btn:active {
+            transform: translateY(0);
+        }
+        .telegram-icon {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        .or {
+            color: #94A3B8;
+            margin: 30px 0;
+            font-size: 14px;
+            position: relative;
+        }
+        .or:before, .or:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #2D3748;
+        }
+        .or:before { left: 0; }
+        .or:after { right: 0; }
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .test-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #2D3748;
+            background: transparent;
+            color: #94A3B8;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 14px;
+        }
+        .test-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+        .admin-btn { border-color: #10B981; color: #10B981; }
+        .user-btn { border-color: #F59E0B; color: #F59E0B; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 style="color: #0088cc; margin-bottom: 20px;">Ukraine GTA 5</h1>
-        <div id="content"><div class="spinner"></div><h3>Обробка авторизації...</h3></div>
+        <div class="card">
+            <div class="logo">U5</div>
+            <h1>Ukraine GTA 5</h1>
+            <div class="subtitle">
+                Адмін панель & система керування<br>
+                Авторизація через Telegram
+            </div>
+
+            <!-- Telegram OAuth кнопка -->
+            <button onclick="openTelegramAuth()" class="telegram-btn">
+                <svg class="telegram-icon" viewBox="0 0 240 240">
+                    <path d="M240 120c0 66.3-53.7 120-120 120S0 186.3 0 120 53.7 0 120 0s120 53.7 120 120z" fill="currentColor"/>
+                    <path d="M98 175c-3.9 0-3.2-1.5-4.6-5.2L82 132.2 152.8 88.8c1.9-1.1 3.6-.5 2.2 1.1-1.4 1.6-5.8 4-5.8 4s-73 46.5-81.6 51.6c-1.6.9-3.1.9-1.6.9 1.5 0 4.3-.9 4.3-.9l111.1-45.4c4.6-2.2 8.3-1 8.3 3.1 0 1.6-.2 2.5-.2 2.5s-51.7 48.1-57.8 53.1c-6.1 5-4.6 2.2-8.7-.1-4.1-2.3-71.2-45.6-79.1-50.5-7.9-4.9-5.7-7.4.3-11.2 6.1-3.8 107.8-41.6 107.8-41.6s24.7-9.4 22.5 13.6z" fill="white"/>
+                </svg>
+                Увійти через Telegram
+            </button>
+
+            <div class="or">або</div>
+
+            <div class="test-buttons">
+                <button onclick="loginAsAdmin()" class="test-btn admin-btn">
+                    👑 Адмін
+                </button>
+                <button onclick="loginAsUser()" class="test-btn user-btn">
+                    👤 Тест
+                </button>
+            </div>
+
+            <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #2D3748;">
+                <div style="color: #94A3B8; font-size: 12px; line-height: 1.6;">
+                    • Підключений бот: @UGgtavBot<br>
+                    • Домен: swetatop.github.io<br>
+                    • Потрібно підтвердити номер телефону
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script type="module">
-        import { db, ADMIN_ID, BOT_TOKEN } from './firebase-app.js';
-        import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-        
-        // Только реальный режим
-        const TEST_MODE = false;
-        
-        async function processAuth() {
-            const userData = getTelegramData();
+    <script>
+        // Функция открытия Telegram OAuth
+        function openTelegramAuth() {
+            // Параметры для OAuth
+            const bot_id = '8506586970'; // ID твоего бота
+            const origin = encodeURIComponent('https://swetatop.github.io');
+            const return_to = encodeURIComponent('https://swetatop.github.io/manual/auth-handler.html');
             
-            if (!userData?.id) {
-                showError('Не вдалося отримати дані з Telegram.<br><br>Будь ласка:<br>1. Відкрийте сторінку через кнопку "Увійти через Telegram"<br>2. Переконайтесь що авторизація пройшла успішно<br><br><a href="login.html" style="color:#0088cc;">← Повернутися до входу</a>');
-                return;
-            }
+            // URL для авторизации через Telegram
+            const authUrl = `https://oauth.telegram.org/auth?bot_id=${bot_id}&origin=${origin}&embed=0&request_access=write&return_to=${return_to}`;
             
-            await processUserData(userData);
-        }
-        
-        function getTelegramData() {
-            try {
-                const hash = window.location.hash.substring(1);
-                if (!hash) return null;
-                
-                const params = new URLSearchParams(hash);
-                const id = params.get('id');
-                if (!id) return null;
-                
-                return {
-                    id: id,
-                    first_name: params.get('first_name') || 'Користувач',
-                    username: params.get('username') || '',
-                    photo_url: params.get('photo_url') || ''
-                };
-                
-            } catch (e) {
-                console.error('Помилка отримання даних:', e);
-                return null;
-            }
-        }
-        
-        async function processUserData(userData) {
-            // Админ - сразу доступ
-            if (userData.id === ADMIN_ID.toString()) {
-                await saveUser(userData, true);
-                grantAccess(userData, true);
-                return;
-            }
+            // Открываем в новом окне
+            const authWindow = window.open(authUrl, 'Telegram Auth', 'width=500,height=600');
             
-            await checkUserAccess(userData);
-        }
-        
-        async function checkUserAccess(userData) {
-            try {
-                const userDoc = await getDoc(doc(db, "users", userData.id));
-                
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
+            // Слушаем сообщения от окна авторизации
+            window.addEventListener('message', function(event) {
+                if (event.origin === 'https://oauth.telegram.org') {
+                    console.log('Получены данные от Telegram:', event.data);
                     
-                    if (data.status === 'approved') {
-                        grantAccess(userData, data.isAdmin || false);
-                        return;
-                    }
-                    
-                    if (data.status === 'pending') {
-                        showWaiting(userData);
-                        listenForApproval(userData.id);
-                        return;
-                    }
-                    
-                    if (data.status === 'rejected') {
-                        showError('Доступ відхилено адміністратором');
-                        return;
-                    }
-                }
-                
-                // Новый пользователь
-                await saveUser(userData, false);
-                await sendTelegramRequest(userData);
-                showWaiting(userData);
-                listenForApproval(userData.id);
-                
-            } catch (error) {
-                console.error('Помилка:', error);
-                showError('Помилка перевірки доступу');
-            }
-        }
-        
-        async function sendTelegramRequest(userData) {
-            const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
-            
-            const message = `🔔 НОВИЙ ЗАПИТ ДОСТУПУ
-
-👤 Користувач: ${userData.first_name}
-📱 Telegram: ${usernameDisplay}
-🆔 ID: ${userData.id}
-⏰ Час: ${new Date().toLocaleTimeString('uk-UA')}
-
-Надати доступ до адмін-панелі Ukraine GTA 5?`;
-            
-            try {
-                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: ADMIN_ID,
-                        text: message,
-                        reply_markup: {
-                            inline_keyboard: [[
-                                { 
-                                    text: "✅ ДАТИ ДОСТУП", 
-                                    callback_data: `approve_${userData.id}`
-                                },
-                                { 
-                                    text: "❌ ВІДМОВИТИ", 
-                                    callback_data: `reject_${userData.id}`
-                                }
-                            ]]
-                        }
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (!result.ok) {
-                    // Запасной вариант
-                    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: ADMIN_ID,
-                            text: `🔔 НОВИЙ ЗАПИТ: ${userData.first_name} (ID: ${userData.id})`
-                        })
-                    });
-                }
-                
-            } catch (error) {
-                console.error('Помилка відправки:', error);
-            }
-        }
-        
-        async function saveUser(userData, isAdmin) {
-            try {
-                await setDoc(doc(db, "users", userData.id), {
-                    telegram_id: userData.id,
-                    first_name: userData.first_name,
-                    username: userData.username || '',
-                    status: isAdmin ? 'approved' : 'pending',
-                    isAdmin: isAdmin,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
-                });
-            } catch (error) {
-                console.error('Помилка збереження:', error);
-            }
-        }
-        
-        function showWaiting(userData) {
-            const usernameDisplay = userData.username ? `@${userData.username}` : 'без username';
-            
-            document.getElementById('content').innerHTML = `
-                <h2 class="warning">⏳ Очікуйте підтвердження</h2>
-                <p style="color: #94A3B8; margin-bottom: 20px;">
-                    Ваш запит відправлено адміністратору
-                </p>
-                
-                <div class="user-info">
-                    <p><strong>👤 Користувач:</strong> ${userData.first_name}</p>
-                    <p><strong>🆔 ID:</strong> ${userData.id}</p>
-                    <p><strong>📱 Telegram:</strong> ${usernameDisplay}</p>
-                    <p><strong>📊 Статус:</strong> <span id="statusText">Очікує підтвердження...</span></p>
-                    <p><strong>🔄 Оновлення:</strong> <span id="updateStatus">Слухаємо Firebase...</span></p>
-                </div>
-                
-                <div class="spinner"></div>
-                
-                <p style="color: #94A3B8; margin: 20px 0;">
-                    🔔 Адмін отримав повідомлення<br>
-                    📱 Очікуйте підтвердження
-                </p>
-                
-                <button onclick="checkAccess('${userData.id}')" class="btn">
-                    🔄 Перевірити статус
-                </button>
-                
-                <button onclick="window.location.href='login.html'" class="btn btn-dark">
-                    ← На головну
-                </button>
-            `;
-            
-            updateStatusText();
-        }
-        
-        function updateStatusText() {
-            const statusElement = document.getElementById('statusText');
-            if (!statusElement) return;
-            
-            const texts = ["Очікує підтвердження...", "Перевірка статусу..."];
-            let index = 0;
-            setInterval(() => {
-                statusElement.textContent = texts[index];
-                index = (index + 1) % texts.length;
-            }, 2000);
-        }
-        
-        function listenForApproval(userId) {
-            console.log(`🔍 Слушаем изменения для ${userId}`);
-            
-            const unsubscribe = onSnapshot(doc(db, "users", userId), (docSnapshot) => {
-                if (docSnapshot.exists()) {
-                    const data = docSnapshot.data();
-                    
-                    const updateElement = document.getElementById('updateStatus');
-                    if (updateElement) {
-                        updateElement.textContent = `Оновлено: ${new Date().toLocaleTimeString()}`;
-                    }
-                    
-                    if (data.status === 'approved') {
-                        unsubscribe();
-                        grantAccess({
-                            id: userId,
-                            first_name: data.first_name,
-                            username: data.username
-                        }, data.isAdmin || false);
+                    if (event.data && event.data.auth_data) {
+                        // Закрываем окно авторизации
+                        if (authWindow) authWindow.close();
                         
-                    } else if (data.status === 'rejected') {
-                        unsubscribe();
-                        showError('Доступ відхилено адміністратором');
+                        // Обрабатываем данные
+                        handleTelegramAuth(event.data.auth_data);
                     }
                 }
             });
+            
+            // Проверяем закрытие окна (на случай, если пользователь закрыл вручную)
+            const checkWindow = setInterval(() => {
+                if (authWindow && authWindow.closed) {
+                    clearInterval(checkWindow);
+                    console.log('Окно авторизации закрыто');
+                }
+            }, 500);
         }
         
-        window.checkAccess = async function(userId) {
+        // Обработка данных от Telegram
+        function handleTelegramAuth(authData) {
             try {
-                const userDoc = await getDoc(doc(db, "users", userId));
+                // Парсим параметры из URL
+                const params = new URLSearchParams(authData);
+                const id = params.get('id');
+                const first_name = params.get('first_name');
+                const username = params.get('username');
                 
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
+                if (id && first_name) {
+                    // Сохраняем данные
+                    const userData = {
+                        id: id,
+                        first_name: first_name,
+                        username: username || 'no_username',
+                        auth_date: Math.floor(Date.now() / 1000)
+                    };
                     
-                    if (data.status === 'approved') {
-                        grantAccess({
-                            id: userId,
-                            first_name: data.first_name,
-                            username: data.username
-                        }, data.isAdmin || false);
-                    } else if (data.status === 'pending') {
-                        alert('⏳ Адмін ще не підтвердив доступ');
-                    } else if (data.status === 'rejected') {
-                        alert('❌ Доступ відхилено адміністратором');
-                    }
+                    sessionStorage.setItem('telegram_user', JSON.stringify(userData));
+                    
+                    // Перенаправляем на обработчик
+                    window.location.href = `auth-handler.html#id=${id}&first_name=${encodeURIComponent(first_name)}&username=${username || ''}&auth_date=${userData.auth_date}`;
                 } else {
-                    alert('❌ Користувача не знайдено в базі');
+                    alert('Помилка: Не отримано дані від Telegram');
                 }
             } catch (error) {
-                alert('❌ Помилка перевірки: ' + error.message);
+                console.error('Помилка обробки даних:', error);
+                alert('Помилка авторизації. Спробуйте ще раз.');
             }
-        };
-        
-        function grantAccess(userData, isAdmin) {
-            console.log(`🎉 Предоставляем доступ:`, userData);
-            
-            sessionStorage.setItem('user_id', userData.id);
-            sessionStorage.setItem('user_name', userData.first_name);
-            sessionStorage.setItem('user_username', userData.username || '');
-            sessionStorage.setItem('is_admin', isAdmin ? 'true' : 'false');
-            
-            localStorage.setItem('authToken', Date.now().toString());
-            localStorage.setItem('userData', JSON.stringify(userData));
-            localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
-            
-            document.getElementById('content').innerHTML = `
-                <h2 class="success">✅ Доступ надано!</h2>
-                <div class="user-info">
-                    <p><strong>👤 Користувач:</strong> ${userData.first_name}</p>
-                    <p><strong>🆔 ID:</strong> ${userData.id}</p>
-                    <p><strong>👑 Роль:</strong> ${isAdmin ? 'Адміністратор' : 'Модератор'}</p>
-                    <p><strong>✅ Статус:</strong> Підтверджено</p>
-                </div>
-                
-                <div class="spinner" style="border-top-color: #10B981;"></div>
-                <p style="color: #94A3B8; margin-top: 20px;">
-                    Перенаправляємо до адмін-панелі...
-                </p>
-            `;
-            
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 2000);
         }
         
-        function showError(message) {
-            document.getElementById('content').innerHTML = `
-                <h2 class="error">❌ Помилка авторизації</h2>
-                <p>${message}</p>
-                
-                <div style="margin-top: 20px;">
-                    <a href="login.html" class="btn">← Повернутися до входу</a>
-                </div>
-            `;
+        // Прямой вход админа (тест)
+        function loginAsAdmin() {
+            const userData = {
+                id: '5316593741',
+                first_name: 'Perets',
+                username: 'swetatopp',
+                auth_date: Math.floor(Date.now() / 1000)
+            };
+            
+            sessionStorage.setItem('telegram_user', JSON.stringify(userData));
+            sessionStorage.setItem('is_admin', 'true');
+            
+            window.location.href = `auth-handler.html#id=${userData.id}&first_name=${encodeURIComponent(userData.first_name)}&username=${userData.username}&auth_date=${userData.auth_date}`;
         }
         
-        document.addEventListener('DOMContentLoaded', processAuth);
+        // Вход тестового пользователя
+        function loginAsUser() {
+            const userId = prompt('Введіть Telegram ID для тесту:', '123456789');
+            const userName = prompt('Введіть ім\'я користувача:', 'Тестовий Користувач');
+            
+            if (userId && userName) {
+                const userData = {
+                    id: userId,
+                    first_name: userName,
+                    username: 'test_user',
+                    auth_date: Math.floor(Date.now() / 1000)
+                };
+                
+                sessionStorage.setItem('telegram_user', JSON.stringify(userData));
+                
+                window.location.href = `auth-handler.html#id=${userId}&first_name=${encodeURIComponent(userName)}&username=test_user&auth_date=${userData.auth_date}`;
+            }
+        }
+        
+        // Проверяем, есть ли уже данные в sessionStorage
+        window.addEventListener('load', function() {
+            const savedUser = sessionStorage.getItem('telegram_user');
+            if (savedUser) {
+                console.log('Вже авторизований:', JSON.parse(savedUser));
+            }
+        });
     </script>
 </body>
 </html>
