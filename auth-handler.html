@@ -157,11 +157,11 @@
                             inline_keyboard: [[
                                 { 
                                     text: "✅ ТЕСТ: ДАТИ ДОСТУП", 
-                                    callback_data: `approve_${userData.id}`
+                                    url: `https://swetatop.github.io/manual/approve.html?action=approve&userId=${userData.id}&userName=${encodeURIComponent(userData.first_name)}&test=true`
                                 },
                                 { 
                                     text: "❌ ТЕСТ: ВІДМОВИТИ", 
-                                    callback_data: `reject_${userData.id}`
+                                    url: `https://swetatop.github.io/manual/approve.html?action=reject&userId=${userData.id}&userName=${encodeURIComponent(userData.first_name)}&test=true`
                                 }
                             ]]
                         }
@@ -261,7 +261,6 @@
                     
                     if (data.status === 'pending') {
                         showWaiting(userData);
-                        // СРАЗУ ПОДПИСЫВАЕМСЯ НА ИЗМЕНЕНИЯ
                         listenForApproval(userData.id);
                         return;
                     }
@@ -276,7 +275,6 @@
                 await saveUser(userData, false);
                 await sendTelegramRequest(userData);
                 showWaiting(userData);
-                // СРАЗУ ПОДПИСЫВАЕМСЯ НА ИЗМЕНЕНИЯ
                 listenForApproval(userData.id);
                 
             } catch (error) {
@@ -308,11 +306,11 @@
                             inline_keyboard: [[
                                 { 
                                     text: "✅ ДАТИ ДОСТУП", 
-                                    callback_data: `approve_${userData.id}`
+                                    url: `https://swetatop.github.io/manual/approve.html?action=approve&userId=${userData.id}&userName=${encodeURIComponent(userData.first_name)}`
                                 },
                                 { 
                                     text: "❌ ВІДМОВИТИ", 
-                                    callback_data: `reject_${userData.id}`
+                                    url: `https://swetatop.github.io/manual/approve.html?action=reject&userId=${userData.id}&userName=${encodeURIComponent(userData.first_name)}`
                                 }
                             ]]
                         }
@@ -442,7 +440,7 @@
                 console.error('❌ Ошибка слушателя:', error);
             });
             
-            // Автоматическая проверка каждые 5 секунд (на всякий случай)
+            // Автоматическая проверка каждые 5 секунд
             const intervalId = setInterval(async () => {
                 try {
                     const userDoc = await getDoc(doc(db, "users", userId));
@@ -525,12 +523,6 @@
                 <p style="color: #94A3B8; margin-top: 20px;">
                     Перенаправляємо до адмін-панелі...
                 </p>
-                
-                <script>
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 2000);
-                </script>
             `;
             
             setTimeout(() => {
