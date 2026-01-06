@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Обработка входа</title>
+    <title>Обробка входу | Ukraine GTA 5</title>
     <style>
         body { 
             background: #0f1419; 
@@ -34,26 +34,28 @@
             font-size: 16px;
         }
         button:hover { background: #2a7fd8; }
+        .admin-btn { background: #10B981; }
+        .admin-btn:hover { background: #059669; }
     </style>
 </head>
 <body>
-    <h2>🔧 Обработка авторизации Telegram Widget</h2>
+    <h2>🔧 Обробка авторизації Telegram Widget</h2>
     
     <div class="log" id="debugInfo">
-        ⏳ Анализируем полученные данные...
+        ⏳ Аналізуємо отримані дані...
     </div>
 
     <div id="actionButtons" style="display: none;">
-        <button onclick="approveUser()">✅ Одобрить этого пользователя</button>
-        <button onclick="goToAdmin()">👑 Перейти в админку</button>
-        <button onclick="goBack()">↩️ Вернуться к входу</button>
+        <button onclick="approveUser()" class="admin-btn">✅ Підтвердити цього користувача</button>
+        <button onclick="goToAdmin()" class="admin-btn">👑 Перейти в адмінку</button>
+        <button onclick="goBack()">↩️ Повернутися до входу</button>
     </div>
 
     <script>
-        // 1. ПАРСИМ ДАННЫЕ ИЗ URL
+        // 1. ПАРСИМО ДАНІ З URL
         const urlParams = new URLSearchParams(window.location.search);
         
-        // Получаем ВСЕ параметры что прислал Telegram
+        // Отримуємо ВСІ параметри що надіслав Telegram
         const telegramData = {
             id: urlParams.get('id'),
             first_name: urlParams.get('first_name'),
@@ -63,43 +65,75 @@
             hash: urlParams.get('hash')
         };
         
-        console.log('📥 Полные данные от Telegram Widget:', telegramData);
+        console.log('📥 Повні дані від Telegram Widget:', telegramData);
         
-        // 2. ПОКАЗЫВАЕМ ЧТО ПОЛУЧИЛИ
+        // 🔥 ВАЖНО: Функція збереження даних та переходу
+        function saveAndRedirect(userData) {
+            console.log('💾 Зберігаємо дані в localStorage:', userData);
+            
+            // Зберігаємо дані користувача
+            localStorage.setItem('telegram_user', JSON.stringify({
+                id: userData.id,
+                first_name: userData.first_name,
+                username: userData.username,
+                photo_url: userData.photo_url,
+                auth_date: userData.auth_date,
+                hash: userData.hash
+            }));
+            
+            // Якщо це адмін (ти)
+            if (userData.id === '5316593741') {
+                localStorage.setItem('is_admin', 'true');
+            }
+            
+            // Час авторизації
+            localStorage.setItem('auth_time', Date.now().toString());
+            localStorage.setItem('widget_auth', 'true');
+            
+            // Перевіряємо що збереглося
+            console.log('✅ Дані збережено в localStorage:');
+            console.log('- telegram_user:', localStorage.getItem('telegram_user'));
+            console.log('- is_admin:', localStorage.getItem('is_admin'));
+            console.log('- auth_time:', localStorage.getItem('auth_time'));
+            
+            return true;
+        }
+        
+        // 2. ПОКАЗУЄМО ЩО ОТРИМАЛИ
         function showDebugInfo() {
             const debug = document.getElementById('debugInfo');
             
-            let html = '<strong>✅ Данные получены от Telegram:</strong><br><br>';
-            html += '<strong>Пользователь:</strong><br>';
+            let html = '<strong class="success">✅ Дані отримано від Telegram:</strong><br><br>';
+            html += '<strong>Користувач:</strong><br>';
             html += `👤 ID: <span class="success">${telegramData.id}</span><br>`;
-            html += `📛 Имя: ${telegramData.first_name}<br>`;
-            html += `🔗 Логин: @${telegramData.username || 'нет'}<br><br>`;
+            html += `📛 Ім'я: ${telegramData.first_name}<br>`;
+            html += `🔗 Логін: @${telegramData.username || 'немає'}<br><br>`;
             
-            html += '<strong>Техническая информация:</strong><br>';
-            html += `📅 Дата авторизации: ${new Date(telegramData.auth_date * 1000).toLocaleString()}<br>`;
-            html += `🔐 Хэш: <code style="font-size: 12px;">${telegramData.hash ? telegramData.hash.substring(0, 30) + '...' : 'нет'}</code><br>`;
-            html += `📎 Полный URL: <code style="font-size: 10px; color: #888;">${window.location.href}</code>`;
+            html += '<strong>Технічна інформація:</strong><br>';
+            html += `📅 Дата авторизації: ${new Date(telegramData.auth_date * 1000).toLocaleString()}<br>`;
+            html += `🔐 Хеш: <code style="font-size: 12px;">${telegramData.hash ? telegramData.hash.substring(0, 30) + '...' : 'немає'}</code><br>`;
+            html += `📎 Повний URL: <code style="font-size: 10px; color: #888;">${window.location.href}</code>`;
             
             debug.innerHTML = html;
             
-            // Показываем кнопки действий
+            // Показуємо кнопки дій
             document.getElementById('actionButtons').style.display = 'block';
         }
         
-        // 3. ОТПРАВЛЯЕМ НА СЕРВЕР RAILWAY (через CORS proxy)
+        // 3. НАДСИЛАЄМО НА СЕРВЕР RAILWAY (через CORS proxy)
         async function sendToRailway() {
             const debug = document.getElementById('debugInfo');
             
             try {
-                debug.innerHTML += '<br><br>🔄 <strong>Пытаемся отправить на Railway...</strong>';
+                debug.innerHTML += '<br><br>🔄 <strong>Намагаємося надіслати на Railway...</strong>';
                 
                 // Ваш Railway URL
                 const RAILWAY_URL = 'https://tgwebhook-production-6e8d.up.railway.app/webhook';
                 
-                // Пытаемся отправить напрямую
+                // Намагаємося надіслати напряму
                 const response = await fetch(RAILWAY_URL, {
                     method: 'POST',
-                    mode: 'cors', // Явно указываем режим CORS
+                    mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json'
@@ -115,19 +149,19 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    debug.innerHTML += `<br><span class="success">✅ Успешно отправлено на Railway!</span><br>`;
-                    debug.innerHTML += `Ответ: ${JSON.stringify(data)}`;
+                    debug.innerHTML += `<br><span class="success">✅ Успішно надіслано на Railway!</span><br>`;
+                    debug.innerHTML += `Відповідь: ${JSON.stringify(data)}`;
                     return true;
                 } else {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
             } catch (error) {
-                debug.innerHTML += `<br><span class="error">❌ Ошибка отправки на Railway:</span><br>`;
+                debug.innerHTML += `<br><span class="error">❌ Помилка відправки на Railway:</span><br>`;
                 debug.innerHTML += `${error.message}<br><br>`;
                 
-                // Пробуем через CORS proxy
-                debug.innerHTML += '🔄 <strong>Пробуем через CORS proxy...</strong>';
+                // Пробуємо через CORS proxy
+                debug.innerHTML += '🔄 <strong>Пробуємо через CORS proxy...</strong>';
                 
                 try {
                     const PROXY_URL = 'https://api.allorigins.win/raw?url=';
@@ -142,31 +176,31 @@
                     });
                     
                     if (proxyResponse.ok) {
-                        debug.innerHTML += `<br><span class="success">✅ Отправлено через proxy!</span>`;
+                        debug.innerHTML += `<br><span class="success">✅ Надіслано через proxy!</span>`;
                         return true;
                     }
                 } catch (proxyError) {
-                    debug.innerHTML += `<br><span class="error">❌ Proxy тоже не сработал</span>`;
+                    debug.innerHTML += `<br><span class="error">❌ Proxy теж не спрацював</span>`;
                 }
                 
                 return false;
             }
         }
         
-        // 4. ОТПРАВКА НАПРЯМУЮ В TELEGRAM (fallback)
+        // 4. НАДСИЛАННЯ НАПРЯМУ В TELEGRAM (fallback)
         async function sendDirectToTelegram() {
             const BOT_TOKEN = '8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA';
-            const ADMIN_ID = '5316593741'; // Твой ID
+            const ADMIN_ID = '5316593741'; // Твій ID
             
             const message = `🔔 <b>Telegram Widget Login</b>\n\n` +
-                           `👤 <b>Пользователь:</b>\n` +
+                           `👤 <b>Користувач:</b>\n` +
                            `├ ID: <code>${telegramData.id}</code>\n` +
-                           `├ Имя: ${telegramData.first_name}\n` +
-                           `└ Логин: @${telegramData.username || 'нет'}\n\n` +
-                           `🔧 <b>Техническое:</b>\n` +
-                           `├ Источник: Telegram Widget\n` +
+                           `├ Ім'я: ${telegramData.first_name}\n` +
+                           `└ Логін: @${telegramData.username || 'немає'}\n\n` +
+                           `🔧 <b>Технічне:</b>\n` +
+                           `├ Джерело: Telegram Widget\n` +
                            `├ auth_date: ${telegramData.auth_date}\n` +
-                           `└ Хэш: <code>${telegramData.hash ? telegramData.hash.substring(0, 20) + '...' : 'нет'}</code>`;
+                           `└ Хеш: <code>${telegramData.hash ? telegramData.hash.substring(0, 20) + '...' : 'немає'}</code>`;
             
             try {
                 const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -179,11 +213,11 @@
                         reply_markup: {
                             inline_keyboard: [[
                                 { 
-                                    text: '✅ Одобрить вход', 
+                                    text: '✅ Підтвердити вхід', 
                                     callback_data: `approve_widget:${telegramData.id}:${telegramData.first_name}`
                                 },
                                 { 
-                                    text: '❌ Отклонить', 
+                                    text: '❌ Відхилити', 
                                     callback_data: `reject_widget:${telegramData.id}`
                                 }
                             ]]
@@ -194,91 +228,124 @@
                 const result = await response.json();
                 if (result.ok) {
                     document.getElementById('debugInfo').innerHTML += 
-                        `<br><br><span class="success">✅ Сообщение отправлено в Telegram!</span><br>` +
-                        `Админ получил уведомление с кнопками.`;
+                        `<br><br><span class="success">✅ Повідомлення надіслано в Telegram!</span><br>` +
+                        `Адмін отримав сповіщення з кнопками.`;
                     return true;
                 }
             } catch (error) {
-                console.error('Telegram API error:', error);
+                console.error('Telegram API помилка:', error);
             }
             
             return false;
         }
         
-        // 5. КНОПКА "ОДОБРИТЬ" (для ручного одобрения)
+        // 5. КНОПКА "ПІДТВЕРДИТИ" (для ручного підтвердження)
         function approveUser() {
-            // Сохраняем пользователя в localStorage
-            localStorage.setItem('telegram_user', JSON.stringify(telegramData));
-            localStorage.setItem('auth_time', Date.now().toString());
-            localStorage.setItem('user_approved', 'true');
+            console.log('✅ Користувач натиснув "Підтвердити"');
             
-            if (telegramData.id === '5316593741') {
-                localStorage.setItem('is_admin', 'true');
-            }
+            // Зберігаємо дані
+            const saved = saveAndRedirect(telegramData);
             
-            document.getElementById('debugInfo').innerHTML += 
-                `<br><br><span class="success">✅ Пользователь одобрен!</span><br>` +
-                `Данные сохранены в localStorage.`;
+            if (saved) {
+                document.getElementById('debugInfo').innerHTML += 
+                    '<br><br><span style="color: green; font-weight: bold;">✅ Ви натиснули "Підтвердити"!</span><br>' +
+                    'Дані збережено. Переходимо в адмін-панель...<br>' +
+                    '<span style="color: #888; font-size: 14px;">(через 3 секунди автоматично, або натисніть кнопку нижче)</span><br>' +
+                    '<button onclick="forceRedirect()" style="background: #10B981; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;">' +
+                    '⚡ Перейти зараз' +
+                    '</button>';
                 
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
+                // Автоматичний перехід через 3 секунди
+                setTimeout(() => {
+                    console.log('🚀 Автоматичний перехід на index.html');
+                    window.location.href = 'index.html';
+                }, 3000);
+            }
         }
         
-        // 6. КНОПКА "ПЕРЕЙТИ В АДМИНКУ"
+        // 6. КНОПКА "ПЕРЕЙТИ В АДМІНКУ"
         function goToAdmin() {
-            // Если это админ (твой ID) - сразу даем доступ
+            // Якщо це адмін (твій ID) - одразу даємо доступ
             if (telegramData.id === '5316593741') {
-                localStorage.setItem('telegram_user', JSON.stringify(telegramData));
-                localStorage.setItem('is_admin', 'true');
-                localStorage.setItem('auth_time', Date.now().toString());
+                saveAndRedirect(telegramData);
+                document.getElementById('debugInfo').innerHTML += 
+                    '<br><br><span style="color: green; font-weight: bold;">👑 Ви адміністратор системи!</span><br>' +
+                    'Переходимо в адмін-панель...';
                 
-                window.location.href = 'index.html';
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1500);
             } else {
-                alert('Эта функция только для администратора (ID: 5316593741)');
+                alert('Ця функція тільки для адміністратора (ID: 5316593741)');
             }
         }
         
-        // 7. КНОПКА "ВЕРНУТЬСЯ"
+        // 7. КНОПКА "ПОВЕРНУТИСЯ"
         function goBack() {
             window.location.href = 'login.html';
         }
         
-        // 8. ЗАПУСК ПРОЦЕССА ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+        // 8. ФУНКЦІЯ ПРИМУСОВОГО ПЕРЕХОДУ
+        window.forceRedirect = function() {
+            console.log('⚡ Примусовий перехід на index.html');
+            window.location.href = 'index.html';
+        };
+        
+        // 9. ЗАПУСК ПРОЦЕСУ ПРИ ЗАВАНТАЖЕННІ СТОРІНКИ
         window.addEventListener('DOMContentLoaded', async () => {
-            // Проверяем есть ли данные
+            // Перевіряємо чи є дані
             if (!telegramData.id) {
                 document.getElementById('debugInfo').innerHTML = 
-                    '<span class="error">❌ Нет данных от Telegram Widget</span><br>' +
-                    'Вернитесь на страницу входа и попробуйте снова.';
+                    '<span class="error">❌ Немає даних від Telegram Widget</span><br>' +
+                    'Поверніться на сторінку входу та спробуйте знову.';
                 return;
             }
             
-            // Показываем полученные данные
+            // Показуємо отримані дані
             showDebugInfo();
             
-            // 1. Пробуем отправить на Railway
+            // 1. Пробуємо надіслати на Railway
             const railwaySuccess = await sendToRailway();
             
-            // 2. Если не получилось - отправляем напрямую в Telegram
+            // 2. Якщо не вийшло - надсилаємо напряму в Telegram
             if (!railwaySuccess) {
                 document.getElementById('debugInfo').innerHTML += 
-                    '<br><br><span class="warning">⚠️ Пробуем отправить напрямую в Telegram...</span>';
+                    '<br><br><span class="warning">⚠️ Пробуємо надіслати напряму в Telegram...</span>';
                 
                 const telegramSuccess = await sendDirectToTelegram();
                 
                 if (!telegramSuccess) {
                     document.getElementById('debugInfo').innerHTML += 
-                        '<br><span class="error">❌ Не удалось отправить уведомление</span><br>' +
-                        'Используйте кнопку "Одобрить" ниже для ручного входа.';
+                        '<br><span class="error">❌ Не вдалося надіслати сповіщення</span><br>' +
+                        'Використовуйте кнопку "Підтвердити" нижче для ручного входу.';
+                } else {
+                    // 🔥 ВАЖНО: Якщо надсилання в Telegram успішне - зберігаємо дані!
+                    document.getElementById('debugInfo').innerHTML += 
+                        '<br><span style="color: green; font-weight: bold;">✅ Автоматично зберігаємо дані...</span>';
+                    
+                    // Автоматично зберігаємо дані після успішного надсилання
+                    setTimeout(() => {
+                        saveAndRedirect(telegramData);
+                        
+                        document.getElementById('debugInfo').innerHTML += 
+                            '<br><span style="color: green;">✅ Дані збережено!</span><br>' +
+                            'Через 5 секунд автоматично перейдемо в адмін-панель...<br>' +
+                            '<button onclick="forceRedirect()" style="background: #10B981; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;">' +
+                            '⚡ Перейти зараз' +
+                            '</button>';
+                        
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 5000);
+                    }, 2000);
                 }
             }
             
-            // 3. Если это админ - предлагаем сразу войти
+            // 3. Якщо це адмін - пропонуємо одразу увійти
             if (telegramData.id === '5316593741') {
                 document.getElementById('debugInfo').innerHTML += 
-                    '<br><br><span class="success">👑 Вы администратор системы!</span><br>' +
-                    'Можете сразу перейти в админку.';
+                    '<br><br><span class="success">👑 Ви адміністратор системи!</span><br>' +
+                    'Можете одразу перейти в адмінку за допомогою кнопки вище.';
             }
         });
     </script>
