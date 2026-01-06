@@ -1,5 +1,4 @@
 import express from 'express';
-import fetch from 'node-fetch';
 
 const app = express();
 const port = process.env.PORT || 8080;
@@ -35,7 +34,6 @@ app.post('/telegram-webhook', async (req, res) => {
     const update = req.body;
     console.log('📨 Получен запрос от Telegram');
     
-    // Обработка callback от кнопок
     if (update.callback_query) {
       const callback = update.callback_query;
       const [action, userId] = callback.data.split('_');
@@ -45,7 +43,7 @@ app.post('/telegram-webhook', async (req, res) => {
       
       console.log(`🔘 Обработка: ${action} для ${userId}`);
 
-      // 1. Отвечаем Telegram, что кнопка нажата
+      // 1. Отвечаем Telegram
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/answerCallbackQuery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -121,7 +119,6 @@ app.post('/update-firebase', async (req, res) => {
     
     console.log(`🔄 Updating user ${userId} to ${status}`);
     
-    // Используем API ключ из конфига
     const API_KEY = "AIzaSyDWj0igJMOw_Tvads6XANXrqw0v_zqfOjE";
     const url = `https://firestore.googleapis.com/v1/projects/manual-moderation-ukraine-gta5/databases/(default)/documents/users/${userId}?updateMask.fieldPaths=status&updateMask.fieldPaths=updated_at&key=${API_KEY}`;
     
