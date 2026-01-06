@@ -178,34 +178,89 @@
             setInterval(() => { statusElement.textContent = texts[index]; index = (index + 1) % texts.length; }, 2000);
         }
         
-        function listenForApproval(userId) {
-            console.log(`🔍 Слушаем изменения для ${userId}`);
-            const unsubscribe = onSnapshot(doc(db, "users", userId), (docSnapshot) => {
-                console.log(`📡 Получено обновление для ${userId}:`, docSnapshot.exists());
-                if (docSnapshot.exists()) {
-                    const data = docSnapshot.data();
-                    console.log(`📊 Данные:`, data);
+        // ФУНКЦИЯ ДЛЯ ПРОСЛУШИВАНИЯ REALTIME DATABASE
+        async function listenForApproval(userId) {
+            console.log(`🔍 Слушаем Realtime Database для ${userId}`);
+            
+            // Инициализируем Realtime Database
+            import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+            
+            const firebaseConfig = {
+                apiKey: "AIzaSyDWj0igJMOw_Tvads6XANXrqw0v_zqfOjE",
+                authDomain: "manual-moderation-ukraine-gta5.firebaseapp.com",
+                databaseURL: "https://manual-moderation-ukraine-gta5-default-rtdb.europe-west1.firebasedatabase.app",
+                projectId: "manual-moderation-ukraine-gta5",
+                storageBucket: "manual-moderation-ukraine-gta5.firebasestorage.app",
+                messagingSenderId: "28969074318",
+                appId: "1:28969074318:web:ad85a4163a0d811de4d3df"
+            };
+            
+            try {
+                const app = initializeApp(firebaseConfig, 'realtimeApp');
+                const database = getDatabase(app);
+                const userStatusRef = ref(database, `users/${userId}/status`);
+                
+                console.log(`📡 Подписываемся на обновления: users/${userId}/status`);
+                
+                onValue(userStatusRef, (snapshot) => {
+                    const data = snapshot.val();
+                    console.log(`📊 Получены данные из Realtime Database:`, data);
+                    
                     const updateElement = document.getElementById('updateStatus');
-                    if (updateElement) updateElement.textContent = `Оновлено: ${new Date().toLocaleTimeString()}`;
-                    if (data.status === 'approved') {
-                        console.log(`✅ Пользователь ${userId} одобрен!`);
-                        unsubscribe();
-                        grantAccess({ id: userId, first_name: data.first_name, username: data.username }, data.isAdmin || false);
-                    } else if (data.status === 'rejected') {
-                        console.log(`❌ Пользователь ${userId} отклонен!`);
-                        unsubscribe();
+                    if (updateElement) {
+                        updateElement.textContent = `Оновлено: ${new Date().toLocaleTimeString()}`;
+                    }
+                    
+                    if (data && data.value === 'approved') {
+                        console.log(`✅ Пользователь ${userId} одобрен через Realtime Database!`);
+                        
+                        grantAccess({
+                            id: userId,
+                            first_name: 'Користувач',
+                            username: ''
+                        }, false);
+                        
+                    } else if (data && data.value === 'rejected') {
+                        console.log(`❌ Пользователь ${userId} отклонен через Realtime Database!`);
+                        
                         showError('Доступ відхилено адміністратором');
                     }
-                }
-            }, (error) => {
-                console.error('❌ Ошибка слушателя:', error);
+                }, (error) => {
+                    console.error('❌ Ошибка слушателя Realtime Database:', error);
+                });
+                
+                // Также слушаем Firestore (на всякий случай)
+                const unsubscribe = onSnapshot(doc(db, "users", userId), (docSnapshot) => {
+                    if (docSnapshot.exists()) {
+                        const data = docSnapshot.data();
+                        if (data.status === 'approved') {
+                            unsubscribe();
+                            grantAccess({
+                                id: userId,
+                                first_name: data.first_name,
+                                username: data.username
+                            }, data.isAdmin || false);
+                        } else if (data.status === 'rejected') {
+                            unsubscribe();
+                            showError('Доступ відхилено адміністратором');
+                        }
+                    }
+                });
+                
+            } catch (error) {
+                console.error('❌ Ошибка инициализации Realtime Database:', error);
+                
+                // Fallback: проверяем Firestore каждые 3 секунды
                 const intervalId = setInterval(async () => {
                     try {
                         const userDoc = await getDoc(doc(db, "users", userId));
                         if (userDoc.exists()) {
                             const data = userDoc.data();
                             const updateElement = document.getElementById('updateStatus');
-                            if (updateElement) updateElement.textContent = `Автоперевірка: ${new Date().toLocaleTimeString()}`;
+                            if (updateElement) {
+                                updateElement.textContent = `Автоперевірка: ${new Date().toLocaleTimeString()}`;
+                            }
                             if (data.status === 'approved') {
                                 clearInterval(intervalId);
                                 grantAccess({ id: userId, first_name: data.first_name, username: data.username }, data.isAdmin || false);
@@ -216,7 +271,7 @@
                         }
                     } catch (error) { console.log('Автоперевірка:', error); }
                 }, 3000);
-            });
+            }
         }
         
         window.checkAccess = async function(userId) {
