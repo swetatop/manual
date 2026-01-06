@@ -3,58 +3,284 @@
 <head>
     <meta charset="UTF-8">
     <title>Обработка входа</title>
-    <script>
-        // 1. Получаем данные из URL (то, что присылает Telegram Widget)
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
-        
-        const userData = {
-            id: params.get('id'),
-            first_name: params.get('first_name'),
-            username: params.get('username') || 'no_username'
-        };
-        
-        console.log('Данные от Telegram:', userData);
-        
-        // 2. ПРОСТО ПЕРЕСЫЛАЕМ на сервер Railway как было раньше
-        // Не проверяем хэш, просто доверяем что данные пришли от виджета
-        fetch('https://tgwebhook-production-6e8d.up.railway.app/webhook', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                type: 'telegram_widget_login',
-                user: userData,
-                timestamp: Date.now(),
-                source: 'widget',
-                raw_hash: hash // отправляем хэш как есть, если нужно
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Ответ сервера:', data);
-            
-            if (data.success) {
-                // Сохраняем в localStorage как было
-                localStorage.setItem('telegram_user', JSON.stringify(userData));
-                localStorage.setItem('auth_time', Date.now().toString());
-                
-                // Переходим на главную
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 1000);
-            } else {
-                document.body.innerHTML = '<h1>Ошибка: ' + (data.error || 'Неизвестная ошибка') + '</h1>';
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            document.body.innerHTML = '<h1>Ошибка связи с сервером</h1>';
-        });
-    </script>
+    <style>
+        body { 
+            background: #0f1419; 
+            color: white; 
+            padding: 50px; 
+            text-align: center; 
+            font-family: sans-serif;
+        }
+        .log { 
+            background: #1a2029; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px auto; 
+            max-width: 600px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        .success { color: #4ade80; }
+        .error { color: #f87171; }
+        .warning { color: #fbbf24; }
+        button {
+            background: #3390ec;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover { background: #2a7fd8; }
+    </style>
 </head>
 <body>
-    <h2>Обработка авторизации...</h2>
+    <h2>🔧 Обработка авторизации Telegram Widget</h2>
+    
+    <div class="log" id="debugInfo">
+        ⏳ Анализируем полученные данные...
+    </div>
+
+    <div id="actionButtons" style="display: none;">
+        <button onclick="approveUser()">✅ Одобрить этого пользователя</button>
+        <button onclick="goToAdmin()">👑 Перейти в админку</button>
+        <button onclick="goBack()">↩️ Вернуться к входу</button>
+    </div>
+
+    <script>
+        // 1. ПАРСИМ ДАННЫЕ ИЗ URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Получаем ВСЕ параметры что прислал Telegram
+        const telegramData = {
+            id: urlParams.get('id'),
+            first_name: urlParams.get('first_name'),
+            username: urlParams.get('username') || '',
+            photo_url: urlParams.get('photo_url') || '',
+            auth_date: urlParams.get('auth_date'),
+            hash: urlParams.get('hash')
+        };
+        
+        console.log('📥 Полные данные от Telegram Widget:', telegramData);
+        
+        // 2. ПОКАЗЫВАЕМ ЧТО ПОЛУЧИЛИ
+        function showDebugInfo() {
+            const debug = document.getElementById('debugInfo');
+            
+            let html = '<strong>✅ Данные получены от Telegram:</strong><br><br>';
+            html += '<strong>Пользователь:</strong><br>';
+            html += `👤 ID: <span class="success">${telegramData.id}</span><br>`;
+            html += `📛 Имя: ${telegramData.first_name}<br>`;
+            html += `🔗 Логин: @${telegramData.username || 'нет'}<br><br>`;
+            
+            html += '<strong>Техническая информация:</strong><br>';
+            html += `📅 Дата авторизации: ${new Date(telegramData.auth_date * 1000).toLocaleString()}<br>`;
+            html += `🔐 Хэш: <code style="font-size: 12px;">${telegramData.hash ? telegramData.hash.substring(0, 30) + '...' : 'нет'}</code><br>`;
+            html += `📎 Полный URL: <code style="font-size: 10px; color: #888;">${window.location.href}</code>`;
+            
+            debug.innerHTML = html;
+            
+            // Показываем кнопки действий
+            document.getElementById('actionButtons').style.display = 'block';
+        }
+        
+        // 3. ОТПРАВЛЯЕМ НА СЕРВЕР RAILWAY (через CORS proxy)
+        async function sendToRailway() {
+            const debug = document.getElementById('debugInfo');
+            
+            try {
+                debug.innerHTML += '<br><br>🔄 <strong>Пытаемся отправить на Railway...</strong>';
+                
+                // Ваш Railway URL
+                const RAILWAY_URL = 'https://tgwebhook-production-6e8d.up.railway.app/webhook';
+                
+                // Пытаемся отправить напрямую
+                const response = await fetch(RAILWAY_URL, {
+                    method: 'POST',
+                    mode: 'cors', // Явно указываем режим CORS
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'telegram_widget_login',
+                        user: telegramData,
+                        raw_params: window.location.search.substring(1),
+                        timestamp: Date.now(),
+                        widget_version: '2.0'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    debug.innerHTML += `<br><span class="success">✅ Успешно отправлено на Railway!</span><br>`;
+                    debug.innerHTML += `Ответ: ${JSON.stringify(data)}`;
+                    return true;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+            } catch (error) {
+                debug.innerHTML += `<br><span class="error">❌ Ошибка отправки на Railway:</span><br>`;
+                debug.innerHTML += `${error.message}<br><br>`;
+                
+                // Пробуем через CORS proxy
+                debug.innerHTML += '🔄 <strong>Пробуем через CORS proxy...</strong>';
+                
+                try {
+                    const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+                    const proxyResponse = await fetch(PROXY_URL + encodeURIComponent(RAILWAY_URL), {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            type: 'telegram_widget_proxy',
+                            user: telegramData,
+                            via_proxy: true
+                        })
+                    });
+                    
+                    if (proxyResponse.ok) {
+                        debug.innerHTML += `<br><span class="success">✅ Отправлено через proxy!</span>`;
+                        return true;
+                    }
+                } catch (proxyError) {
+                    debug.innerHTML += `<br><span class="error">❌ Proxy тоже не сработал</span>`;
+                }
+                
+                return false;
+            }
+        }
+        
+        // 4. ОТПРАВКА НАПРЯМУЮ В TELEGRAM (fallback)
+        async function sendDirectToTelegram() {
+            const BOT_TOKEN = '8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA';
+            const ADMIN_ID = '5316593741'; // Твой ID
+            
+            const message = `🔔 <b>Telegram Widget Login</b>\n\n` +
+                           `👤 <b>Пользователь:</b>\n` +
+                           `├ ID: <code>${telegramData.id}</code>\n` +
+                           `├ Имя: ${telegramData.first_name}\n` +
+                           `└ Логин: @${telegramData.username || 'нет'}\n\n` +
+                           `🔧 <b>Техническое:</b>\n` +
+                           `├ Источник: Telegram Widget\n` +
+                           `├ auth_date: ${telegramData.auth_date}\n` +
+                           `└ Хэш: <code>${telegramData.hash ? telegramData.hash.substring(0, 20) + '...' : 'нет'}</code>`;
+            
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        chat_id: ADMIN_ID,
+                        text: message,
+                        parse_mode: 'HTML',
+                        reply_markup: {
+                            inline_keyboard: [[
+                                { 
+                                    text: '✅ Одобрить вход', 
+                                    callback_data: `approve_widget:${telegramData.id}:${telegramData.first_name}`
+                                },
+                                { 
+                                    text: '❌ Отклонить', 
+                                    callback_data: `reject_widget:${telegramData.id}`
+                                }
+                            ]]
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.ok) {
+                    document.getElementById('debugInfo').innerHTML += 
+                        `<br><br><span class="success">✅ Сообщение отправлено в Telegram!</span><br>` +
+                        `Админ получил уведомление с кнопками.`;
+                    return true;
+                }
+            } catch (error) {
+                console.error('Telegram API error:', error);
+            }
+            
+            return false;
+        }
+        
+        // 5. КНОПКА "ОДОБРИТЬ" (для ручного одобрения)
+        function approveUser() {
+            // Сохраняем пользователя в localStorage
+            localStorage.setItem('telegram_user', JSON.stringify(telegramData));
+            localStorage.setItem('auth_time', Date.now().toString());
+            localStorage.setItem('user_approved', 'true');
+            
+            if (telegramData.id === '5316593741') {
+                localStorage.setItem('is_admin', 'true');
+            }
+            
+            document.getElementById('debugInfo').innerHTML += 
+                `<br><br><span class="success">✅ Пользователь одобрен!</span><br>` +
+                `Данные сохранены в localStorage.`;
+                
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        }
+        
+        // 6. КНОПКА "ПЕРЕЙТИ В АДМИНКУ"
+        function goToAdmin() {
+            // Если это админ (твой ID) - сразу даем доступ
+            if (telegramData.id === '5316593741') {
+                localStorage.setItem('telegram_user', JSON.stringify(telegramData));
+                localStorage.setItem('is_admin', 'true');
+                localStorage.setItem('auth_time', Date.now().toString());
+                
+                window.location.href = 'index.html';
+            } else {
+                alert('Эта функция только для администратора (ID: 5316593741)');
+            }
+        }
+        
+        // 7. КНОПКА "ВЕРНУТЬСЯ"
+        function goBack() {
+            window.location.href = 'login.html';
+        }
+        
+        // 8. ЗАПУСК ПРОЦЕССА ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Проверяем есть ли данные
+            if (!telegramData.id) {
+                document.getElementById('debugInfo').innerHTML = 
+                    '<span class="error">❌ Нет данных от Telegram Widget</span><br>' +
+                    'Вернитесь на страницу входа и попробуйте снова.';
+                return;
+            }
+            
+            // Показываем полученные данные
+            showDebugInfo();
+            
+            // 1. Пробуем отправить на Railway
+            const railwaySuccess = await sendToRailway();
+            
+            // 2. Если не получилось - отправляем напрямую в Telegram
+            if (!railwaySuccess) {
+                document.getElementById('debugInfo').innerHTML += 
+                    '<br><br><span class="warning">⚠️ Пробуем отправить напрямую в Telegram...</span>';
+                
+                const telegramSuccess = await sendDirectToTelegram();
+                
+                if (!telegramSuccess) {
+                    document.getElementById('debugInfo').innerHTML += 
+                        '<br><span class="error">❌ Не удалось отправить уведомление</span><br>' +
+                        'Используйте кнопку "Одобрить" ниже для ручного входа.';
+                }
+            }
+            
+            // 3. Если это админ - предлагаем сразу войти
+            if (telegramData.id === '5316593741') {
+                document.getElementById('debugInfo').innerHTML += 
+                    '<br><br><span class="success">👑 Вы администратор системы!</span><br>' +
+                    'Можете сразу перейти в админку.';
+            }
+        });
+    </script>
 </body>
 </html>
