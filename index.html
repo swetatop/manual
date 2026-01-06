@@ -12,8 +12,56 @@
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
+    <!-- 🔥 ВАЖНО: Скрипт перевірки авторизації -->
+    <script>
+        // ПЕРЕВІРКА АВТОРИЗАЦІЇ ПРИ ЗАВАНТАЖЕННІ СТОРІНКИ
+        (function checkAuthOnLoad() {
+            console.log('🔍 Перевірка авторизації...');
+            
+            // 1. Перевіряємо дані в localStorage (від Telegram Widget)
+            const savedUser = localStorage.getItem('telegram_user');
+            const isAdmin = localStorage.getItem('is_admin');
+            const authTime = localStorage.getItem('auth_time');
+            
+            // 2. Якщо є дані і не застаріли (менше 24 годин)
+            if (savedUser && authTime) {
+                const userData = JSON.parse(savedUser);
+                const timeDiff = Date.now() - parseInt(authTime);
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                
+                if (hoursDiff < 24) {
+                    console.log('✅ Авторизація через Telegram Widget активна:', userData.first_name);
+                    
+                    // Зберігаємо для основного скрипта
+                    window.__USER_DATA = userData;
+                    window.__USER_DATA.isAdmin = (isAdmin === 'true');
+                    
+                    // Показуємо сторінку
+                    document.addEventListener('DOMContentLoaded', function() {
+                        document.body.style.opacity = '1';
+                    });
+                    
+                    return; // Все добре, продовжуємо
+                } else {
+                    console.log('❌ Сесія застаріла (більше 24 годин)');
+                    localStorage.clear();
+                }
+            }
+            
+            // 3. Перевіряємо Telegram Web App (якщо відкрито всередині Telegram)
+            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
+                console.log('✅ Авторизація через Telegram Web App');
+                return; // Все добре, продовжуємо
+            }
+            
+            // 4. Якщо немає авторизації - перенаправляємо на вхід
+            console.log('❌ Немає авторизації, перенаправляємо на login.html');
+            window.location.href = 'login.html';
+        })();
+    </script>
+    
     <style>
-        /* Базовые стили */
+        /* Базові стилі */
         :root {
             --bg-dark: #0C1016;
             --bg-card: #141A24;
@@ -45,6 +93,12 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        body.loaded {
+            opacity: 1;
         }
         
         /* Сайдбар */
@@ -173,7 +227,7 @@
             box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
         }
         
-        /* Основной контент */
+        /* Основний контент */
         .main-content {
             flex: 1;
             padding: 40px 30px;
@@ -182,7 +236,7 @@
             width: 100%;
         }
         
-        /* Контент страниц (скрыт по умолчанию) */
+        /* Контент сторінок (приховано за замовчуванням) */
         .page-content {
             display: none;
             animation: fadeIn 0.4s ease;
@@ -197,9 +251,9 @@
             to { opacity: 1; }
         }
         
-        /* ========== СТИЛИ ДЛЯ ГЛАВНОЙ СТРАНИЦЫ ========== */
+        /* ========== СТИЛІ ДЛЯ ГОЛОВНОЇ СТОРІНКИ ========== */
         
-        /* Шапка главной страницы */
+        /* Шапка головної сторінки */
         .user-header {
             text-align: center;
             margin: 30px 0 80px 0;
@@ -231,7 +285,7 @@
             margin: 0 auto;
         }
         
-        /* Блок информации о пользователе */
+        /* Блок інформації про користувача */
         .user-info-block {
             background: linear-gradient(135deg, rgba(20, 26, 36, 0.8), rgba(30, 41, 59, 0.6));
             border-radius: 12px;
@@ -282,7 +336,7 @@
             font-weight: 600;
         }
         
-        /* Блок возможностей на главной */
+        /* Блок можливостей на головній */
         .capabilities {
             margin: 80px 0 100px 0;
             text-align: center;
@@ -310,7 +364,7 @@
             border-radius: 2px;
         }
         
-        /* Карточки на главной */
+        /* Картки на головній */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -372,7 +426,7 @@
             min-height: 70px;
         }
         
-        /* Кнопка "Детальніше" на главной */
+        /* Кнопка "Детальніше" на головній */
         .home-card-btn {
             display: inline-block;
             background-color: rgba(59, 130, 246, 0.1);
@@ -405,9 +459,9 @@
             transform: translateX(4px);
         }
         
-        /* ========== ОБЩИЕ СТИЛИ ДЛЯ ВСЕХ СТРАНИЦ ========== */
+        /* ========== ЗАГАЛЬНІ СТИЛІ ДЛЯ ВСІХ СТОРІНОК ========== */
         
-        /* Большая карточка для контента */
+        /* Велика картка для контенту */
         .main-card {
             background-color: var(--bg-card);
             border-radius: 16px;
@@ -417,7 +471,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
-        /* Секция с заголовком и линией - ПОЛНАЯ ЛИНИЯ С ГРАДИЕНТОМ */
+        /* Секція з заголовком та лінією - ПОВНА ЛІНІЯ З ГРАДІЄНТОМ */
         .section-header {
             margin: 50px 0 40px 0;
             position: relative;
@@ -439,7 +493,7 @@
             border-radius: 2px;
         }
         
-        /* Карточки с временем змін */
+        /* Картки з часом змін */
         .time-cards {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -482,7 +536,7 @@
             line-height: 1.2;
         }
         
-        /* Основной текст */
+        /* Основний текст */
         .content-text {
             font-size: 1.15rem;
             line-height: 1.7;
@@ -491,7 +545,7 @@
             max-width: 100%;
         }
         
-        /* Предупреждение ОРАНЖЕВОЕ с серым текстом */
+        /* Попередження ОРАНЖЕВЕ з сірим текстом */
         .warning-box {
             background-color: rgba(245, 158, 11, 0.15);
             border-left: 4px solid var(--warning);
@@ -513,7 +567,7 @@
             font-size: 1.15rem;
         }
         
-        /* Секция с ссылками */
+        /* Секція з посиланнями */
         .links-section {
             background-color: rgba(20, 26, 36, 0.5);
             border-radius: 12px;
@@ -579,7 +633,7 @@
             transform: translateX(5px);
         }
         
-        /* Список рекомендаций */
+        /* Список рекомендацій */
         .recommendations-list {
             list-style: none;
             margin: 40px 0 30px 0;
@@ -618,7 +672,7 @@
             font-family: 'Montserrat', sans-serif;
         }
         
-        /* ========== СТИЛИ ДЛЯ СТРАНИЦЫ "СТАТУТ ТА РЕГЛАМЕНТ" ========== */
+        /* ========== СТИЛІ ДЛЯ СТОРІНКИ "СТАТУТ ТА РЕГЛАМЕНТ" ========== */
         
         .regulations-list {
             list-style: none;
@@ -649,7 +703,7 @@
             line-height: 1;
         }
         
-        /* ЖЕЛТЫЙ блок (для примечаний) */
+        /* ЖОВТИЙ блок (для приміток) */
         .note-box {
             background-color: rgba(234, 179, 8, 0.15);
             border-left: 4px solid #EAB308;
@@ -665,7 +719,7 @@
             margin: 0;
         }
         
-        /* СИНИЙ блок (для примеров) */
+        /* СИНІЙ блок (для прикладів) */
         .examples-box {
             background-color: rgba(59, 130, 246, 0.15);
             border-left: 4px solid var(--primary);
@@ -686,7 +740,7 @@
             font-weight: 700;
         }
         
-        /* ========== ОБЩИЕ СТИЛИ ========== */
+        /* ========== ЗАГАЛЬНІ СТИЛІ ========== */
         
         /* Футер */
         .footer {
@@ -715,7 +769,7 @@
             font-weight: 600;
         }
         
-        /* Кнопка выхода */
+        /* Кнопка виходу */
         .logout-btn {
             position: fixed;
             bottom: 25px;
@@ -742,7 +796,7 @@
             box-shadow: 0 5px 15px rgba(239, 68, 68, 0.2);
         }
         
-        /* Модальное окно выхода */
+        /* Модальне вікно виходу */
         .logout-modal {
             display: none;
             position: fixed;
@@ -791,7 +845,7 @@
             color: var(--text-light);
         }
         
-        /* Кнопка управления Telegram (для админов) */
+        /* Кнопка управління Telegram (для адмінів) */
         .tg-control-btn {
             position: fixed;
             bottom: 70px;
@@ -819,7 +873,7 @@
             box-shadow: 0 6px 16px rgba(0, 136, 204, 0.4);
         }
         
-        /* Адаптивность */
+        /* Адаптивність */
         @media (max-width: 1200px) {
             .cards-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -919,7 +973,7 @@
     </style>
 </head>
 <body>
-    <!-- Оверлей для закрытия меню -->
+    <!-- Оверлей для закриття меню -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Кнопка меню -->
@@ -966,26 +1020,26 @@
         </div>
     </div>
 
-    <!-- Основной контент -->
+    <!-- Основний контент -->
     <div class="main-content" id="mainContent">
-        <!-- ========== ГЛАВНАЯ СТРАНИЦА ========== -->
+        <!-- ========== ГОЛОВНА СТОРІНКА ========== -->
         <div id="homePage" class="page-content active">
-            <!-- Шапка главной страницы -->
+            <!-- Шапка головної сторінки -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1 id="userGreeting">Вітаємо, <span id="userName">Perets</span>!</h1>
+                    <h1 id="userGreeting">Вітаємо, <span id="userName">Користувач</span>!</h1>
                     <p>Цей посібник створений для того, щоб допомогти модераторам ефективно виконувати свої обов'язки, ознайомитись із правилами, командами та новими оновленнями сервера.</p>
                 </div>
             </div>
             
-            <!-- Блок информации о пользователе -->
+            <!-- Блок інформації про користувача -->
             <div class="user-info-block" id="userInfoBlock">
                 <div class="user-info-content">
                     <div class="user-avatar">
                         <i class="fas fa-user-shield"></i>
                     </div>
                     <div class="user-details">
-                        <div class="user-name" id="userFullName">Perets</div>
+                        <div class="user-name" id="userFullName">Завантаження...</div>
                         <div class="user-meta">
                             <div><i class="fas fa-id-card"></i> ID: <span id="userId">...</span></div>
                             <div><i class="fab fa-telegram"></i> Telegram: <span id="userTelegram">...</span></div>
@@ -998,7 +1052,7 @@
                 </div>
             </div>
             
-            <!-- Карточки возможностей -->
+            <!-- Картки можливостей -->
             <div class="capabilities">
                 <h2>Можливості системи</h2>
                 
@@ -1050,9 +1104,9 @@
             </div>
         </div>
         
-        <!-- ========== СТРАНИЦА "ОНЛАЙН ЗМІНА" ========== -->
+        <!-- ========== СТОРІНКА "ОНЛАЙН ЗМІНА" ========== -->
         <div id="onlinePage" class="page-content">
-            <!-- Шапка как на главной странице -->
+            <!-- Шапка як на головній сторінці -->
             <div class="user-header">
                 <div class="user-info">
                     <h1>Онлайн зміна</h1>
@@ -1060,15 +1114,15 @@
                 </div>
             </div>
             
-            <!-- Большая карточка с основным контентом -->
+            <!-- Велика картка з основним контентом -->
             <div class="main-card">
-                <!-- Основные требования -->
+                <!-- Основні вимоги -->
                 <div class="section-header">
                     <h2 class="section-title">Основні вимоги до онлайн змін</h2>
                     <div class="section-line"></div>
                 </div>
                 
-                <!-- Карточки с временем -->
+                <!-- Картки з часом -->
                 <div class="time-cards">
                     <div class="time-card">
                         <h3>Мінімальний час зміни</h3>
@@ -1088,14 +1142,14 @@
                 
                 <p class="content-text">Модератор має встигнути зробити онлайн зміни з <strong>7:00 до 00:00</strong>.</p>
                 
-                <!-- Предупреждение -->
+                <!-- Попередження -->
                 <div class="warning-box">
                     <p><strong>Увага!</strong> Якщо модератор не встигає зробити зміну та не попередив про це Тім Лідера, то модератор отримує штраф <strong>–2% до заробітної плати</strong>.</p>
                 </div>
                 
                 <p class="content-text">Також існують нічні онлайн зміни (це додаткові зміни, які не мають відношення до основної) з <strong>00:01 до 6:59</strong>.</p>
                 
-                <!-- Доступ к системе -->
+                <!-- Доступ до системи -->
                 <div class="section-header">
                     <h2 class="section-title">Доступ до системи онлайн змін</h2>
                     <div class="section-line"></div>
@@ -1123,7 +1177,7 @@
                     </div>
                 </div>
                 
-                <!-- Рекомендации -->
+                <!-- Рекомендації -->
                 <div class="section-header">
                     <h2 class="section-title">Рекомендації щодо онлайн змін</h2>
                     <div class="section-line"></div>
@@ -1139,12 +1193,12 @@
             </div>
         </div>
         
-        <!-- ========== СТРАНИЦА "СТАТУТ ТА РЕГЛАМЕНТ" ========== -->
+        <!-- ========== СТОРІНКА "СТАТУТ ТА РЕГЛАМЕНТ" ========== -->
         <div id="statutePage" class="page-content">
-            <!-- Шапка страницы -->
+            <!-- Шапка сторінки -->
             <div class="user-header">
                 <div class="user-info">
-                    <h1 id="userGreetingStatute">Вітаємо, <span>Perets</span>!</h1>
+                    <h1 id="userGreetingStatute">Вітаємо, <span>Користувач</span>!</h1>
                     <p>Цей документ визначає правила, обов'язки та заборони для модераторів Discord сервера Ukraine GTA5. Уважно ознайомтесь з усіма положеннями.</p>
                     
                     <p class="content-text" style="text-align: center; font-size: 1.1rem; margin-top: 20px;">
@@ -1153,7 +1207,7 @@
                 </div>
             </div>
             
-            <!-- Большая карточка с основным контентом -->
+            <!-- Велика картка з основним контентом -->
             <div class="main-card">
                 <!-- Основні положення -->
                 <div class="section-header">
@@ -1173,7 +1227,7 @@
                     <li>Модератор не вирішує/втручається в проблеми ігрового та RP-процесу та не надає привілеї гравцям в грі.</li>
                 </ul>
                 
-                <!-- Примеры в синем блоке -->
+                <!-- Приклади в синьому блоці -->
                 <div class="examples-box">
                     <div class="example-item"><strong>Приклад:</strong> "Замов за мене словечко у Адмінів"</div>
                     <div class="example-item"><strong>Приклад:</strong> "А можеш покликати адміна/дай мені номер ГА/Попроси, щоб мене тп-хнули"</div>
@@ -1181,7 +1235,7 @@
                 
                 <ul class="regulations-list">
                     <li>Модератор тільки видає покарання та попередження у Discord.</li>
-                    <li>Правила Discord сервера – это главний документ, за яким модератори видають покарання.</li>
+                    <li>Правила Discord сервера – це головний документ, за яким модератори видають покарання.</li>
                     <li>Модератор повинен бути прикладом для інших учасників у поведінці та комунікації.</li>
                 </ul>
                 
@@ -1198,7 +1252,7 @@
                     <li>Модератор зобов'язаний прикріпляти докази до кожного випадку покарання.</li>
                 </ul>
                 
-                <!-- Желтый блок с примечанием -->
+                <!-- Жовтий блок з приміткою -->
                 <div class="note-box">
                     <p><strong>Примітка:</strong> Якщо модератор займає посаду адміністратора на проєкті та у відео-доказах міститься конфіденційна інформація, яка не може бути розголошена гравцям, він може не надсилати докази у відповідний канал. У такому випадку модератор зобов'язаний надіслати докази в особисті повідомлення своєму Тім-лідеру (S.M).</p>
                 </div>
@@ -1209,7 +1263,7 @@
                     <li>Модератор має поважати своїх колег та керівників.</li>
                 </ul>
                 
-                <!-- Желтый блок с примечанием -->
+                <!-- Жовтий блок з приміткою -->
                 <div class="note-box">
                     <p><strong>Примітка:</strong> У разі виникнення конфлікту між модераторами вони зобов'язані повідомити про це старшого керівника (S.M, КТП).</p>
                 </div>
@@ -1233,7 +1287,7 @@
                     <li>Модератору заборонено не дотримуватись субординації з користувачами.</li>
                 </ul>
                 
-                <!-- Желтый блок с винятком и примечанием -->
+                <!-- Жовтий блок з винятком і приміткою -->
                 <div class="note-box">
                     <p><strong>Виняток:</strong> особи, які перебувають у знайомих стосунках.<br>
                     <strong>Примітка:</strong> Навіть у такому випадку має бути дотримана мінімальна субординація; образи та подібна поведінка заборонені.</p>
@@ -1263,7 +1317,7 @@
             </div>
         </div>
         
-        <!-- ========== ЗАГЛУШКИ ДЛЯ ДРУГИХ СТРАНИЦ ========== -->
+        <!-- ========== ЗАГЛУШКИ ДЛЯ ІНШИХ СТОРІНОК ========== -->
         
         <div id="penaltiesPage" class="page-content">
             <div class="user-header">
@@ -1388,21 +1442,21 @@
     <!-- Футер -->
     <footer class="footer">
         <div class="footer-content">
-            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong id="creatorName">Perets</strong> | Контент – <strong>Parkhyts</strong></p>
+            <p><strong>Ukraine GTA 5 ©</strong> | Сайт створено <strong id="creatorName">Користувач</strong> | Контент – <strong>Parkhyts</strong></p>
         </div>
     </footer>
 
-    <!-- Кнопка управления Telegram (для админов) -->
+    <!-- Кнопка управління Telegram (для адмінів) -->
     <button class="tg-control-btn" id="tgControlBtn" onclick="window.open('bot-handler.html', '_blank')">
         <i class="fab fa-telegram"></i> Telegram Управління
     </button>
 
-    <!-- Кнопка выхода -->
+    <!-- Кнопка виходу -->
     <button class="logout-btn" id="logoutBtn">
         <i class="fas fa-sign-out-alt"></i> Вийти з системи
     </button>
 
-    <!-- Модальное окно выхода -->
+    <!-- Модальне вікно виходу -->
     <div class="logout-modal" id="logoutModal">
         <div class="logout-modal-content">
             <h3>Вийти з системи</h3>
@@ -1414,14 +1468,14 @@
         </div>
     </div>
 
-    <!-- Основной скрипт приложения -->
+    <!-- Основний скрипт програми -->
     <script type="module">
         import { db } from './firebase-app.js';
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
-        // ========== ФУНКЦИИ АВТОРИЗАЦИИ ==========
+        // ========== ФУНКЦІЇ АВТОРИЗАЦІЇ ==========
         
-        // Функция получения данных из Telegram Web App
+        // Функція отримання даних з Telegram Web App
         function getTelegramUserData() {
             try {
                 if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
@@ -1442,22 +1496,95 @@
             }
         }
         
-        // Проверка авторизации через Telegram Web App
+        // Перевірка авторизації (Telegram Widget АБО Telegram Web App)
         async function checkTelegramAuth() {
-            console.log('🔍 Перевірка авторизації Telegram Web App...');
+            console.log('🔍 Перевірка авторизації...');
             
+            // 1. ПЕРЕВІРЯЄМО Telegram Widget (дані з localStorage)
+            const savedUser = localStorage.getItem('telegram_user');
+            const isAdmin = localStorage.getItem('is_admin');
+            const authTime = localStorage.getItem('auth_time');
+            
+            if (savedUser && authTime) {
+                const userData = JSON.parse(savedUser);
+                const timeDiff = Date.now() - parseInt(authTime);
+                const hoursDiff = timeDiff / (1000 * 60 * 60);
+                
+                if (hoursDiff < 24) {
+                    console.log('✅ Авторизація через Telegram Widget:', userData.first_name);
+                    
+                    // Перевіряємо в Firebase (опціонально, для безпеки)
+                    try {
+                        const userDoc = await getDoc(doc(db, "users", userData.id));
+                        
+                        if (userDoc.exists()) {
+                            const dbData = userDoc.data();
+                            
+                            // Якщо користувач затверджений або це адмін
+                            if (dbData.status === 'approved' || dbData.isAdmin || userData.id === '5316593741') {
+                                console.log('✅ Користувач підтверджений в Firebase');
+                                
+                                // Об'єднуємо дані
+                                return {
+                                    ...userData,
+                                    ...dbData,
+                                    isAdmin: dbData.isAdmin || (userData.id === '5316593741') || (isAdmin === 'true')
+                                };
+                            } else {
+                                console.log('❌ Користувач не затверджений в Firebase');
+                                window.location.href = 'login.html';
+                                return null;
+                            }
+                        } else {
+                            console.log('❌ Користувача немає в Firebase, але пропускаємо (це адмін)');
+                            
+                            // Якщо це ти (адмін) - пропускаємо
+                            if (userData.id === '5316593741') {
+                                return {
+                                    ...userData,
+                                    isAdmin: true,
+                                    status: 'approved'
+                                };
+                            }
+                            
+                            window.location.href = 'login.html';
+                            return null;
+                        }
+                    } catch (error) {
+                        console.error('Помилка перевірки в Firebase:', error);
+                        
+                        // Якщо помилка Firebase, але це адмін - пропускаємо
+                        if (userData.id === '5316593741') {
+                            return {
+                                ...userData,
+                                isAdmin: true,
+                                status: 'approved'
+                            };
+                        }
+                        
+                        return null;
+                    }
+                } else {
+                    console.log('❌ Сесія застаріла');
+                    localStorage.clear();
+                    window.location.href = 'login.html';
+                    return null;
+                }
+            }
+            
+            // 2. ПЕРЕВІРЯЄМО Telegram Web App (якщо відкрито в Telegram)
             const telegramUser = getTelegramUserData();
             
             if (!telegramUser?.id) {
-                console.log('❌ Немає даних Telegram, перенаправляємо до входу...');
+                console.log('❌ Немає даних авторизації');
                 window.location.href = 'login.html';
                 return null;
             }
             
-            console.log('✅ Telegram дані отримано:', telegramUser.first_name, telegramUser.id);
+            console.log('✅ Telegram Web App дані отримано:', telegramUser.first_name);
             
             try {
-                // Проверяем в Firebase
+                // Перевіряємо в Firebase
                 const userDoc = await getDoc(doc(db, "users", telegramUser.id));
                 
                 if (!userDoc.exists()) {
@@ -1475,7 +1602,7 @@
                 }
                 
                 console.log('✅ Авторизація успішна!');
-                return userData;
+                return { ...telegramUser, ...userData };
                 
             } catch (error) {
                 console.error('❌ Помилка перевірки авторизації:', error);
@@ -1484,83 +1611,86 @@
             }
         }
         
-        // Очистка данных авторизации
+        // Очищення даних авторизації
         function clearAuthData() {
             sessionStorage.clear();
             localStorage.clear();
         }
         
-        // ========== ФУНКЦИИ ИНТЕРФЕЙСА ==========
+        // ========== ФУНКЦІЇ ІНТЕРФЕЙСУ ==========
         
-        // Функция для обновления информации о пользователе
+        // Функція для оновлення інформації про користувача
         function updateUserInfo(userData) {
-            console.log('🔄 Обновление информации пользователя:', userData);
+            console.log('🔄 Оновлення інформації користувача:', userData);
             
-            // Обновляем приветствие
+            // Оновлюємо привітання
             const userNameElements = document.querySelectorAll('#userName, #userFullName, #creatorName');
             userNameElements.forEach(el => {
                 if (el) el.textContent = userData.first_name;
             });
             
-            // Обновляем ID
+            // Оновлюємо ID
             const userIdElement = document.getElementById('userId');
             if (userIdElement) userIdElement.textContent = userData.telegram_id || userData.id || 'немає';
             
-            // Обновляем Telegram
+            // Оновлюємо Telegram
             const userTelegramElement = document.getElementById('userTelegram');
             if (userTelegramElement) {
                 userTelegramElement.textContent = userData.username ? '@' + userData.username : 'немає';
             }
             
-            // Обновляем роль
+            // Оновлюємо роль
             const userRoleElement = document.getElementById('userRole');
             if (userRoleElement) {
                 userRoleElement.textContent = userData.isAdmin ? 'Адміністратор' : 'Модератор';
             }
             
-            // Обновляем приветствие на странице статута
+            // Оновлюємо привітання на сторінці статуту
             const statuteGreeting = document.querySelector('#userGreetingStatute span');
             if (statuteGreeting) {
                 statuteGreeting.textContent = userData.first_name;
             }
             
-            // Показываем блок информации о пользователе
+            // Показуємо блок інформації про користувача
             const userInfoBlock = document.getElementById('userInfoBlock');
             if (userInfoBlock) {
                 userInfoBlock.style.display = 'block';
             }
             
-            // Показываем кнопку управления для админов
+            // Показуємо кнопку управління для адмінів
             const tgControlBtn = document.getElementById('tgControlBtn');
             
             if (userData.isAdmin) {
                 if (tgControlBtn) tgControlBtn.style.display = 'flex';
             }
             
-            // Обновляем заголовок
+            // Оновлюємо заголовок
             document.title = `Посібник модератора | ${userData.first_name}`;
+            
+            // Показуємо сторінку
+            document.body.classList.add('loaded');
         }
         
-        // Функция для выхода
+        // Функція для виходу
         function performLogout() {
             clearAuthData();
             window.location.href = 'login.html';
         }
         
-        // Функция переключения страниц
+        // Функція перемикання сторінок
         window.showPage = function(pageId) {
-            // Скрываем все страницы
+            // Приховуємо всі сторінки
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');
             });
             
-            // Показываем выбранную страницу
+            // Показуємо вибрану сторінку
             const pageToShow = document.getElementById(pageId + 'Page');
             if (pageToShow) {
                 pageToShow.classList.add('active');
             }
             
-            // Обновляем активный пункт меню
+            // Оновлюємо активний пункт меню
             document.querySelectorAll('.nav-item').forEach(item => {
                 item.classList.remove('active');
                 if (item.getAttribute('onclick') === `showPage('${pageId}')`) {
@@ -1568,7 +1698,7 @@
                 }
             });
             
-            // Закрываем меню на мобильных
+            // Закриваємо меню на мобільних
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('sidebar');
                 const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -1578,15 +1708,15 @@
                 }
             }
             
-            // Прокручиваем наверх
+            // Прокручуємо вгору
             window.scrollTo({ top: 0, behavior: 'smooth' });
             
             return false;
         };
         
-        // Функции для интерфейса
+        // Функції для інтерфейсу
         function initializePage() {
-            console.log('🔄 Инициализация интерфейса...');
+            console.log('🔄 Ініціалізація інтерфейсу...');
             
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
@@ -1611,7 +1741,7 @@
                 });
             }
             
-            // Выход
+            // Вихід
             if (logoutBtn && logoutModal && confirmLogout && cancelLogout) {
                 logoutBtn.addEventListener('click', function() {
                     logoutModal.style.display = 'flex';
@@ -1632,15 +1762,15 @@
                 });
             }
             
-            console.log('✅ Интерфейс инициализирован');
+            console.log('✅ Інтерфейс ініціалізований');
         }
         
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        // ========== ІНІЦІАЛІЗАЦІЯ ==========
         
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Ініціалізація адмін-панелі...');
             
-            // Проверяем авторизацию через Telegram Web App
+            // Перевіряємо авторизацію
             const userData = await checkTelegramAuth();
             
             if (!userData) {
@@ -1650,16 +1780,16 @@
             
             console.log('✅ Користувач авторизований:', userData.first_name);
             
-            // Обновляем информацию на странице
+            // Оновлюємо інформацію на сторінці
             updateUserInfo(userData);
             
-            // Инициализируем интерфейс
+            // Ініціалізуємо інтерфейс
             initializePage();
             
-            // Показываем страницу "Главная" по умолчанию
+            // Показуємо сторінку "Головна" за замовчуванням
             showPage('home');
             
-            // Инициализируем Telegram Web App
+            // Ініціалізуємо Telegram Web App
             if (window.Telegram && Telegram.WebApp) {
                 Telegram.WebApp.ready();
                 Telegram.WebApp.expand();
