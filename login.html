@@ -1,145 +1,76 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вхід | Ukraine GTA 5</title>
+    <title>Вход | Ukraine GTA 5</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0C1016;
-            color: white;
-            font-family: sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container { max-width: 500px; width: 100%; text-align: center; }
-        .card {
-            background: linear-gradient(135deg, #141A24, #1E293B);
-            border-radius: 20px;
-            padding: 50px 40px;
-            border: 1px solid #2D3748;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-        h1 {
-            color: #0088cc;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #0088cc, #60A5FA);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        body { background: #0f1419; color: white; font-family: sans-serif; text-align: center; padding: 50px; }
         .telegram-btn {
             background: #0088cc;
             color: white;
-            border: none;
-            padding: 18px 40px;
+            padding: 20px 40px;
             border-radius: 12px;
+            border: none;
             font-size: 18px;
-            font-weight: 600;
             cursor: pointer;
-            display: flex;
+            margin: 30px;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 15px;
-            margin: 30px auto;
-            width: 100%;
-            max-width: 350px;
-            text-decoration: none;
-            transition: all 0.3s;
-            box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
         }
-        .telegram-btn:hover {
-            background: #0077b5;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.5);
-        }
-        .telegram-btn img {
-            width: 28px;
-            height: 28px;
-        }
+        .telegram-btn:hover { background: #0077b5; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <h1>Ukraine GTA 5</h1>
-            <p style="color: #94A3B8; margin-bottom: 30px;">Адмін панель | Посібник модератора</p>
-            
-            <h2 style="margin-bottom: 15px;">Вхід через Telegram</h2>
-            <p style="color: #94A3B8; margin-bottom: 30px;">
-                Натисніть кнопку для входу через Telegram<br>
-                Потрібно буде підтвердити номер телефону
-            </p>
-            
-            <!-- Кнопка Telegram Login -->
-            <a href="https://oauth.telegram.org/auth?bot_id=8506586970&origin=https%3A%2F%2Fswetatop.github.io&embed=1&request_access=write&return_to=https%3A%2F%2Fswetatop.github.io%2Fmanual%2Fauth-handler.html" 
-               class="telegram-btn"
-               target="_blank">
-                <img src="https://telegram.org/img/t_logo.svg" alt="Telegram">
-                Увійти через Telegram
-            </a>
-            
-            <p style="color: #94A3B8; font-size: 14px; margin-top: 10px;">
-                Відкриється Telegram для авторизації
-            </p>
-            
-            <!-- Быстрый тест -->
-            <div style="border-top: 1px solid #2D3748; padding-top: 25px; margin-top: 30px;">
-                <p style="color: #94A3B8; margin-bottom: 15px;">Швидкий тест:</p>
-                <button onclick="loginTestAdmin()" style="background: #10B981; color: white; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; margin: 5px;">
-                    👑 Тест: Адмін
-                </button>
-                <button onclick="loginTestUser()" style="background: #F59E0B; color: white; padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; margin: 5px;">
-                    👤 Тест: Користувач
-                </button>
-            </div>
-        </div>
+    <h1>Ukraine GTA 5</h1>
+    <p>Вход через Telegram</p>
+    
+    <!-- Виджет -->
+    <div style="margin: 40px;">
+        <script async 
+            src="https://telegram.org/js/telegram-widget.js?22" 
+            data-telegram-login="UGgtavBot"
+            data-auth-url="https://swetatop.github.io/manual/auth-handler.html"
+            data-size="large"
+            data-radius="20">
+        </script>
     </div>
-
+    
+    <!-- Резервная кнопка -->
+    <div id="fallback" style="display: none; margin-top: 30px;">
+        <p>Виджет не загрузился. Используйте кнопку ниже:</p>
+        <button onclick="fallbackLogin()" class="telegram-btn">
+            🔗 Открыть в Telegram
+        </button>
+    </div>
+    
     <script>
-        // Тест админа
-        function loginTestAdmin() {
-            sessionStorage.setItem('user_id', '5316593741');
-            sessionStorage.setItem('user_name', 'Perets');
-            sessionStorage.setItem('user_username', 'swetatopp');
-            sessionStorage.setItem('is_admin', 'true');
+        // Проверка через 3 секунды
+        setTimeout(() => {
+            const iframes = document.querySelectorAll('iframe[src*="telegram.org"]');
+            if(iframes.length === 0) {
+                document.getElementById('fallback').style.display = 'block';
+            }
+        }, 3000);
+        
+        // Резервный метод
+        function fallbackLogin() {
+            const random = Date.now();
+            // Пробуем открыть в приложении
+            window.location.href = `tg://resolve?domain=UGgtavBot&start=login_${random}`;
             
-            window.location.href = 'auth-handler.html#id=5316593741&first_name=Perets&username=swetatopp&auth_date=' + Math.floor(Date.now()/1000);
+            // Если не открылось, через 500мс открываем веб версию
+            setTimeout(() => {
+                window.location.href = `https://t.me/UGgtavBot?start=login_${random}`;
+            }, 500);
         }
         
-        // Тест пользователя
-        function loginTestUser() {
-            const userId = prompt('Введи Telegram ID для теста:', '123456789');
-            const userName = prompt('Введи имя:', 'Тестовый Пользователь');
-            
-            if(userId && userName) {
-                sessionStorage.setItem('user_id', userId);
-                sessionStorage.setItem('user_name', userName);
-                sessionStorage.setItem('user_username', 'test_user');
-                
-                window.location.href = `auth-handler.html#id=${userId}&first_name=${encodeURIComponent(userName)}&username=test_user&auth_date=${Math.floor(Date.now()/1000)}`;
-            }
+        // Проверяем, не вернулись ли мы уже с данными
+        if(window.location.hash && window.location.hash.includes('id=')) {
+            console.log('Уже есть данные:', window.location.hash);
+            // Можно сразу перейти на auth-handler.html
+            // window.location.href = 'auth-handler.html' + window.location.hash;
         }
-        
-        // Автоматический переход после авторизации
-        window.addEventListener('message', function(event) {
-            if(event.origin === 'https://oauth.telegram.org') {
-                console.log('Получены данные от Telegram:', event.data);
-                
-                if(event.data && event.data.auth_data) {
-                    // Сохраняем данные
-                    const params = new URLSearchParams(event.data.auth_data);
-                    sessionStorage.setItem('telegram_auth', event.data.auth_data);
-                    
-                    // Переходим к обработчику
-                    window.location.href = `auth-handler.html#${event.data.auth_data}`;
-                }
-            }
-        });
     </script>
 </body>
 </html>
