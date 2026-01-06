@@ -12,51 +12,85 @@
     <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
-    <!-- 🔥 ВАЖНО: Скрипт перевірки авторизації -->
+    <!-- 🔥 ФІКС 1: МИТТЄВА ПЕРЕВІРКА localStorage -->
     <script>
-        // ПЕРЕВІРКА АВТОРИЗАЦІЇ ПРИ ЗАВАНТАЖЕННІ СТОРІНКИ
-        (function checkAuthOnLoad() {
-            console.log('🔍 Перевірка авторизації...');
+        // ШВИДКА ПЕРЕВІРКА АВТОРИЗАЦІЇ ПРИ ЗАВАНТАЖЕННІ
+        (function fastAuthCheck() {
+            console.log('⚡ Швидка перевірка авторизації...');
             
-            // 1. Перевіряємо дані в localStorage (від Telegram Widget)
-            const savedUser = localStorage.getItem('telegram_user');
-            const isAdmin = localStorage.getItem('is_admin');
+            // Перевіряємо localStorage
+            const telegramUser = localStorage.getItem('telegram_user');
+            const userId = localStorage.getItem('user_id');
             const authTime = localStorage.getItem('auth_time');
             
-            // 2. Якщо є дані і не застаріли (менше 24 годин)
-            if (savedUser && authTime) {
-                const userData = JSON.parse(savedUser);
+            // Якщо є дані та сесія не застаріла (24 години)
+            if ((telegramUser || userId) && authTime) {
+                const userData = telegramUser ? JSON.parse(telegramUser) : { id: userId };
                 const timeDiff = Date.now() - parseInt(authTime);
-                const hoursDiff = timeDiff / (1000 * 60 * 60);
                 
-                if (hoursDiff < 24) {
-                    console.log('✅ Авторизація через Telegram Widget активна:', userData.first_name);
+                if (timeDiff < 86400000) { // 24 години
+                    console.log('✅ Авторизація знайдена в localStorage:', userData.id);
                     
-                    // Зберігаємо для основного скрипта
+                    // Зберігаємо дані для основного скрипта
                     window.__USER_DATA = userData;
-                    window.__USER_DATA.isAdmin = (isAdmin === 'true');
+                    window.__USER_DATA.isAdmin = (localStorage.getItem('is_admin') === 'true') || 
+                                                (userData.id === '5316593741');
                     
-                    // Показуємо сторінку
+                    // Швидке оновлення інтерфейсу
                     document.addEventListener('DOMContentLoaded', function() {
+                        // Оновлюємо ім'я користувача
+                        const nameElements = document.querySelectorAll('#userName, #userFullName, #creatorName');
+                        nameElements.forEach(el => {
+                            if (el && userData.first_name) {
+                                el.textContent = userData.first_name;
+                            }
+                        });
+                        
+                        // Оновлюємо ID
+                        const idElement = document.getElementById('userId');
+                        if (idElement && userData.id) {
+                            idElement.textContent = userData.id;
+                        }
+                        
+                        // Оновлюємо Telegram
+                        const tgElement = document.getElementById('userTelegram');
+                        if (tgElement && userData.username) {
+                            tgElement.textContent = '@' + userData.username;
+                        }
+                        
+                        // Оновлюємо роль
+                        const roleElement = document.getElementById('userRole');
+                        if (roleElement) {
+                            roleElement.textContent = window.__USER_DATA.isAdmin ? 'Адміністратор' : 'Модератор';
+                        }
+                        
+                        // Показуємо блок інформації
+                        const infoBlock = document.getElementById('userInfoBlock');
+                        if (infoBlock) infoBlock.style.display = 'block';
+                        
+                        // Показуємо кнопку управління для адміна
+                        const tgBtn = document.getElementById('tgControlBtn');
+                        if (tgBtn && window.__USER_DATA.isAdmin) {
+                            tgBtn.style.display = 'flex';
+                        }
+                        
+                        // Дозволяємо показ сторінки
+                        document.body.classList.add('loaded');
                         document.body.style.opacity = '1';
+                        
+                        console.log('✅ Інтерфейс оновлено (швидкий режим)');
                     });
                     
-                    return; // Все добре, продовжуємо
+                    // Позначаємо що основну перевірку можна пропустити
+                    window.__SKIP_AUTH_CHECK = true;
+                    return;
                 } else {
-                    console.log('❌ Сесія застаріла (більше 24 годин)');
+                    console.log('❌ Сесія застаріла');
                     localStorage.clear();
                 }
             }
             
-            // 3. Перевіряємо Telegram Web App (якщо відкрито всередині Telegram)
-            if (window.Telegram && Telegram.WebApp && Telegram.WebApp.initDataUnsafe && Telegram.WebApp.initDataUnsafe.user) {
-                console.log('✅ Авторизація через Telegram Web App');
-                return; // Все добре, продовжуємо
-            }
-            
-            // 4. Якщо немає авторизації - перенаправляємо на вхід
-            console.log('❌ Немає авторизації, перенаправляємо на login.html');
-            window.location.href = 'login.html';
+            console.log('ℹ️ Не знайдено даних в localStorage');
         })();
     </script>
     
@@ -1496,119 +1530,112 @@
             }
         }
         
-        // Перевірка авторизації (Telegram Widget АБО Telegram Web App)
+        // 🔥 ФІКС 2: Покращена функція перевірки авторизації
         async function checkTelegramAuth() {
             console.log('🔍 Перевірка авторизації...');
             
-            // 1. ПЕРЕВІРЯЄМО Telegram Widget (дані з localStorage)
+            // Перевіряємо чи вже є дані з localStorage (швидкий режим)
+            if (window.__SKIP_AUTH_CHECK && window.__USER_DATA) {
+                console.log('✅ Використовуємо дані з localStorage:', window.__USER_DATA.first_name);
+                return window.__USER_DATA;
+            }
+            
+            // Перевіряємо Telegram Web App (якщо відкрито в Telegram)
+            const telegramUser = getTelegramUserData();
+            
+            if (telegramUser?.id) {
+                console.log('✅ Telegram Web App дані:', telegramUser.first_name);
+                
+                try {
+                    const userDoc = await getDoc(doc(db, "users", telegramUser.id));
+                    
+                    if (!userDoc.exists()) {
+                        console.log('❌ Користувача немає в базі');
+                        window.location.href = 'login.html';
+                        return null;
+                    }
+                    
+                    const userData = userDoc.data();
+                    
+                    if (userData.status !== 'approved' && !userData.isAdmin) {
+                        console.log('❌ Користувач не підтверджений');
+                        window.location.href = 'login.html';
+                        return null;
+                    }
+                    
+                    console.log('✅ Авторизація успішна!');
+                    return { ...telegramUser, ...userData };
+                    
+                } catch (error) {
+                    console.error('❌ Помилка перевірки:', error);
+                    window.location.href = 'login.html';
+                    return null;
+                }
+            }
+            
+            // Додаткова перевірка localStorage (для Telegram Widget)
             const savedUser = localStorage.getItem('telegram_user');
-            const isAdmin = localStorage.getItem('is_admin');
             const authTime = localStorage.getItem('auth_time');
             
             if (savedUser && authTime) {
                 const userData = JSON.parse(savedUser);
                 const timeDiff = Date.now() - parseInt(authTime);
-                const hoursDiff = timeDiff / (1000 * 60 * 60);
                 
-                if (hoursDiff < 24) {
-                    console.log('✅ Авторизація через Telegram Widget:', userData.first_name);
+                if (timeDiff < 86400000) { // 24 години
+                    console.log('✅ Авторизація з localStorage:', userData.first_name);
                     
-                    // Перевіряємо в Firebase (опціонально, для безпеки)
+                    // Якщо це адмін - перевіряємо Firebase, але не блокуємо
+                    if (userData.id === '5316593741') {
+                        try {
+                            const userDoc = await getDoc(doc(db, "users", userData.id));
+                            if (userDoc.exists()) {
+                                const dbData = userDoc.data();
+                                return { ...userData, ...dbData, isAdmin: true };
+                            }
+                        } catch (error) {
+                            console.log('⚠️ Помилка Firebase для адміна, але продовжуємо');
+                        }
+                        
+                        return {
+                            ...userData,
+                            isAdmin: true,
+                            status: 'approved'
+                        };
+                    }
+                    
+                    // Для інших користувачів перевіряємо Firebase
                     try {
                         const userDoc = await getDoc(doc(db, "users", userData.id));
                         
                         if (userDoc.exists()) {
                             const dbData = userDoc.data();
                             
-                            // Якщо користувач затверджений або це адмін
-                            if (dbData.status === 'approved' || dbData.isAdmin || userData.id === '5316593741') {
-                                console.log('✅ Користувач підтверджений в Firebase');
-                                
-                                // Об'єднуємо дані
-                                return {
-                                    ...userData,
-                                    ...dbData,
-                                    isAdmin: dbData.isAdmin || (userData.id === '5316593741') || (isAdmin === 'true')
-                                };
+                            if (dbData.status === 'approved' || dbData.isAdmin) {
+                                return { ...userData, ...dbData };
                             } else {
-                                console.log('❌ Користувач не затверджений в Firebase');
+                                console.log('❌ Користувач не підтверджений в Firebase');
                                 window.location.href = 'login.html';
                                 return null;
                             }
-                        } else {
-                            console.log('❌ Користувача немає в Firebase, але пропускаємо (це адмін)');
-                            
-                            // Якщо це ти (адмін) - пропускаємо
-                            if (userData.id === '5316593741') {
-                                return {
-                                    ...userData,
-                                    isAdmin: true,
-                                    status: 'approved'
-                                };
-                            }
-                            
-                            window.location.href = 'login.html';
-                            return null;
                         }
                     } catch (error) {
-                        console.error('Помилка перевірки в Firebase:', error);
-                        
-                        // Якщо помилка Firebase, але це адмін - пропускаємо
-                        if (userData.id === '5316593741') {
-                            return {
-                                ...userData,
-                                isAdmin: true,
-                                status: 'approved'
-                            };
-                        }
-                        
-                        return null;
+                        console.log('⚠️ Помилка Firebase, але продовжуємо');
+                        // Якщо Firebase не доступний, але є дані в localStorage - пропускаємо
+                        return {
+                            ...userData,
+                            isAdmin: userData.id === '5316593741',
+                            status: userData.id === '5316593741' ? 'approved' : 'unknown'
+                        };
                     }
                 } else {
                     console.log('❌ Сесія застаріла');
                     localStorage.clear();
-                    window.location.href = 'login.html';
-                    return null;
                 }
             }
             
-            // 2. ПЕРЕВІРЯЄМО Telegram Web App (якщо відкрито в Telegram)
-            const telegramUser = getTelegramUserData();
-            
-            if (!telegramUser?.id) {
-                console.log('❌ Немає даних авторизації');
-                window.location.href = 'login.html';
-                return null;
-            }
-            
-            console.log('✅ Telegram Web App дані отримано:', telegramUser.first_name);
-            
-            try {
-                // Перевіряємо в Firebase
-                const userDoc = await getDoc(doc(db, "users", telegramUser.id));
-                
-                if (!userDoc.exists()) {
-                    console.log('❌ Користувача немає в базі');
-                    window.location.href = 'login.html';
-                    return null;
-                }
-                
-                const userData = userDoc.data();
-                
-                if (userData.status !== 'approved' && !userData.isAdmin) {
-                    console.log('❌ Користувач не підтверджений');
-                    window.location.href = 'login.html';
-                    return null;
-                }
-                
-                console.log('✅ Авторизація успішна!');
-                return { ...telegramUser, ...userData };
-                
-            } catch (error) {
-                console.error('❌ Помилка перевірки авторизації:', error);
-                window.location.href = 'login.html';
-                return null;
-            }
+            console.log('❌ Немає авторизації');
+            window.location.href = 'login.html';
+            return null;
         }
         
         // Очищення даних авторизації
@@ -1626,17 +1653,21 @@
             // Оновлюємо привітання
             const userNameElements = document.querySelectorAll('#userName, #userFullName, #creatorName');
             userNameElements.forEach(el => {
-                if (el) el.textContent = userData.first_name;
+                if (el && userData.first_name) {
+                    el.textContent = userData.first_name;
+                }
             });
             
             // Оновлюємо ID
             const userIdElement = document.getElementById('userId');
-            if (userIdElement) userIdElement.textContent = userData.telegram_id || userData.id || 'немає';
+            if (userIdElement && userData.id) {
+                userIdElement.textContent = userData.id;
+            }
             
             // Оновлюємо Telegram
             const userTelegramElement = document.getElementById('userTelegram');
-            if (userTelegramElement) {
-                userTelegramElement.textContent = userData.username ? '@' + userData.username : 'немає';
+            if (userTelegramElement && userData.username) {
+                userTelegramElement.textContent = '@' + userData.username;
             }
             
             // Оновлюємо роль
@@ -1647,7 +1678,7 @@
             
             // Оновлюємо привітання на сторінці статуту
             const statuteGreeting = document.querySelector('#userGreetingStatute span');
-            if (statuteGreeting) {
+            if (statuteGreeting && userData.first_name) {
                 statuteGreeting.textContent = userData.first_name;
             }
             
@@ -1659,16 +1690,21 @@
             
             // Показуємо кнопку управління для адмінів
             const tgControlBtn = document.getElementById('tgControlBtn');
+            const tgManageBtn = document.getElementById('tgManageBtn');
             
             if (userData.isAdmin) {
                 if (tgControlBtn) tgControlBtn.style.display = 'flex';
+                if (tgManageBtn) tgManageBtn.style.display = 'inline-block';
             }
             
             // Оновлюємо заголовок
-            document.title = `Посібник модератора | ${userData.first_name}`;
+            if (userData.first_name) {
+                document.title = `Посібник модератора | ${userData.first_name}`;
+            }
             
             // Показуємо сторінку
             document.body.classList.add('loaded');
+            document.body.style.opacity = '1';
         }
         
         // Функція для виходу
@@ -1775,6 +1811,7 @@
             
             if (!userData) {
                 console.log('❌ Немає авторизації, перенаправляємо...');
+                // Вже перенаправлено в checkTelegramAuth
                 return;
             }
             
@@ -1789,7 +1826,7 @@
             // Показуємо сторінку "Головна" за замовчуванням
             showPage('home');
             
-            // Ініціалізуємо Telegram Web App
+            // Ініціалізуємо Telegram Web App (якщо використовується)
             if (window.Telegram && Telegram.WebApp) {
                 Telegram.WebApp.ready();
                 Telegram.WebApp.expand();
