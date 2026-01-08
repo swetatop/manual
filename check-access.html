@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Перевірка доступу | Посібник</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: sans-serif;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #1e293b;
+            padding: 40px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+        }
+        
+        h1 {
+            color: #3B82F6;
+            margin-bottom: 20px;
+        }
+        
+        .status-box {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .pending {
+            background: rgba(245, 158, 11, 0.2);
+            border: 2px solid #F59E0B;
+            color: #F59E0B;
+        }
+        
+        .approved {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid #10B981;
+            color: #10B981;
+        }
+        
+        .rejected {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #EF4444;
+            color: #EF4444;
+        }
+        
+        .user-info {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .btn {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        .admin-panel-btn {
+            background: #8B5CF6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Перевірка доступу</h1>
+        
+        <div class="user-info">
+            <p><strong>ID:</strong> <span id="userId">...</span></p>
+            <p><strong>Ім'я:</strong> <span id="userName">...</span></p>
+            <p><strong>Статус:</strong> <span id="userStatus">завантаження...</span></p>
+        </div>
+        
+        <div class="status-box pending" id="statusBox">
+            <div id="statusText">Перевірка вашого доступу...</div>
+        </div>
+        
+        <div id="adminSection" style="display: none; margin-top: 30px;">
+            <h3>👑 Адмін-панель</h3>
+            <div id="pendingUsersList" style="margin: 20px 0;"></div>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <button class="btn" id="gotoManualBtn" style="display: none;">
+                📘 Перейти до посібника
+            </button>
+            <button class="btn admin-panel-btn" id="refreshBtn">
+                🔄 Оновити
+            </button>
+            <button class="btn" style="background: #64748B;" onclick="logout()">
+                🚪 Вийти
+            </button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { db } from './firebase-app.js';
+        import { 
+            doc, 
+            getDoc, 
+            setDoc, 
+            updateDoc,
+            collection,
+            getDocs,
+            query,
+            orderBy 
+        } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        
+        // ТВОЙ ID
+        const ADMIN_ID = '5316593741';
+        
+        // Получаем пользователя из localStorage
+        const userData = JSON.parse(localStorage.getItem('tg_user'));
+        
+        if (!userData) {
+            window.location.href = 'login.html';
+        }
+        
+        // Показываем данные
+        document.getElementById('userId').textContent = userData.id;
+        document.getElementById('userName').textContent = userData.first_name;
+        
+        // Проверяем доступ
+        async function checkAccess() {
+            const userId = userData.id;
+            
+            // Если это админ (ТЫ) - сразу всё разрешаем
+            if (userId === ADMIN_ID) {
+                showAdminAccess();
+                return;
+            }
+            
+            try {
+                // Проверяем в базе
+                const userDoc = await getDoc(doc(db, "users", userId));
+                
+                if (userDoc.exists()) {
+                    const dbData = userDoc.data();
+                    updateStatus(dbData.status);
+                    
+                    if (dbData.status === 'approved') {
+                        showApproved();
+                    }
+                } else {
+                    // Новый пользователь - сохраняем
+                    await setDoc(doc(db, "users", userId), {
+                        telegram_id: userId,
+                        name: userData.first_name,
+                        username: userData.username || '',
+                        status: 'pending',
+                        created_at: new Date(),
+                        last_login: new Date()
+                    });
+                    
+                    updateStatus('pending');
+                }
+                
+            } catch (error) {
+                console.error('Помилка:', error);
+                document.getElementById('statusText').innerHTML = '❌ Помилка сервера';
+            }
+        }
+        
+        function showAdminAccess() {
+            document.getElementById('userStatus').textContent = 'Адміністратор';
+            document.getElementById('statusText').innerHTML = '✅ Ви адміністратор!';
+            document.getElementById('statusBox').className = 'status-box approved';
+            
+            // Показываем кнопку посібника
+            document.getElementById('gotoManualBtn').style.display = 'inline-block';
+            document.getElementById('gotoManualBtn').onclick = () => {
+                window.location.href = 'manual.html';
+            };
+            
+            // Показываем админ-панель
+            document.getElementById('adminSection').style.display = 'block';
+            loadPendingUsers();
+        }
+        
+        function showApproved() {
+            document.getElementById('userStatus').textContent = 'Підтверджено';
+            document.getElementById('statusText').innerHTML = '✅ Ваш доступ підтверджено!';
+            document.getElementById('statusBox').className = 'status-box approved';
+            
+            document.getElementById('gotoManualBtn').style.display = 'inline-block';
+            document.getElementById('gotoManualBtn').onclick = () => {
+                window.location.href = 'manual.html';
+            };
+        }
+        
+        function updateStatus(status) {
+            document.getElementById('userStatus').textContent = 
+                status === 'pending' ? 'Очікує підтвердження' :
+                status === 'approved' ? 'Підтверджено' : 'Відхилено';
+            
+            if (status === 'pending') {
+                document.getElementById('statusText').innerHTML = '⏳ Ваш запит на розгляді адміністратора';
+                document.getElementById('statusBox').className = 'status-box pending';
+            } else if (status === 'rejected') {
+                document.getElementById('statusText').innerHTML = '❌ Ваш доступ відхилено';
+                document.getElementById('statusBox').className = 'status-box rejected';
+            }
+        }
+        
+        // Загружаем пользователей для админа
+        async function loadPendingUsers() {
+            try {
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, orderBy("created_at", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                let pendingHtml = '';
+                let approvedHtml = '';
+                
+                querySnapshot.forEach((docSnapshot) => {
+                    const user = docSnapshot.data();
+                    const userId = docSnapshot.id;
+                    
+                    if (userId === ADMIN_ID) return; // Пропускаем админа
+                    
+                    const userCard = `
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; margin: 10px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${user.name}</strong><br>
+                                <small>ID: ${user.telegram_id} | @${user.username || 'без логіну'}</small>
+                            </div>
+                            <div>
+                                ${user.status === 'pending' ? `
+                                    <button onclick="approveUser('${userId}')" style="background: #10B981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin: 2px;">
+                                        ✅ Підтвердити
+                                    </button>
+                                    <button onclick="rejectUser('${userId}')" style="background: #EF4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin: 2px;">
+                                        ❌ Відхилити
+                                    </button>
+                                ` : ''}
+                                
+                                ${user.status === 'approved' ? `
+                                    <span style="color: #10B981;">✅ Підтверджено</span>
+                                    <button onclick="revokeUser('${userId}')" style="background: #F59E0B; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin: 2px;">
+                                        🚫 Забрати доступ
+                                    </button>
+                                ` : ''}
+                                
+                                ${user.status === 'rejected' ? `
+                                    <span style="color: #EF4444;">❌ Відхилено</span>
+                                    <button onclick="approveUser('${userId}')" style="background: #10B981; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin: 2px;">
+                                        ✅ Відновити доступ
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (user.status === 'pending') {
+                        pendingHtml += userCard;
+                    } else {
+                        approvedHtml += userCard;
+                    }
+                });
+                
+                let finalHtml = '';
+                
+                if (pendingHtml) {
+                    finalHtml += `<h4>⏳ Очікують підтвердження:</h4>${pendingHtml}`;
+                }
+                
+                if (approvedHtml) {
+                    finalHtml += `<h4 style="margin-top: 30px;">👤 Всі користувачі:</h4>${approvedHtml}`;
+                }
+                
+                if (!pendingHtml && !approvedHtml) {
+                    finalHtml = '<p>Немає інших користувачів</p>';
+                }
+                
+                document.getElementById('pendingUsersList').innerHTML = finalHtml;
+                
+            } catch (error) {
+                console.error('Помилка завантаження:', error);
+                document.getElementById('pendingUsersList').innerHTML = '<p style="color: red;">❌ Помилка завантаження</p>';
+            }
+        }
+        
+        // Функции для админа
+        window.approveUser = async function(userId) {
+            try {
+                await updateDoc(doc(db, "users", userId), {
+                    status: 'approved',
+                    approved_at: new Date()
+                });
+                alert('✅ Користувача підтверджено!');
+                loadPendingUsers();
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        };
+        
+        window.rejectUser = async function(userId) {
+            if (!confirm('Відхилити доступ цьому користувачу?')) return;
+            
+            try {
+                await updateDoc(doc(db, "users", userId), {
+                    status: 'rejected',
+                    rejected_at: new Date()
+                });
+                alert('✅ Доступ відхилено!');
+                loadPendingUsers();
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        };
+        
+        window.revokeUser = async function(userId) {
+            if (!confirm('Забрати доступ у цього користувача?')) return;
+            
+            try {
+                await updateDoc(doc(db, "users", userId), {
+                    status: 'rejected',
+                    revoked_at: new Date()
+                });
+                alert('✅ Доступ забрано!');
+                loadPendingUsers();
+            } catch (error) {
+                alert('❌ Помилка: ' + error.message);
+            }
+        };
+        
+        function logout() {
+            localStorage.removeItem('tg_user');
+            window.location.href = 'login.html';
+        }
+        
+        // Обновление
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            location.reload();
+        });
+        
+        // Запускаем
+        checkAccess();
+    </script>
+</body>
+</html>
