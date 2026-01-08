@@ -381,10 +381,12 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Импортируем Firebase -->
     <script type="module">
+        // Импортируем db из firebase-app.js
         import { db } from './firebase-app.js';
-        import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
@@ -393,11 +395,13 @@
         const switchToRegister = document.getElementById('switchToRegister');
         const successMessage = document.getElementById('successMessage');
         
+        // Проверяем URL параметры
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('registered') === 'true') {
             successMessage.style.display = 'flex';
         }
         
+        // Показать/скрыть пароль
         togglePasswordBtn.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
@@ -405,30 +409,39 @@
             icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
         });
         
+        // Переключение на регистрацию
         switchToRegister.addEventListener('click', function(e) {
             e.preventDefault();
             showRegisterForm();
         });
         
+        // Валидация email
         function validateEmail(email) {
             const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return re.test(email);
         }
         
+        // Показать ошибку
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
-            errorElement.querySelector('span').textContent = message;
-            errorElement.style.display = 'flex';
+            if (errorElement) {
+                errorElement.querySelector('span').textContent = message;
+                errorElement.style.display = 'flex';
+            }
         }
         
+        // Скрыть ошибку
         function hideError(elementId) {
             const errorElement = document.getElementById(elementId);
-            errorElement.style.display = 'none';
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
         }
         
+        // Быстрый вход админа
         function quickAdminLogin() {
             emailInput.value = 'dan.0985850201@gmail.com';
-            passwordInput.value = 'admin123';
+            passwordInput.value = 'admin123456'; // Простой пароль
             
             const loginBtn = document.querySelector('.login-btn');
             const originalText = loginBtn.innerHTML;
@@ -442,13 +455,14 @@
             }, 500);
         }
         
+        // Основной обработчик входа
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             hideError('emailError');
             hideError('passwordError');
             
-            const email = emailInput.value.trim();
+            const email = emailInput.value.trim().toLowerCase();
             const password = passwordInput.value;
             
             let isValid = true;
@@ -466,81 +480,113 @@
             if (!isValid) return;
             
             try {
+                console.log('🚀 Спробуємо вхід для:', email);
+                
+                // Генерируем ID пользователя
                 const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                console.log('🆔 User ID:', userId);
                 
                 // ========== ПРОВЕРКА НА АДМИНА ==========
-                const ADMIN_EMAILS = [
-                    'dan.0985850201@gmail.com'  // ЕДИНСТВЕННЫЙ админский email
-                ];
+                const ADMIN_EMAILS = ['dan.0985850201@gmail.com'];
                 
                 // Если это админ
-                if (ADMIN_EMAILS.includes(email.toLowerCase())) {
-                    console.log('👑 Адмін входить в систему:', email);
+                if (ADMIN_EMAILS.includes(email)) {
+                    console.log('👑 Знайдено адміна:', email);
                     
+                    // Проверяем, существует ли админ в базе
+                    const userDoc = await getDoc(doc(db, "users", userId));
+                    
+                    if (!userDoc.exists()) {
+                        console.log('📝 Адміна немає в базі, створюємо...');
+                        // Создаем запись админа
+                        await setDoc(doc(db, "users", userId), {
+                            email: email,
+                            nickname: 'Адміністратор',
+                            password_hash: btoa(password), // В реальном проекте используй хеширование!
+                            status: 'approved',
+                            isAdmin: true,
+                            created_at: new Date().toISOString(),
+                            last_login: new Date().toISOString()
+                        });
+                        console.log('✅ Адмін створений успішно');
+                    } else {
+                        console.log('✅ Адмін вже є в базі');
+                        // Обновляем время входа
+                        await setDoc(doc(db, "users", userId), {
+                            last_login: new Date().toISOString()
+                        }, { merge: true });
+                    }
+                    
+                    // Сохраняем в localStorage
                     localStorage.setItem('user_id', userId);
                     localStorage.setItem('user_email', email);
                     localStorage.setItem('user_name', 'Адміністратор');
                     localStorage.setItem('is_admin', 'true');
                     localStorage.setItem('user_registered', 'true');
                     
-                    const userDoc = await getDoc(doc(db, "users", userId));
-                    
-                    if (!userDoc.exists()) {
-                        await setDoc(doc(db, "users", userId), {
-                            email: email,
-                            nickname: 'Адміністратор',
-                            password_hash: btoa(password),
-                            status: 'approved',
-                            isAdmin: true,
-                            created_at: new Date(),
-                            last_login: new Date()
-                        });
-                        console.log('✅ Адмін створений в базі');
-                    }
-                    
+                    console.log('🔄 Перенаправляємо на check-access.html');
                     window.location.href = 'check-access.html';
                     return;
                 }
                 
-                // Обычный пользователь
+                // ========== ОБЫЧНЫЙ ПОЛЬЗОВАТЕЛЬ ==========
+                console.log('👤 Звичайний користувач:', email);
+                
+                // Проверяем существование пользователя
                 const userDoc = await getDoc(doc(db, "users", userId));
                 
                 if (!userDoc.exists()) {
+                    console.log('📝 Користувача немає, реєструємо...');
                     const nickname = email.split('@')[0];
                     
+                    // Создаем нового пользователя
                     await setDoc(doc(db, "users", userId), {
                         email: email,
                         nickname: nickname,
                         password_hash: btoa(password),
-                        status: 'pending',
+                        status: 'pending', // требует подтверждения
                         isAdmin: false,
-                        created_at: new Date(),
-                        last_login: new Date()
+                        created_at: new Date().toISOString(),
+                        last_login: new Date().toISOString()
                     });
                     
+                    // Сохраняем в localStorage
                     localStorage.setItem('user_id', userId);
                     localStorage.setItem('user_email', email);
                     localStorage.setItem('user_name', nickname);
                     localStorage.setItem('is_admin', 'false');
                     localStorage.setItem('user_registered', 'true');
                     
+                    console.log('✅ Користувач зареєстрований');
                     window.location.href = 'check-access.html';
                     return;
                 }
                 
+                // Пользователь существует - проверяем пароль
                 const userData = userDoc.data();
+                console.log('📋 Дані користувача:', userData);
                 
                 if (btoa(password) !== userData.password_hash) {
+                    console.log('❌ Невірний пароль');
                     showError('passwordError', 'Невірний пароль');
                     return;
                 }
                 
+                // Обновляем время входа
+                await setDoc(doc(db, "users", userId), {
+                    last_login: new Date().toISOString()
+                }, { merge: true });
+                
+                // Сохраняем в localStorage
                 localStorage.setItem('user_id', userId);
                 localStorage.setItem('user_email', email);
                 localStorage.setItem('user_name', userData.nickname || 'Користувач');
                 localStorage.setItem('is_admin', userData.isAdmin ? 'true' : 'false');
                 localStorage.setItem('user_registered', 'true');
                 
+                console.log('📊 Статус користувача:', userData.status);
+                
+                // Проверяем статус
                 if (userData.status === 'approved') {
                     window.location.href = 'index.html';
                 } else {
@@ -548,18 +594,39 @@
                 }
                 
             } catch (error) {
-                console.error('❌ Помилка:', error);
-                showError('emailError', 'Помилка сервера. Спробуйте ще раз.');
+                console.error('❌ Критична помилка:', error);
+                showError('emailError', 'Помилка підключення до бази даних. Перевірте консоль.');
+                
+                // Если ошибка с Firebase, покажем подробности
+                if (error.message.includes('permission')) {
+                    console.error('⚠️ Проблема з правами доступу Firestore:');
+                    console.error('1. Перейди в Firebase Console → Firestore Database');
+                    console.error('2. Налаштуй правила доступу:');
+                    console.error(`
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if true; // Для тесту
+    }
+  }
+}
+                    `);
+                }
             }
         });
         
+        // Функция показа формы регистрации
         function showRegisterForm() {
+            console.log('🔄 Переключаємо на форму реєстрації');
+            
             document.querySelector('.form-title').textContent = 'Реєстрація';
             document.querySelector('.login-btn i').className = 'fas fa-user-plus';
             document.querySelector('.login-btn').innerHTML = '<i class="fas fa-user-plus"></i>Зареєструватися';
             document.querySelector('.form-switch p').innerHTML = 'Вже маєте акаунт? <a href="#" id="switchToLogin">Увійти</a>';
             document.querySelector('.admin-quick-login').style.display = 'none';
             
+            // Добавляем поле подтверждения пароля
             const passwordGroup = document.querySelector('.form-group:nth-child(2)');
             const confirmGroup = passwordGroup.cloneNode(true);
             
@@ -571,19 +638,24 @@
             
             passwordGroup.after(confirmGroup);
             
+            // Удаляем старый обработчик и добавляем новый
             form.removeEventListener('submit', arguments.callee);
             form.addEventListener('submit', handleRegister);
             
+            // Обновляем переключатель
             document.getElementById('switchToLogin').addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.reload();
             });
         }
         
+        // Обработка регистрации
         async function handleRegister(e) {
             e.preventDefault();
             
-            const email = emailInput.value.trim();
+            console.log('📝 Обробка реєстрації');
+            
+            const email = emailInput.value.trim().toLowerCase();
             const password = passwordInput.value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
@@ -614,35 +686,51 @@
                 const nickname = email.split('@')[0];
                 const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
                 
-                localStorage.setItem('user_id', userId);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('user_name', nickname);
-                localStorage.setItem('user_registered', 'true');
-                localStorage.setItem('is_admin', 'false');
+                console.log('🆔 Реєструємо користувача:', email, 'ID:', userId);
                 
+                // Проверяем, не зарегистрирован ли уже
+                const existingUser = await getDoc(doc(db, "users", userId));
+                if (existingUser.exists()) {
+                    showError('emailError', 'Користувач з таким email вже зареєстрований');
+                    return;
+                }
+                
+                // Сохраняем в Firebase
                 await setDoc(doc(db, "users", userId), {
                     email: email,
                     nickname: nickname,
                     password_hash: btoa(password),
-                    status: 'pending',
+                    status: 'pending', // требует подтверждения админом
                     isAdmin: false,
-                    created_at: new Date(),
-                    last_login: new Date()
+                    created_at: new Date().toISOString(),
+                    last_login: new Date().toISOString()
                 });
                 
-                window.location.href = 'check-access.html';
+                console.log('✅ Користувач успішно зареєстрований');
+                
+                // Сохраняем в localStorage
+                localStorage.setItem('user_id', userId);
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('user_name', nickname);
+                localStorage.setItem('is_admin', 'false');
+                localStorage.setItem('user_registered', 'true');
+                
+                // Редирект на страницу проверки
+                window.location.href = 'check-access.html?registered=true';
                 
             } catch (error) {
                 console.error('❌ Помилка реєстрації:', error);
-                showError('emailError', 'Помилка реєстрації. Спробуйте ще раз.');
+                showError('emailError', 'Помилка реєстрації. Перевірте підключення до інтернету.');
             }
         }
         
+        // Проверка, если уже залогинен
         document.addEventListener('DOMContentLoaded', function() {
             const isRegistered = localStorage.getItem('user_registered');
             
             if (isRegistered) {
                 const isAdmin = localStorage.getItem('is_admin') === 'true';
+                console.log('📱 Користувач вже зареєстрований, адмін:', isAdmin);
                 
                 if (isAdmin) {
                     window.location.href = 'check-access.html';
