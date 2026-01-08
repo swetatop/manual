@@ -2,24 +2,22 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Вхід | Ukraine GTA 5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід | Система обліку онлайн-зміни GTA 5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #0C1016;
             --bg-card: #141A24;
-            --bg-hover: #1A2230;
             --primary: #3B82F6;
             --primary-dark: #2563EB;
-            --primary-light: #60A5FA;
             --text-light: #F8FAFC;
-            --text-gray: #A6A6A6;
+            --text-gray: #94A3B8;
             --border: #2D3748;
             --success: #10B981;
             --warning: #F59E0B;
             --danger: #EF4444;
-            --purple: #8B5CF6;
         }
         
         * {
@@ -31,171 +29,175 @@
         body {
             background-color: var(--bg-dark);
             color: var(--text-light);
-            font-family: 'Roboto', sans-serif;
             min-height: 100vh;
+            font-family: 'Montserrat', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 20%);
+            background: linear-gradient(135deg, #0C1016 0%, #1E293B 100%);
         }
         
-        .login-container {
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             width: 100%;
-            max-width: 480px;
-        }
-        
-        .login-header {
-            text-align: center;
-            margin-bottom: 50px;
+            max-width: 500px;
         }
         
         .logo {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2.8rem;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
             font-weight: 800;
-            background: linear-gradient(90deg, var(--primary), var(--purple));
+            background: linear-gradient(90deg, #3B82F6, #8B5CF6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             letter-spacing: 1px;
         }
         
-        .subtitle {
+        .logo p {
             color: var(--text-gray);
-            font-size: 1.1rem;
-            max-width: 400px;
-            margin: 0 auto;
-            line-height: 1.6;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
         }
         
-        .login-card {
+        /* Карточка формы */
+        .form-card {
             background: var(--bg-card);
-            border-radius: 20px;
-            padding: 50px 40px;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
             border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
         
-        .login-card:before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--purple));
-        }
-        
-        .form-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.8rem;
-            margin-bottom: 35px;
-            color: var(--text-light);
+        .form-header {
             text-align: center;
+            margin-bottom: 30px;
         }
         
+        .form-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .form-header p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+        }
+        
+        /* Поля формы */
         .form-group {
             margin-bottom: 25px;
-            position: relative;
         }
         
         .form-label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: var(--text-light);
             font-weight: 500;
             font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .form-label i {
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-        
-        .input-wrapper {
-            position: relative;
         }
         
         .form-input {
             width: 100%;
-            padding: 16px 50px 16px 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid var(--border);
-            border-radius: 12px;
+            padding: 14px 16px;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 10px;
             color: var(--text-light);
             font-size: 1rem;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Montserrat', sans-serif;
+            transition: all 0.3s ease;
         }
         
         .form-input:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            background: rgba(255, 255, 255, 0.08);
         }
         
-        .input-icon {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+        .form-input::placeholder {
             color: var(--text-gray);
-            font-size: 1.1rem;
         }
         
-        .password-toggle {
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--text-gray);
-            cursor: pointer;
-            font-size: 1.1rem;
-        }
-        
-        .login-btn {
+        /* Кнопки */
+        .btn {
             width: 100%;
-            padding: 18px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
+            padding: 16px;
             border: none;
-            border-radius: 12px;
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.1rem;
+            border-radius: 10px;
+            font-size: 1rem;
             font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 10px;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            letter-spacing: 0.5px;
+            gap: 10px;
         }
         
-        .login-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
-            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            margin-bottom: 15px;
         }
         
-        .login-btn:active {
-            transform: translateY(-1px);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
         
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-gray);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(30, 41, 59, 0.5);
+            border-color: var(--primary);
+        }
+        
+        /* Сообщения */
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            display: none;
+        }
+        
+        .message-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .message-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .message-info {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        /* Переключатель форм */
         .form-switch {
             text-align: center;
-            margin-top: 30px;
+            margin-top: 25px;
             color: var(--text-gray);
             font-size: 0.95rem;
         }
@@ -204,367 +206,348 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 600;
-            transition: color 0.3s;
+            cursor: pointer;
         }
         
         .form-switch a:hover {
-            color: var(--primary-light);
             text-decoration: underline;
         }
         
-        .error-message {
-            color: var(--danger);
-            font-size: 0.85rem;
-            margin-top: 8px;
-            display: none;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .success-message {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid var(--success);
-            color: var(--success);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            display: none;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-        }
-        
-        .admin-quick-login {
+        /* Админ ссылка */
+        .admin-link {
             text-align: center;
-            margin-top: 25px;
-            padding-top: 25px;
+            margin-top: 30px;
+            padding-top: 20px;
             border-top: 1px solid var(--border);
         }
         
-        .admin-btn {
-            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.95rem;
+        .admin-link a {
+            color: var(--warning);
+            text-decoration: none;
+            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
+            gap: 5px;
         }
         
-        .admin-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        .admin-link a:hover {
+            color: #F59E0B;
         }
         
-        .glow-effect {
-            position: absolute;
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: -1;
+        /* Responsive */
+        @media (max-width: 576px) {
+            .form-card {
+                padding: 30px 20px;
+            }
+            
+            .logo h1 {
+                font-size: 1.8rem;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="glow-effect" style="top: 10%; left: 10%;"></div>
-    <div class="glow-effect" style="bottom: 10%; right: 10%; background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);"></div>
-    
-    <div class="login-container">
-        <div class="login-header">
-            <div class="logo">UKRAINE GTA 5</div>
-            <p class="subtitle">Офіційний посібник для модераторів сервера</p>
+    <div class="container">
+        <!-- Логотип -->
+        <div class="logo">
+            <h1>Ukraine GTA 5</h1>
+            <p>Система обліку онлайн-зміни</p>
         </div>
         
-        <div class="login-card">
-            <h2 class="form-title">Вхід в систему</h2>
-            
-            <form id="loginForm">
+        <!-- Карточка формы -->
+        <div class="form-card">
+            <!-- Форма входа -->
+            <div id="loginForm">
+                <div class="form-header">
+                    <h2>Вхід</h2>
+                    <p>Увійдіть до системи обліку онлайн-змін</p>
+                </div>
+                
+                <div class="message" id="loginMessage"></div>
+                
                 <div class="form-group">
-                    <label class="form-label" for="email">
-                        <i class="fas fa-envelope"></i>
-                        Електронна пошта
-                    </label>
-                    <div class="input-wrapper">
-                        <input type="email" id="email" class="form-input" placeholder="Введіть ваш email" required>
-                        <div class="input-icon">
-                            <i class="fas fa-at"></i>
-                        </div>
-                    </div>
-                    <div class="error-message" id="emailError">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>Будь ласка, введіть коректну email адресу</span>
-                    </div>
+                    <label class="form-label">Електронна пошта</label>
+                    <input type="email" id="loginEmail" class="form-input" placeholder="Введіть email" required>
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label" for="password">
-                        <i class="fas fa-lock"></i>
-                        Пароль
-                    </label>
-                    <div class="input-wrapper">
-                        <input type="password" id="password" class="form-input" placeholder="Введіть пароль" required>
-                        <button type="button" class="password-toggle" id="togglePassword">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <div class="error-message" id="passwordError">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>Пароль повинен містити принаймні 6 символів</span>
-                    </div>
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Введіть пароль" required>
                 </div>
                 
-                <button type="submit" class="login-btn">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Увійти в систему
+                <button class="btn btn-primary" onclick="login()">
+                    <i class="fas fa-sign-in-alt"></i> Увійти
                 </button>
-            </form>
-            
-            <div class="admin-quick-login">
-                <button class="admin-btn" onclick="quickAdminLogin()">
-                    <i class="fas fa-crown"></i> Швидкий вхід для адміна
-                </button>
-                <p style="font-size: 0.8rem; color: var(--text-gray); margin-top: 8px;">
-                    (Заповнює форму адмінськими даними)
-                </p>
+                
+                <div class="form-switch">
+                    Немає акаунта? <a onclick="showRegisterForm()">Зареєструватися</a>
+                </div>
             </div>
             
-            <div class="form-switch">
-                <p>Ще не маєте акаунта? <a href="#" id="switchToRegister">Зареєструватися</a></p>
+            <!-- Форма регистрации -->
+            <div id="registerForm" style="display: none;">
+                <div class="form-header">
+                    <h2>Реєстрація</h2>
+                    <p>Створіть новий акаунт для доступу</p>
+                </div>
+                
+                <div class="message" id="registerMessage"></div>
+                
+                <div class="form-group">
+                    <label class="form-label">Електронна пошта</label>
+                    <input type="email" id="registerEmail" class="form-input" placeholder="Введіть email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Нікнейм</label>
+                    <input type="text" id="registerNickname" class="form-input" placeholder="Введіть нікнейм" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Пароль</label>
+                    <input type="password" id="registerPassword" class="form-input" placeholder="Введіть пароль" minlength="6" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Підтвердження пароля</label>
+                    <input type="password" id="registerConfirmPassword" class="form-input" placeholder="Підтвердіть пароль" required>
+                </div>
+                
+                <button class="btn btn-primary" onclick="register()">
+                    <i class="fas fa-user-plus"></i> Зареєструватися
+                </button>
+                
+                <div class="form-switch">
+                    Вже є акаунт? <a onclick="showLoginForm()">Увійти</a>
+                </div>
             </div>
+        </div>
+        
+        <!-- Ссылка на админ-панель -->
+        <div class="admin-link">
+            <a href="admin-panel.html">
+                <i class="fas fa-crown"></i> Адмін-панель
+            </a>
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module" src="firebase-app.js"></script>
+    
     <script type="module">
-        import { db } from './firebase-app.js';
-        import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { auth, db } from './firebase-app.js';
+        import { 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword 
+        } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
+        import { 
+            doc, setDoc, getDoc, collection, addDoc 
+        } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
-        const form = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const togglePasswordBtn = document.getElementById('togglePassword');
-        const switchToRegister = document.getElementById('switchToRegister');
+        // ID админа (ВАШ ID - замените на свой)
+        const ADMIN_ID = 'YOUR_ADMIN_ID_HERE';
         
-        // Показать/скрыть пароль
-        togglePasswordBtn.addEventListener('click', function() {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            const icon = this.querySelector('i');
-            icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
-        });
-        
-        // Переключение на регистрацию
-        switchToRegister.addEventListener('click', function(e) {
-            e.preventDefault();
-            showRegisterForm();
-        });
-        
-        // Валидация email
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
+        // Показать форму регистрации
+        function showRegisterForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            clearMessages();
         }
         
-        // Показать ошибку
-        function showError(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.querySelector('span').textContent = message;
-                errorElement.style.display = 'flex';
+        // Показать форму входа
+        function showLoginForm() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            clearMessages();
+        }
+        
+        // Очистить сообщения
+        function clearMessages() {
+            document.getElementById('loginMessage').style.display = 'none';
+            document.getElementById('registerMessage').style.display = 'none';
+        }
+        
+        // Показать сообщение
+        function showMessage(elementId, text, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = text;
+            element.className = `message message-${type}`;
+            element.style.display = 'block';
+        }
+        
+        // Регистрация
+        async function register() {
+            const email = document.getElementById('registerEmail').value;
+            const nickname = document.getElementById('registerNickname').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            // Валидация
+            if (!email || !nickname || !password || !confirmPassword) {
+                showMessage('registerMessage', 'Будь ласка, заповніть всі поля', 'error');
+                return;
             }
-        }
-        
-        // Скрыть ошибку
-        function hideError(elementId) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
-        }
-        
-        // Быстрый вход админа
-        function quickAdminLogin() {
-            emailInput.value = 'dan.0985850201@gmail.com';
-            passwordInput.value = 'admin123456';
             
-            const loginBtn = document.querySelector('.login-btn');
-            const originalText = loginBtn.innerHTML;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Входимо як адмін...';
-            loginBtn.disabled = true;
-            
-            setTimeout(() => {
-                form.dispatchEvent(new Event('submit'));
-                loginBtn.innerHTML = originalText;
-                loginBtn.disabled = false;
-            }, 500);
-        }
-        
-        // Основной обработчик входа
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            hideError('emailError');
-            hideError('passwordError');
-            
-            const email = emailInput.value.trim().toLowerCase();
-            const password = passwordInput.value;
-            
-            let isValid = true;
-            
-            if (!validateEmail(email)) {
-                showError('emailError', 'Будь ласка, введіть коректну email адресу');
-                isValid = false;
+            if (password !== confirmPassword) {
+                showMessage('registerMessage', 'Паролі не співпадають', 'error');
+                return;
             }
             
             if (password.length < 6) {
-                showError('passwordError', 'Пароль повинен містити принаймні 6 символів');
-                isValid = false;
+                showMessage('registerMessage', 'Пароль має містити мінімум 6 символів', 'error');
+                return;
             }
-            
-            if (!isValid) return;
             
             try {
-                // Генерируем ID
-                const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                // Создаем пользователя в Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
                 
-                // ========== АДМИН ==========
-                if (email === 'dan.0985850201@gmail.com') {
-                    // Сохраняем в localStorage
-                    localStorage.setItem('user_id', userId);
-                    localStorage.setItem('user_email', email);
-                    localStorage.setItem('user_name', 'Адміністратор');
-                    localStorage.setItem('is_admin', 'true');
-                    
-                    // Проверяем в базе
-                    const userDoc = await getDoc(doc(db, "users", userId));
-                    
-                    if (!userDoc.exists()) {
-                        await setDoc(doc(db, "users", userId), {
-                            email: email,
-                            nickname: 'Адміністратор',
-                            password_hash: btoa(password),
-                            status: 'approved',
-                            isAdmin: true,
-                            created_at: new Date().toISOString()
-                        });
-                    }
-                    
-                    // Сразу в посібник
-                    window.location.href = 'index.html';
-                    return;
-                }
+                // Генерируем уникальный ID для пользователя
+                const userId = user.uid;
                 
-                // ========== ОБЫЧНЫЙ ПОЛЬЗОВАТЕЛЬ ==========
-                const userDoc = await getDoc(doc(db, "users", userId));
+                // Создаем запись в Firestore
+                await setDoc(doc(db, "users", userId), {
+                    id: userId,
+                    email: email,
+                    nickname: nickname,
+                    role: 'user',
+                    status: 'pending', // Ожидает подтверждения админом
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
                 
-                if (!userDoc.exists()) {
-                    // Регистрация
-                    const nickname = email.split('@')[0];
-                    
-                    await setDoc(doc(db, "users", userId), {
-                        email: email,
-                        nickname: nickname,
-                        password_hash: btoa(password),
-                        status: 'pending',
-                        isAdmin: false,
-                        created_at: new Date().toISOString()
-                    });
-                    
-                    localStorage.setItem('user_id', userId);
-                    localStorage.setItem('user_email', email);
-                    localStorage.setItem('user_name', nickname);
-                    localStorage.setItem('is_admin', 'false');
-                    
-                    // Показать сообщение об ожидании
-                    alert('✅ Реєстрація успішна! Чекайте підтвердження адміністратора.');
-                    return;
-                }
+                // Создаем уведомление для админа
+                await addDoc(collection(db, "notifications"), {
+                    type: 'new_user',
+                    userId: userId,
+                    userEmail: email,
+                    userNickname: nickname,
+                    message: `Нова заявка на реєстрацію від ${nickname} (${email})`,
+                    created_at: new Date().toISOString(),
+                    read: false
+                });
                 
-                // Проверяем пароль
-                const userData = userDoc.data();
+                showMessage('registerMessage', 
+                    '✅ Реєстрація успішна! Очікуйте підтвердження адміністратора. Ви отримаєте доступ після підтвердження.', 
+                    'success'
+                );
                 
-                if (btoa(password) !== userData.password_hash) {
-                    showError('passwordError', 'Невірний пароль');
-                    return;
-                }
+                // Очищаем форму
+                document.getElementById('registerEmail').value = '';
+                document.getElementById('registerNickname').value = '';
+                document.getElementById('registerPassword').value = '';
+                document.getElementById('registerConfirmPassword').value = '';
                 
-                // Проверяем статус
-                if (userData.status === 'approved') {
-                    localStorage.setItem('user_id', userId);
-                    localStorage.setItem('user_email', email);
-                    localStorage.setItem('user_name', userData.nickname || 'Користувач');
-                    localStorage.setItem('is_admin', 'false');
-                    
-                    window.location.href = 'index.html';
-                } else {
-                    alert('⏳ Ваш акаунт очікує підтвердження адміністратора.');
-                }
+                // Автоматически переключаем на форму входа через 3 секунды
+                setTimeout(() => {
+                    showLoginForm();
+                }, 3000);
                 
             } catch (error) {
-                console.error('❌ Помилка:', error);
-                showError('emailError', 'Помилка підключення до бази даних');
+                console.error('Помилка реєстрації:', error);
+                
+                let errorMessage = 'Помилка реєстрації';
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'Ця електронна пошта вже використовується';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = 'Невірний формат електронної пошти';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'Пароль занадто слабкий';
+                }
+                
+                showMessage('registerMessage', errorMessage, 'error');
+            }
+        }
+        
+        // Вход
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showMessage('loginMessage', 'Будь ласка, заповніть всі поля', 'error');
+                return;
+            }
+            
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Проверяем статус пользователя в Firestore
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                
+                if (!userDoc.exists()) {
+                    showMessage('loginMessage', 'Користувача не знайдено', 'error');
+                    await auth.signOut();
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                
+                // Проверяем статус подтверждения
+                if (userData.status !== 'approved') {
+                    showMessage('loginMessage', 
+                        '⏳ Ваш акаунт очікує підтвердження адміністратора. Спробуйте пізніше.', 
+                        'info'
+                    );
+                    await auth.signOut();
+                    return;
+                }
+                
+                // Сохраняем данные пользователя в localStorage
+                localStorage.setItem('user_data', JSON.stringify({
+                    id: user.uid,
+                    email: userData.email,
+                    nickname: userData.nickname,
+                    role: userData.role,
+                    status: userData.status
+                }));
+                
+                localStorage.setItem('auth_time', Date.now().toString());
+                
+                // Перенаправляем на главную страницу
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('Помилка входу:', error);
+                
+                let errorMessage = 'Помилка входу';
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessage = 'Невірна електронна пошта або пароль';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = 'Забагато спроб входу. Спробуйте пізніше';
+                }
+                
+                showMessage('loginMessage', errorMessage, 'error');
+            }
+        }
+        
+        // Проверяем, есть ли уже активная сессия
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                // Проверяем статус пользователя
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    
+                    if (userData.status === 'approved') {
+                        // Пользователь уже авторизован - перенаправляем
+                        localStorage.setItem('user_data', JSON.stringify({
+                            id: user.uid,
+                            email: userData.email,
+                            nickname: userData.nickname,
+                            role: userData.role,
+                            status: userData.status
+                        }));
+                        
+                        localStorage.setItem('auth_time', Date.now().toString());
+                        window.location.href = 'index.html';
+                    }
+                }
             }
         });
-        
-        // Функция регистрации (упрощенная)
-        function showRegisterForm() {
-            // Просто показываем форму регистрации
-            document.querySelector('.form-title').textContent = 'Реєстрація';
-            document.querySelector('.login-btn i').className = 'fas fa-user-plus';
-            document.querySelector('.login-btn').innerHTML = '<i class="fas fa-user-plus"></i>Зареєструватися';
-            document.querySelector('.form-switch p').innerHTML = 'Вже маєте акаунт? <a href="#" id="switchToLogin">Увійти</a>';
-            document.querySelector('.admin-quick-login').style.display = 'none';
-            
-            // Переключение обратно
-            document.getElementById('switchToLogin').addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.reload();
-            });
-            
-            // Простая регистрация
-            form.removeEventListener('submit', arguments.callee);
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const email = emailInput.value.trim().toLowerCase();
-                const password = passwordInput.value;
-                
-                if (!validateEmail(email)) {
-                    showError('emailError', 'Будь ласка, введіть коректну email адресу');
-                    return;
-                }
-                
-                if (password.length < 6) {
-                    showError('passwordError', 'Пароль повинен містити принаймні 6 символів');
-                    return;
-                }
-                
-                try {
-                    const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
-                    const nickname = email.split('@')[0];
-                    
-                    await setDoc(doc(db, "users", userId), {
-                        email: email,
-                        nickname: nickname,
-                        password_hash: btoa(password),
-                        status: 'pending',
-                        isAdmin: false,
-                        created_at: new Date().toISOString()
-                    });
-                    
-                    alert('✅ Реєстрація успішна! Чекайте підтвердження адміністратора.');
-                    window.location.reload();
-                    
-                } catch (error) {
-                    showError('emailError', 'Помилка реєстрації');
-                }
-            });
-        }
     </script>
 </body>
 </html>
