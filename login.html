@@ -2,534 +2,68 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вхід | Ukraine GTA 5</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #3B82F6;
-            --primary-dark: #2563EB;
-            --bg-dark: #0f1419;
-            --bg-card: #1a2029;
-            --text-light: #F8FAFC;
-            --text-gray: #94A3B8;
-            --border: #2D3748;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            background: var(--bg-dark);
-            color: var(--text-light);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
+            background: #0f1419;
+            color: white;
+            font-family: sans-serif;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
             padding: 20px;
         }
         
         .container {
-            max-width: 400px;
-            width: 100%;
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 40px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             text-align: center;
-        }
-        
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary), #8B5CF6);
-            border-radius: 50%;
-            margin: 0 auto 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: white;
+            max-width: 400px;
         }
         
         h1 {
-            font-size: 28px;
             margin-bottom: 10px;
-            background: linear-gradient(90deg, var(--primary), #60A5FA);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
         
-        .subtitle {
-            color: var(--text-gray);
-            font-size: 15px;
-            line-height: 1.5;
-            margin-bottom: 35px;
-        }
-        
-        .login-options {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin: 30px 0;
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            transition: all 0.3s ease;
-            border: none;
-            font-family: inherit;
-        }
-        
-        .btn-telegram {
-            background: #0088cc;
-            color: white;
-            box-shadow: 0 6px 15px rgba(0, 136, 204, 0.3);
-        }
-        
-        .btn-telegram:hover {
-            background: #0077b5;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 136, 204, 0.4);
-        }
-        
-        .btn-simulate {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-light);
-            border: 1px solid var(--border);
-        }
-        
-        .btn-simulate:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        .login-btn i {
-            font-size: 20px;
-        }
-        
-        .manual-login {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 30px;
-            border: 1px solid var(--border);
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-gray);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            color: var(--text-light);
-            font-family: inherit;
-            font-size: 15px;
-        }
-        
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .status {
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-size: 14px;
-        }
-        
-        .status-success {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #10B981;
-        }
-        
-        .status-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #FCA5A5;
-        }
-        
-        .instructions {
-            background: rgba(59, 130, 246, 0.1);
-            border-left: 4px solid var(--primary);
-            padding: 15px;
-            margin: 25px 0;
-            text-align: left;
-            border-radius: 0 8px 8px 0;
-            font-size: 13px;
-            color: var(--text-gray);
-        }
-        
-        .instructions strong {
-            color: var(--text-light);
-        }
-        
-        .user-id-note {
-            font-size: 12px;
-            color: var(--text-gray);
-            margin-top: 5px;
-            display: block;
-        }
-        
-        .user-id-note code {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            color: #E2E8F0;
+        p {
+            color: #94A3B8;
+            margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo">
-            <i class="fas fa-shield-alt"></i>
-        </div>
-        
         <h1>Ukraine GTA 5</h1>
-        <p class="subtitle">
-            Вхід до адмін-панелі модераторів
-        </p>
+        <p>Вхід до посібника модераторів</p>
         
-        <!-- Опции входа -->
-        <div class="login-options">
-            <button class="login-btn btn-telegram" id="telegramBtn">
-                <i class="fab fa-telegram"></i> Увійти через Telegram
-            </button>
-            
-            <button class="login-btn btn-simulate" id="simulateBtn">
-                <i class="fas fa-user-cog"></i> Тестовий вхід (для розробки)
-            </button>
-        </div>
-        
-        <!-- Статус -->
-        <div class="status" id="status"></div>
-        
-        <!-- Инструкция -->
-        <div class="instructions">
-            <strong>Як знайти свій Telegram ID:</strong>
-            <ol style="margin: 10px 0 0 20px; line-height: 1.6;">
-                <li>Відкрийте Telegram</li>
-                <li>Знайдіть бота <code>@userinfobot</code></li>
-                <li>Надішліть команду <code>/start</code></li>
-                <li>Бот покаже ваш ID</li>
-            </ol>
-        </div>
-        
-        <!-- Ручной вход -->
-        <div class="manual-login" id="manualLogin" style="display: none;">
-            <h3 style="margin-bottom: 20px; color: var(--text-light); font-size: 18px;">
-                <i class="fas fa-key"></i> Ручний вхід
-            </h3>
-            
-            <div class="input-group">
-                <label for="userId">Ваш Telegram ID:</label>
-                <input type="text" id="userId" placeholder="Наприклад: 123456789">
-                <span class="user-id-note">Знайдіть свій ID через бота @userinfobot</span>
-            </div>
-            
-            <div class="input-group">
-                <label for="userName">Ваше ім'я:</label>
-                <input type="text" id="userName" placeholder="Наприклад: Іван">
-            </div>
-            
-            <button class="login-btn btn-telegram" id="manualSubmitBtn" style="margin-top: 10px;">
-                <i class="fas fa-sign-in-alt"></i> Продовжити
-            </button>
-        </div>
+        <!-- Telegram Widget -->
+        <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                data-telegram-login="UGgtavBot" 
+                data-size="large" 
+                data-auth-url="https://swetatop.github.io/manual/auth-handler.html"
+                data-request-access="write"></script>
     </div>
     
-    <!-- Firebase -->
-    <script type="module" src="firebase-app.js"></script>
-    <script type="module">
-        import { db } from './firebase-app.js';
-        import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
-        
-        const ADMIN_ID = '5316593741'; // Твой ID
-        
-        // Элементы
-        const telegramBtn = document.getElementById('telegramBtn');
-        const simulateBtn = document.getElementById('simulateBtn');
-        const manualLogin = document.getElementById('manualLogin');
-        const manualSubmitBtn = document.getElementById('manualSubmitBtn');
-        const status = document.getElementById('status');
-        
-        // ========== ФУНКЦИЯ ВХОДА ==========
-        async function loginUser(userId, userName, isAdmin = false) {
-            console.log('🔐 Вхід користувача:', userName, 'ID:', userId);
+    <script>
+        // Просто перенаправляем данные в auth-handler
+        function onTelegramAuth(user) {
+            console.log('✅ Вхід:', user);
             
-            try {
-                // 1. Сохраняем/обновляем пользователя в Firebase
-                const userRef = doc(db, "users", userId.toString());
-                
-                // Проверяем существующего пользователя
-                const userDoc = await getDoc(userRef);
-                
-                if (userDoc.exists()) {
-                    const existingUser = userDoc.data();
-                    
-                    // Если уже подтверждён или это админ
-                    if (existingUser.status === 'approved' || isAdmin) {
-                        console.log('✅ Пользователь уже подтверждён');
-                        
-                        // Сохраняем в localStorage
-                        const userData = {
-                            id: userId,
-                            first_name: userName,
-                            username: existingUser.username || '',
-                            auth_date: Math.floor(Date.now() / 1000)
-                        };
-                        
-                        localStorage.setItem('telegram_user', JSON.stringify(userData));
-                        localStorage.setItem('auth_time', Date.now().toString());
-                        
-                        // Переходим в index.html
-                        showStatus('✅ Авторизація успішна! Перенаправляємо...', 'success');
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 1000);
-                        return;
-                    }
-                }
-                
-                // 2. Для новых пользователей сохраняем в Firebase
-                await setDoc(userRef, {
-                    telegram_id: userId,
-                    name: userName,
-                    status: isAdmin ? 'approved' : 'pending',
-                    isAdmin: isAdmin,
-                    created_at: new Date(),
-                    auth_date: Math.floor(Date.now() / 1000)
-                }, { merge: true });
-                
-                console.log('✅ Пользователь сохранён в Firebase');
-                
-                // 3. Сохраняем в localStorage
-                const userData = {
-                    id: userId,
-                    first_name: userName,
-                    auth_date: Math.floor(Date.now() / 1000)
-                };
-                
-                localStorage.setItem('telegram_user', JSON.stringify(userData));
-                localStorage.setItem('auth_time', Date.now().toString());
-                
-                // 4. Переходим на auth-handler
-                const params = new URLSearchParams({
-                    user_id: userId,
-                    user_name: encodeURIComponent(userName),
-                    auth_date: Math.floor(Date.now() / 1000).toString()
-                });
-                
-                showStatus('✅ Дані збережено. Переходимо...', 'success');
-                setTimeout(() => {
-                    window.location.href = `auth-handler.html?${params.toString()}`;
-                }, 1000);
-                
-            } catch (error) {
-                console.error('❌ Ошибка входа:', error);
-                showStatus('❌ Помилка з\'єднання з сервером', 'error');
-            }
-        }
-        
-        // ========== ТЕСТОВЫЙ ВХОД ==========
-        simulateBtn.addEventListener('click', function() {
-            // Если уже открыта ручная форма - скрыть
-            if (manualLogin.style.display === 'block') {
-                manualLogin.style.display = 'none';
-                simulateBtn.innerHTML = '<i class="fas fa-user-cog"></i> Тестовий вхід (для розробки)';
-                return;
-            }
+            // Сохраняем в localStorage
+            localStorage.setItem('telegram_user', JSON.stringify(user));
+            localStorage.setItem('auth_time', Date.now().toString());
             
-            // Показать ручную форму
-            manualLogin.style.display = 'block';
-            simulateBtn.innerHTML = '<i class="fas fa-times"></i> Сховати форму';
-            
-            // Автозаполнение для теста
-            document.getElementById('userId').value = '123456789';
-            document.getElementById('userName').value = 'Тестовий Користувач';
-        });
-        
-        // ========== РУЧНОЙ ВВОД ==========
-        manualSubmitBtn.addEventListener('click', async function() {
-            const userId = document.getElementById('userId').value.trim();
-            const userName = document.getElementById('userName').value.trim();
-            
-            if (!userId || !userName) {
-                showStatus('❌ Заповніть всі поля', 'error');
-                return;
-            }
-            
-            if (!/^\d+$/.test(userId)) {
-                showStatus('❌ Telegram ID має містити тільки цифри', 'error');
-                return;
-            }
-            
-            // Показываем загрузку
-            manualSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Обробка...';
-            manualSubmitBtn.disabled = true;
-            
-            // Входим
-            const isAdmin = userId === ADMIN_ID;
-            await loginUser(userId, userName, isAdmin);
-            
-            // Восстанавливаем кнопку
-            manualSubmitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Продовжити';
-            manualSubmitBtn.disabled = false;
-        });
-        
-        // ========== TЕЛЕГРАМ КНОПКА ==========
-        telegramBtn.addEventListener('click', function() {
-            showStatus('ℹ️ Telegram Widget завантажується...', 'success');
-            
-            // Создаём iframe с Telegram Login Widget
-            const telegramWidget = document.createElement('script');
-            telegramWidget.async = true;
-            telegramWidget.src = 'https://telegram.org/js/telegram-widget.js?22';
-            telegramWidget.setAttribute('data-telegram-login', 'UGgtavBot');
-            telegramWidget.setAttribute('data-size', 'large');
-            telegramWidget.setAttribute('data-radius', '12');
-            telegramWidget.setAttribute('data-request-access', 'write');
-            telegramWidget.setAttribute('data-auth-url', 'https://swetatop.github.io/manual/login.html');
-            telegramWidget.setAttribute('data-lang', 'uk');
-            
-            // Очищаем предыдущий виджет
-            const oldWidget = document.querySelector('script[data-telegram-login]');
-            if (oldWidget) oldWidget.remove();
-            
-            // Добавляем новый
-            document.body.appendChild(telegramWidget);
-            
-            // Показываем инструкцию
-            showStatus(`
-                <div style="text-align: left;">
-                    <strong>Якщо Telegram Widget не працює:</strong><br>
-                    1. Використовуйте "Тестовий вхід"<br>
-                    2. Введіть свій Telegram ID вручну<br>
-                    3. Знайдіть ID через бота @userinfobot
-                </div>
-            `, 'success');
-        });
-        
-        // ========== УТИЛИТЫ ==========
-        function showStatus(message, type) {
-            status.innerHTML = message;
-            status.className = `status status-${type}`;
-            status.style.display = 'flex';
-            
-            if (type === 'error') {
-                setTimeout(() => {
-                    status.style.display = 'none';
-                }, 5000);
-            }
-        }
-        
-        // ========== ПРОВЕРКА СУЩЕСТВУЮЩЕЙ СЕССИИ ==========
-        function checkExistingSession() {
-            const savedUser = localStorage.getItem('telegram_user');
-            const authTime = localStorage.getItem('auth_time');
-            
-            if (savedUser && authTime) {
-                const userData = JSON.parse(savedUser);
-                const timeDiff = Date.now() - parseInt(authTime);
-                
-                // Если сессия активна (менее 24 часов)
-                if (timeDiff < 86400000) {
-                    console.log('✅ Найдена активная сессия:', userData.first_name);
-                    
-                    // Если это админ - сразу переходим
-                    if (userData.id === ADMIN_ID) {
-                        window.location.href = 'index.html';
-                        return true;
-                    }
-                    
-                    // Проверяем статус в Firebase
-                    checkUserStatus(userData.id, userData.first_name);
-                    return true;
-                } else {
-                    console.log('❌ Сессия устарела');
-                    localStorage.clear();
-                }
-            }
-            
-            return false;
-        }
-        
-        async function checkUserStatus(userId, userName) {
-            try {
-                const userDoc = await getDoc(doc(db, "users", userId));
-                
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    
-                    if (userData.status === 'approved') {
-                        window.location.href = 'index.html';
-                        return;
-                    }
-                }
-                
-                // Если не подтверждён - показываем форму входа
-                showStatus(`🕐 Ваш запит (${userName}) ще очікує підтвердження.`, 'success');
-                
-            } catch (error) {
-                console.error('❌ Ошибка проверки статуса:', error);
-            }
-        }
-        
-        // ========== ИНИЦИАЛИЗАЦИЯ ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Страница входа загружена');
-            
-            // Проверяем существующую сессию
-            const hasSession = checkExistingSession();
-            
-            if (!hasSession) {
-                console.log('ℹ️ Активной сессии не найдено');
-            }
-            
-            // Разрешаем Enter в полях ввода
-            document.getElementById('userId')?.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') manualSubmitBtn.click();
+            // Переходим в auth-handler с данными
+            const params = new URLSearchParams({
+                user_id: user.id,
+                user_name: encodeURIComponent(user.first_name),
+                auth_date: user.auth_date
             });
             
-            document.getElementById('userName')?.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') manualSubmitBtn.click();
-            });
-        });
+            window.location.href = `auth-handler.html?${params.toString()}`;
+        }
+        
+        window.onTelegramAuth = onTelegramAuth;
     </script>
 </body>
 </html>
