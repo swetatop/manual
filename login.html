@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        /* Стили как в index.html */
         :root {
             --bg-dark: #0C1016;
             --bg-card: #141A24;
@@ -72,7 +71,6 @@
             line-height: 1.6;
         }
         
-        /* Форма входа */
         .login-card {
             background: var(--bg-card);
             border-radius: 20px;
@@ -165,7 +163,6 @@
             font-size: 1.1rem;
         }
         
-        /* Кнопка входа */
         .login-btn {
             width: 100%;
             padding: 18px;
@@ -196,7 +193,6 @@
             transform: translateY(-1px);
         }
         
-        /* Переключатель форм */
         .form-switch {
             text-align: center;
             margin-top: 30px;
@@ -216,7 +212,6 @@
             text-decoration: underline;
         }
         
-        /* Валидация */
         .error-message {
             color: var(--danger);
             font-size: 0.85rem;
@@ -239,7 +234,33 @@
             font-size: 0.95rem;
         }
         
-        /* Анимации */
+        .admin-quick-login {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border);
+        }
+        
+        .admin-btn {
+            background: linear-gradient(135deg, #8B5CF6, #7C3AED);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -249,7 +270,6 @@
             animation: fadeIn 0.6s ease-out;
         }
         
-        /* Адаптивность */
         @media (max-width: 768px) {
             .login-card {
                 padding: 40px 30px;
@@ -278,7 +298,6 @@
             }
         }
         
-        /* Дополнительные эффекты */
         .glow-effect {
             position: absolute;
             width: 200px;
@@ -290,7 +309,6 @@
     </style>
 </head>
 <body>
-    <!-- Эффекты фона -->
     <div class="glow-effect" style="top: 10%; left: 10%;"></div>
     <div class="glow-effect" style="bottom: 10%; right: 10%; background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);"></div>
     
@@ -349,19 +367,25 @@
                 </button>
             </form>
             
+            <div class="admin-quick-login">
+                <button class="admin-btn" onclick="quickAdminLogin()">
+                    <i class="fas fa-crown"></i> Швидкий вхід для адміна
+                </button>
+                <p style="font-size: 0.8rem; color: var(--text-gray); margin-top: 8px;">
+                    (Заповнює форму адмінськими даними)
+                </p>
+            </div>
+            
             <div class="form-switch">
                 <p>Ще не маєте акаунта? <a href="#" id="switchToRegister">Зареєструватися</a></p>
             </div>
         </div>
     </div>
     
-    <!-- Firebase SDK -->
-    <script type="module" src="firebase-app.js"></script>
     <script type="module">
         import { db } from './firebase-app.js';
         import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
-        // Элементы формы
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
@@ -369,13 +393,11 @@
         const switchToRegister = document.getElementById('switchToRegister');
         const successMessage = document.getElementById('successMessage');
         
-        // Проверяем, есть ли параметр успешной регистрации в URL
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('registered') === 'true') {
             successMessage.style.display = 'flex';
         }
         
-        // Переключение видимости пароля
         togglePasswordBtn.addEventListener('click', function() {
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
@@ -383,53 +405,59 @@
             icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
         });
         
-        // Переход к регистрации
         switchToRegister.addEventListener('click', function(e) {
             e.preventDefault();
-            // Показываем форму регистрации вместо входа
             showRegisterForm();
         });
         
-        // Валидация email
         function validateEmail(email) {
             const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return re.test(email);
         }
         
-        // Показать ошибку
         function showError(elementId, message) {
             const errorElement = document.getElementById(elementId);
             errorElement.querySelector('span').textContent = message;
             errorElement.style.display = 'flex';
         }
         
-        // Скрыть ошибку
         function hideError(elementId) {
             const errorElement = document.getElementById(elementId);
             errorElement.style.display = 'none';
         }
         
-        // Обработка входа
+        function quickAdminLogin() {
+            emailInput.value = 'dan.0985850201@gmail.com';
+            passwordInput.value = 'admin123';
+            
+            const loginBtn = document.querySelector('.login-btn');
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Входимо як адмін...';
+            loginBtn.disabled = true;
+            
+            setTimeout(() => {
+                form.dispatchEvent(new Event('submit'));
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }, 500);
+        }
+        
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Сбрасываем ошибки
             hideError('emailError');
             hideError('passwordError');
             
-            // Получаем значения
             const email = emailInput.value.trim();
             const password = passwordInput.value;
             
             let isValid = true;
             
-            // Валидация email
             if (!validateEmail(email)) {
                 showError('emailError', 'Будь ласка, введіть коректну email адресу');
                 isValid = false;
             }
             
-            // Валидация пароля
             if (password.length < 6) {
                 showError('passwordError', 'Пароль повинен містити принаймні 6 символів');
                 isValid = false;
@@ -438,119 +466,100 @@
             if (!isValid) return;
             
             try {
-                // Создаем ID пользователя (хеш от email)
                 const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
                 
-                // Проверяем пользователя в Firebase
+                // ========== ПРОВЕРКА НА АДМИНА ==========
+                const ADMIN_EMAILS = [
+                    'dan.0985850201@gmail.com'  // ЕДИНСТВЕННЫЙ админский email
+                ];
+                
+                // Если это админ
+                if (ADMIN_EMAILS.includes(email.toLowerCase())) {
+                    console.log('👑 Адмін входить в систему:', email);
+                    
+                    localStorage.setItem('user_id', userId);
+                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('user_name', 'Адміністратор');
+                    localStorage.setItem('is_admin', 'true');
+                    localStorage.setItem('user_registered', 'true');
+                    
+                    const userDoc = await getDoc(doc(db, "users", userId));
+                    
+                    if (!userDoc.exists()) {
+                        await setDoc(doc(db, "users", userId), {
+                            email: email,
+                            nickname: 'Адміністратор',
+                            password_hash: btoa(password),
+                            status: 'approved',
+                            isAdmin: true,
+                            created_at: new Date(),
+                            last_login: new Date()
+                        });
+                        console.log('✅ Адмін створений в базі');
+                    }
+                    
+                    window.location.href = 'check-access.html';
+                    return;
+                }
+                
+                // Обычный пользователь
                 const userDoc = await getDoc(doc(db, "users", userId));
                 
                 if (!userDoc.exists()) {
-                    // Если пользователя нет, предлагаем зарегистрироваться
-                    if (confirm('Користувача з таким email не знайдено. Бажаєте зареєструватися?')) {
-                        await registerUser(email, password);
-                        return;
-                    } else {
-                        showError('emailError', 'Користувача не знайдено');
-                        return;
-                    }
+                    const nickname = email.split('@')[0];
+                    
+                    await setDoc(doc(db, "users", userId), {
+                        email: email,
+                        nickname: nickname,
+                        password_hash: btoa(password),
+                        status: 'pending',
+                        isAdmin: false,
+                        created_at: new Date(),
+                        last_login: new Date()
+                    });
+                    
+                    localStorage.setItem('user_id', userId);
+                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('user_name', nickname);
+                    localStorage.setItem('is_admin', 'false');
+                    localStorage.setItem('user_registered', 'true');
+                    
+                    window.location.href = 'check-access.html';
+                    return;
                 }
                 
                 const userData = userDoc.data();
                 
-                // Проверяем пароль (в реальном проекте используй хеширование!)
                 if (btoa(password) !== userData.password_hash) {
                     showError('passwordError', 'Невірний пароль');
                     return;
                 }
                 
-                // Проверяем статус
-                if (userData.status !== 'approved') {
-                    // Сохраняем данные пользователя
-                    localStorage.setItem('user_id', userId);
-                    localStorage.setItem('user_email', email);
-                    localStorage.setItem('user_name', userData.nickname || 'Користувач');
-                    localStorage.setItem('user_registered', 'true');
-                    
-                    // Определяем админ ли это
-                    const adminEmails = ['perets@example.com', 'admin@ukrainegta5.com']; // добавь свои email
-                    if (adminEmails.includes(email.toLowerCase())) {
-                        localStorage.setItem('is_admin', 'true');
-                        window.location.href = 'index.html';
-                    } else {
-                        localStorage.setItem('is_admin', 'false');
-                        window.location.href = 'check-access.html';
-                    }
-                    return;
-                }
-                
-                // Сохраняем в localStorage
                 localStorage.setItem('user_id', userId);
                 localStorage.setItem('user_email', email);
                 localStorage.setItem('user_name', userData.nickname || 'Користувач');
+                localStorage.setItem('is_admin', userData.isAdmin ? 'true' : 'false');
                 localStorage.setItem('user_registered', 'true');
                 
-                // Определяем админ ли это
-                const adminEmails = ['perets@example.com', 'admin@ukrainegta5.com'];
-                if (adminEmails.includes(email.toLowerCase())) {
-                    localStorage.setItem('is_admin', 'true');
+                if (userData.status === 'approved') {
                     window.location.href = 'index.html';
                 } else {
-                    localStorage.setItem('is_admin', 'false');
-                    window.location.href = 'index.html';
-                }
-                
-            } catch (error) {
-                console.error('❌ Помилка входу:', error);
-                showError('emailError', 'Помилка сервера. Спробуйте ще раз.');
-            }
-        });
-        
-        // Функция регистрации
-        async function registerUser(email, password) {
-            try {
-                const nickname = email.split('@')[0];
-                const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
-                
-                // Сохраняем в localStorage
-                localStorage.setItem('user_id', userId);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('user_name', nickname);
-                localStorage.setItem('user_registered', 'true');
-                
-                // Сохраняем в Firebase
-                await setDoc(doc(db, "users", userId), {
-                    email: email,
-                    nickname: nickname,
-                    password_hash: btoa(password), // В реальном проекте используй хеширование!
-                    status: 'pending', // ожидает подтверждения админом
-                    created_at: new Date(),
-                    last_login: new Date()
-                });
-                
-                // Определяем админ ли это
-                const adminEmails = ['perets@example.com', 'admin@ukrainegta5.com'];
-                if (adminEmails.includes(email.toLowerCase())) {
-                    localStorage.setItem('is_admin', 'true');
-                    window.location.href = 'index.html';
-                } else {
-                    localStorage.setItem('is_admin', 'false');
                     window.location.href = 'check-access.html';
                 }
                 
             } catch (error) {
-                console.error('❌ Помилка реєстрації:', error);
-                showError('emailError', 'Помилка реєстрації. Спробуйте ще раз.');
+                console.error('❌ Помилка:', error);
+                showError('emailError', 'Помилка сервера. Спробуйте ще раз.');
             }
-        }
+        });
         
-        // Функция показа формы регистрации
         function showRegisterForm() {
             document.querySelector('.form-title').textContent = 'Реєстрація';
             document.querySelector('.login-btn i').className = 'fas fa-user-plus';
             document.querySelector('.login-btn').innerHTML = '<i class="fas fa-user-plus"></i>Зареєструватися';
             document.querySelector('.form-switch p').innerHTML = 'Вже маєте акаунт? <a href="#" id="switchToLogin">Увійти</a>';
+            document.querySelector('.admin-quick-login').style.display = 'none';
             
-            // Добавляем поле подтверждения пароля
             const passwordGroup = document.querySelector('.form-group:nth-child(2)');
             const confirmGroup = passwordGroup.cloneNode(true);
             
@@ -562,18 +571,15 @@
             
             passwordGroup.after(confirmGroup);
             
-            // Обновляем обработчик
             form.removeEventListener('submit', arguments.callee);
             form.addEventListener('submit', handleRegister);
             
-            // Обновляем переключатель
             document.getElementById('switchToLogin').addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.reload();
             });
         }
         
-        // Обработка регистрации
         async function handleRegister(e) {
             e.preventDefault();
             
@@ -604,15 +610,45 @@
             
             if (!isValid) return;
             
-            await registerUser(email, password);
+            try {
+                const nickname = email.split('@')[0];
+                const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                
+                localStorage.setItem('user_id', userId);
+                localStorage.setItem('user_email', email);
+                localStorage.setItem('user_name', nickname);
+                localStorage.setItem('user_registered', 'true');
+                localStorage.setItem('is_admin', 'false');
+                
+                await setDoc(doc(db, "users", userId), {
+                    email: email,
+                    nickname: nickname,
+                    password_hash: btoa(password),
+                    status: 'pending',
+                    isAdmin: false,
+                    created_at: new Date(),
+                    last_login: new Date()
+                });
+                
+                window.location.href = 'check-access.html';
+                
+            } catch (error) {
+                console.error('❌ Помилка реєстрації:', error);
+                showError('emailError', 'Помилка реєстрації. Спробуйте ще раз.');
+            }
         }
         
-        // Если уже залогинен - редирект
         document.addEventListener('DOMContentLoaded', function() {
             const isRegistered = localStorage.getItem('user_registered');
             
             if (isRegistered) {
-                window.location.href = 'check-access.html';
+                const isAdmin = localStorage.getItem('is_admin') === 'true';
+                
+                if (isAdmin) {
+                    window.location.href = 'check-access.html';
+                } else {
+                    window.location.href = 'check-access.html';
+                }
             }
         });
     </script>
