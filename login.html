@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Вхід | Посібник модератора Ukraine GTA 5</title>
+    <title>Вхід | Ukraine GTA 5</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
@@ -261,43 +261,6 @@
             box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .login-card {
-            animation: fadeIn 0.6s ease-out;
-        }
-        
-        @media (max-width: 768px) {
-            .login-card {
-                padding: 40px 30px;
-            }
-            
-            .logo {
-                font-size: 2.3rem;
-            }
-            
-            .subtitle {
-                font-size: 1rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .login-card {
-                padding: 35px 25px;
-            }
-            
-            .form-title {
-                font-size: 1.6rem;
-            }
-            
-            .login-btn {
-                padding: 16px;
-            }
-        }
-        
         .glow-effect {
             position: absolute;
             width: 200px;
@@ -320,11 +283,6 @@
         
         <div class="login-card">
             <h2 class="form-title">Вхід в систему</h2>
-            
-            <div class="success-message" id="successMessage">
-                <i class="fas fa-check-circle"></i>
-                <span>Реєстрація успішна! Очікуйте підтвердження адміністратора.</span>
-            </div>
             
             <form id="loginForm">
                 <div class="form-group">
@@ -382,24 +340,15 @@
         </div>
     </div>
 
-    <!-- Импортируем Firebase -->
     <script type="module">
-        // Импортируем db из firebase-app.js
         import { db } from './firebase-app.js';
-        import { doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
         const form = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
         const togglePasswordBtn = document.getElementById('togglePassword');
         const switchToRegister = document.getElementById('switchToRegister');
-        const successMessage = document.getElementById('successMessage');
-        
-        // Проверяем URL параметры
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('registered') === 'true') {
-            successMessage.style.display = 'flex';
-        }
         
         // Показать/скрыть пароль
         togglePasswordBtn.addEventListener('click', function() {
@@ -441,7 +390,7 @@
         // Быстрый вход админа
         function quickAdminLogin() {
             emailInput.value = 'dan.0985850201@gmail.com';
-            passwordInput.value = 'admin123456'; // Простой пароль
+            passwordInput.value = 'admin123456';
             
             const loginBtn = document.querySelector('.login-btn');
             const originalText = loginBtn.innerHTML;
@@ -480,265 +429,142 @@
             if (!isValid) return;
             
             try {
-                console.log('🚀 Спробуємо вхід для:', email);
-                
-                // Генерируем ID пользователя
+                // Генерируем ID
                 const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
-                console.log('🆔 User ID:', userId);
                 
-                // ========== ПРОВЕРКА НА АДМИНА ==========
-                const ADMIN_EMAILS = ['dan.0985850201@gmail.com'];
-                
-                // Если это админ
-                if (ADMIN_EMAILS.includes(email)) {
-                    console.log('👑 Знайдено адміна:', email);
-                    
-                    // Проверяем, существует ли админ в базе
-                    const userDoc = await getDoc(doc(db, "users", userId));
-                    
-                    if (!userDoc.exists()) {
-                        console.log('📝 Адміна немає в базі, створюємо...');
-                        // Создаем запись админа
-                        await setDoc(doc(db, "users", userId), {
-                            email: email,
-                            nickname: 'Адміністратор',
-                            password_hash: btoa(password), // В реальном проекте используй хеширование!
-                            status: 'approved',
-                            isAdmin: true,
-                            created_at: new Date().toISOString(),
-                            last_login: new Date().toISOString()
-                        });
-                        console.log('✅ Адмін створений успішно');
-                    } else {
-                        console.log('✅ Адмін вже є в базі');
-                        // Обновляем время входа
-                        await setDoc(doc(db, "users", userId), {
-                            last_login: new Date().toISOString()
-                        }, { merge: true });
-                    }
-                    
+                // ========== АДМИН ==========
+                if (email === 'dan.0985850201@gmail.com') {
                     // Сохраняем в localStorage
                     localStorage.setItem('user_id', userId);
                     localStorage.setItem('user_email', email);
                     localStorage.setItem('user_name', 'Адміністратор');
                     localStorage.setItem('is_admin', 'true');
-                    localStorage.setItem('user_registered', 'true');
                     
-                    console.log('🔄 Перенаправляємо на check-access.html');
-                    window.location.href = 'check-access.html';
+                    // Проверяем в базе
+                    const userDoc = await getDoc(doc(db, "users", userId));
+                    
+                    if (!userDoc.exists()) {
+                        await setDoc(doc(db, "users", userId), {
+                            email: email,
+                            nickname: 'Адміністратор',
+                            password_hash: btoa(password),
+                            status: 'approved',
+                            isAdmin: true,
+                            created_at: new Date().toISOString()
+                        });
+                    }
+                    
+                    // Сразу в посібник
+                    window.location.href = 'index.html';
                     return;
                 }
                 
                 // ========== ОБЫЧНЫЙ ПОЛЬЗОВАТЕЛЬ ==========
-                console.log('👤 Звичайний користувач:', email);
-                
-                // Проверяем существование пользователя
                 const userDoc = await getDoc(doc(db, "users", userId));
                 
                 if (!userDoc.exists()) {
-                    console.log('📝 Користувача немає, реєструємо...');
+                    // Регистрация
                     const nickname = email.split('@')[0];
                     
-                    // Создаем нового пользователя
                     await setDoc(doc(db, "users", userId), {
                         email: email,
                         nickname: nickname,
                         password_hash: btoa(password),
-                        status: 'pending', // требует подтверждения
+                        status: 'pending',
                         isAdmin: false,
-                        created_at: new Date().toISOString(),
-                        last_login: new Date().toISOString()
+                        created_at: new Date().toISOString()
                     });
                     
-                    // Сохраняем в localStorage
                     localStorage.setItem('user_id', userId);
                     localStorage.setItem('user_email', email);
                     localStorage.setItem('user_name', nickname);
                     localStorage.setItem('is_admin', 'false');
-                    localStorage.setItem('user_registered', 'true');
                     
-                    console.log('✅ Користувач зареєстрований');
-                    window.location.href = 'check-access.html';
+                    // Показать сообщение об ожидании
+                    alert('✅ Реєстрація успішна! Чекайте підтвердження адміністратора.');
                     return;
                 }
                 
-                // Пользователь существует - проверяем пароль
+                // Проверяем пароль
                 const userData = userDoc.data();
-                console.log('📋 Дані користувача:', userData);
                 
                 if (btoa(password) !== userData.password_hash) {
-                    console.log('❌ Невірний пароль');
                     showError('passwordError', 'Невірний пароль');
                     return;
                 }
                 
-                // Обновляем время входа
-                await setDoc(doc(db, "users", userId), {
-                    last_login: new Date().toISOString()
-                }, { merge: true });
-                
-                // Сохраняем в localStorage
-                localStorage.setItem('user_id', userId);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('user_name', userData.nickname || 'Користувач');
-                localStorage.setItem('is_admin', userData.isAdmin ? 'true' : 'false');
-                localStorage.setItem('user_registered', 'true');
-                
-                console.log('📊 Статус користувача:', userData.status);
-                
                 // Проверяем статус
                 if (userData.status === 'approved') {
+                    localStorage.setItem('user_id', userId);
+                    localStorage.setItem('user_email', email);
+                    localStorage.setItem('user_name', userData.nickname || 'Користувач');
+                    localStorage.setItem('is_admin', 'false');
+                    
                     window.location.href = 'index.html';
                 } else {
-                    window.location.href = 'check-access.html';
+                    alert('⏳ Ваш акаунт очікує підтвердження адміністратора.');
                 }
                 
             } catch (error) {
-                console.error('❌ Критична помилка:', error);
-                showError('emailError', 'Помилка підключення до бази даних. Перевірте консоль.');
-                
-                // Если ошибка с Firebase, покажем подробности
-                if (error.message.includes('permission')) {
-                    console.error('⚠️ Проблема з правами доступу Firestore:');
-                    console.error('1. Перейди в Firebase Console → Firestore Database');
-                    console.error('2. Налаштуй правила доступу:');
-                    console.error(`
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if true; // Для тесту
-    }
-  }
-}
-                    `);
-                }
+                console.error('❌ Помилка:', error);
+                showError('emailError', 'Помилка підключення до бази даних');
             }
         });
         
-        // Функция показа формы регистрации
+        // Функция регистрации (упрощенная)
         function showRegisterForm() {
-            console.log('🔄 Переключаємо на форму реєстрації');
-            
+            // Просто показываем форму регистрации
             document.querySelector('.form-title').textContent = 'Реєстрація';
             document.querySelector('.login-btn i').className = 'fas fa-user-plus';
             document.querySelector('.login-btn').innerHTML = '<i class="fas fa-user-plus"></i>Зареєструватися';
             document.querySelector('.form-switch p').innerHTML = 'Вже маєте акаунт? <a href="#" id="switchToLogin">Увійти</a>';
             document.querySelector('.admin-quick-login').style.display = 'none';
             
-            // Добавляем поле подтверждения пароля
-            const passwordGroup = document.querySelector('.form-group:nth-child(2)');
-            const confirmGroup = passwordGroup.cloneNode(true);
-            
-            confirmGroup.querySelector('label').innerHTML = '<i class="fas fa-lock"></i>Підтвердження пароля';
-            confirmGroup.querySelector('input').id = 'confirmPassword';
-            confirmGroup.querySelector('input').placeholder = 'Підтвердіть пароль';
-            confirmGroup.querySelector('.error-message').id = 'confirmPasswordError';
-            confirmGroup.querySelector('.error-message span').textContent = 'Паролі не співпадають';
-            
-            passwordGroup.after(confirmGroup);
-            
-            // Удаляем старый обработчик и добавляем новый
-            form.removeEventListener('submit', arguments.callee);
-            form.addEventListener('submit', handleRegister);
-            
-            // Обновляем переключатель
+            // Переключение обратно
             document.getElementById('switchToLogin').addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.reload();
             });
-        }
-        
-        // Обработка регистрации
-        async function handleRegister(e) {
-            e.preventDefault();
             
-            console.log('📝 Обробка реєстрації');
-            
-            const email = emailInput.value.trim().toLowerCase();
-            const password = passwordInput.value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            hideError('emailError');
-            hideError('passwordError');
-            hideError('confirmPasswordError');
-            
-            let isValid = true;
-            
-            if (!validateEmail(email)) {
-                showError('emailError', 'Будь ласка, введіть коректну email адресу');
-                isValid = false;
-            }
-            
-            if (password.length < 6) {
-                showError('passwordError', 'Пароль повинен містити принаймні 6 символів');
-                isValid = false;
-            }
-            
-            if (password !== confirmPassword) {
-                showError('confirmPasswordError', 'Паролі не співпадають');
-                isValid = false;
-            }
-            
-            if (!isValid) return;
-            
-            try {
-                const nickname = email.split('@')[0];
-                const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+            // Простая регистрация
+            form.removeEventListener('submit', arguments.callee);
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
                 
-                console.log('🆔 Реєструємо користувача:', email, 'ID:', userId);
+                const email = emailInput.value.trim().toLowerCase();
+                const password = passwordInput.value;
                 
-                // Проверяем, не зарегистрирован ли уже
-                const existingUser = await getDoc(doc(db, "users", userId));
-                if (existingUser.exists()) {
-                    showError('emailError', 'Користувач з таким email вже зареєстрований');
+                if (!validateEmail(email)) {
+                    showError('emailError', 'Будь ласка, введіть коректну email адресу');
                     return;
                 }
                 
-                // Сохраняем в Firebase
-                await setDoc(doc(db, "users", userId), {
-                    email: email,
-                    nickname: nickname,
-                    password_hash: btoa(password),
-                    status: 'pending', // требует подтверждения админом
-                    isAdmin: false,
-                    created_at: new Date().toISOString(),
-                    last_login: new Date().toISOString()
-                });
-                
-                console.log('✅ Користувач успішно зареєстрований');
-                
-                // Сохраняем в localStorage
-                localStorage.setItem('user_id', userId);
-                localStorage.setItem('user_email', email);
-                localStorage.setItem('user_name', nickname);
-                localStorage.setItem('is_admin', 'false');
-                localStorage.setItem('user_registered', 'true');
-                
-                // Редирект на страницу проверки
-                window.location.href = 'check-access.html?registered=true';
-                
-            } catch (error) {
-                console.error('❌ Помилка реєстрації:', error);
-                showError('emailError', 'Помилка реєстрації. Перевірте підключення до інтернету.');
-            }
-        }
-        
-        // Проверка, если уже залогинен
-        document.addEventListener('DOMContentLoaded', function() {
-            const isRegistered = localStorage.getItem('user_registered');
-            
-            if (isRegistered) {
-                const isAdmin = localStorage.getItem('is_admin') === 'true';
-                console.log('📱 Користувач вже зареєстрований, адмін:', isAdmin);
-                
-                if (isAdmin) {
-                    window.location.href = 'check-access.html';
-                } else {
-                    window.location.href = 'check-access.html';
+                if (password.length < 6) {
+                    showError('passwordError', 'Пароль повинен містити принаймні 6 символів');
+                    return;
                 }
-            }
-        });
+                
+                try {
+                    const userId = btoa(email).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                    const nickname = email.split('@')[0];
+                    
+                    await setDoc(doc(db, "users", userId), {
+                        email: email,
+                        nickname: nickname,
+                        password_hash: btoa(password),
+                        status: 'pending',
+                        isAdmin: false,
+                        created_at: new Date().toISOString()
+                    });
+                    
+                    alert('✅ Реєстрація успішна! Чекайте підтвердження адміністратора.');
+                    window.location.reload();
+                    
+                } catch (error) {
+                    showError('emailError', 'Помилка реєстрації');
+                }
+            });
+        }
     </script>
 </body>
 </html>
