@@ -2,115 +2,78 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <title>Вхід | Ukraine GTA 5</title>
+    <title>Вхід | Посібник модератора</title>
     <style>
         body {
-            background: #0f1419;
+            background: #0f172a;
             color: white;
             font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .container {
             text-align: center;
-            max-width: 400px;
+            padding: 100px 20px;
         }
         
         h1 {
-            margin-bottom: 10px;
-            color: #3B82F6;
+            color: #60a5fa;
+            margin-bottom: 20px;
         }
         
-        p {
-            color: #94A3B8;
-            margin-bottom: 30px;
+        .telegram-widget {
+            margin: 40px auto;
+            display: inline-block;
         }
         
-        .note {
+        .info {
             background: rgba(59, 130, 246, 0.1);
             border-left: 4px solid #3B82F6;
             padding: 15px;
-            margin-top: 30px;
+            max-width: 500px;
+            margin: 40px auto;
             text-align: left;
-            border-radius: 0 8px 8px 0;
-            font-size: 14px;
-            color: #94A3B8;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Ukraine GTA 5</h1>
-        <p>Вхід до адмін-панелі модераторів</p>
-        
-        <!-- Telegram Widget -->
+    <h1>Ukraine GTA 5</h1>
+    <p>Посібник модератора</p>
+    
+    <div class="telegram-widget">
         <script async src="https://telegram.org/js/telegram-widget.js?22" 
                 data-telegram-login="UGgtavBot" 
                 data-size="large" 
-                data-auth-url="https://swetatop.github.io/manual/auth-handler.html"
+                data-auth-url="auth-success.html"
                 data-request-access="write"></script>
-        
-        <div class="note">
-            <strong>Примітка:</strong> Якщо Telegram Widget не працює, перевірте:
-            <ul style="margin: 10px 0 0 20px;">
-                <li>Чи дозволені сторонні cookie</li>
-                <li>Чи увімкнено JavaScript</li>
-                <li>Спробуйте інший браузер</li>
-            </ul>
-        </div>
+    </div>
+    
+    <div class="info">
+        <strong>Як працює:</strong>
+        <ol style="margin-top: 10px; padding-left: 20px;">
+            <li>Натисніть кнопку вище</li>
+            <li>Увійдіть через свій Telegram</li>
+            <li>Адміністратор підтвердить ваш доступ</li>
+            <li>Готово! Можете користуватись посібником</li>
+        </ol>
     </div>
     
     <script>
-        // Функция обработки входа
+        // Функция, которую вызовет Telegram Widget
         function onTelegramAuth(user) {
-            console.log('✅ Вхід через Telegram:', user);
+            console.log('Користувач увійшов:', user);
             
             // Сохраняем в localStorage
-            const userData = {
-                id: user.id.toString(),
-                first_name: user.first_name || 'Користувач',
+            localStorage.setItem('tg_user', JSON.stringify({
+                id: user.id,
+                first_name: user.first_name,
                 username: user.username || '',
-                auth_date: user.auth_date,
-                hash: user.hash
-            };
-            
-            localStorage.setItem('telegram_user', JSON.stringify(userData));
-            localStorage.setItem('auth_time', Date.now().toString());
-            
-            // Переходим на auth-handler с данными
-            const params = new URLSearchParams({
-                user_id: user.id,
-                user_name: encodeURIComponent(user.first_name || 'Користувач'),
-                user_login: user.username || '',
+                photo_url: user.photo_url || '',
                 auth_date: user.auth_date
-            });
+            }));
             
-            window.location.href = `auth-handler.html?${params.toString()}`;
+            // Переходим на обработчик
+            window.location.href = 'check-access.html';
         }
         
-        // Назначаем функцию глобально
+        // Делаем функцию глобальной
         window.onTelegramAuth = onTelegramAuth;
-        
-        // Проверяем, если уже есть сессия
-        document.addEventListener('DOMContentLoaded', function() {
-            const savedUser = localStorage.getItem('telegram_user');
-            const authTime = localStorage.getItem('auth_time');
-            
-            if (savedUser && authTime) {
-                const timeDiff = Date.now() - parseInt(authTime);
-                
-                // Если сессия активна (менее 24 часов)
-                if (timeDiff < 86400000) {
-                    console.log('ℹ️ Уже есть активная сессия');
-                    // Можно сразу перенаправить, но лучше пусть через виджет
-                }
-            }
-        });
     </script>
 </body>
 </html>
