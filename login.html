@@ -67,7 +67,6 @@
             letter-spacing: 0.5px;
         }
         
-        /* Карточка формы */
         .form-card {
             background: var(--bg-card);
             border-radius: 16px;
@@ -93,7 +92,6 @@
             font-size: 0.95rem;
         }
         
-        /* Поля формы */
         .form-group {
             margin-bottom: 25px;
         }
@@ -124,11 +122,6 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
         
-        .form-input::placeholder {
-            color: var(--text-gray);
-        }
-        
-        /* Кнопки */
         .btn {
             width: 100%;
             padding: 16px;
@@ -156,18 +149,20 @@
             box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
         
-        .btn-secondary {
-            background: transparent;
+        .form-switch {
+            text-align: center;
+            margin-top: 25px;
             color: var(--text-gray);
-            border: 1px solid var(--border);
+            font-size: 0.95rem;
         }
         
-        .btn-secondary:hover {
-            background: rgba(30, 41, 59, 0.5);
-            border-color: var(--primary);
+        .form-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
         }
         
-        /* Сообщения */
         .message {
             padding: 15px;
             border-radius: 10px;
@@ -188,32 +183,6 @@
             color: var(--danger);
         }
         
-        .message-info {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-        
-        /* Переключатель форм */
-        .form-switch {
-            text-align: center;
-            margin-top: 25px;
-            color: var(--text-gray);
-            font-size: 0.95rem;
-        }
-        
-        .form-switch a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        .form-switch a:hover {
-            text-decoration: underline;
-        }
-        
-        /* Админ ссылка */
         .admin-link {
             text-align: center;
             margin-top: 30px;
@@ -230,33 +199,21 @@
             gap: 5px;
         }
         
-        .admin-link a:hover {
-            color: #F59E0B;
-        }
-        
-        /* Responsive */
         @media (max-width: 576px) {
             .form-card {
                 padding: 30px 20px;
-            }
-            
-            .logo h1 {
-                font-size: 1.8rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Логотип -->
         <div class="logo">
             <h1>Ukraine GTA 5</h1>
             <p>Система обліку онлайн-зміни</p>
         </div>
         
-        <!-- Карточка формы -->
         <div class="form-card">
-            <!-- Форма входа -->
             <div id="loginForm">
                 <div class="form-header">
                     <h2>Вхід</h2>
@@ -284,7 +241,6 @@
                 </div>
             </div>
             
-            <!-- Форма регистрации -->
             <div id="registerForm" style="display: none;">
                 <div class="form-header">
                     <h2>Реєстрація</h2>
@@ -323,7 +279,6 @@
             </div>
         </div>
         
-        <!-- Ссылка на админ-панель -->
         <div class="admin-link">
             <a href="admin-panel.html">
                 <i class="fas fa-crown"></i> Адмін-панель
@@ -331,9 +286,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script type="module" src="firebase-app.js"></script>
-    
     <script type="module">
         import { auth, db } from './firebase-app.js';
         import { 
@@ -344,30 +296,23 @@
             doc, setDoc, getDoc, collection, addDoc 
         } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
         
-        // ID админа (ВАШ ID - замените на свой)
-        const ADMIN_ID = 'YOUR_ADMIN_ID_HERE';
-        
-        // Показать форму регистрации
         function showRegisterForm() {
             document.getElementById('loginForm').style.display = 'none';
             document.getElementById('registerForm').style.display = 'block';
             clearMessages();
         }
         
-        // Показать форму входа
         function showLoginForm() {
             document.getElementById('registerForm').style.display = 'none';
             document.getElementById('loginForm').style.display = 'block';
             clearMessages();
         }
         
-        // Очистить сообщения
         function clearMessages() {
             document.getElementById('loginMessage').style.display = 'none';
             document.getElementById('registerMessage').style.display = 'none';
         }
         
-        // Показать сообщение
         function showMessage(elementId, text, type) {
             const element = document.getElementById(elementId);
             element.textContent = text;
@@ -375,14 +320,12 @@
             element.style.display = 'block';
         }
         
-        // Регистрация
         async function register() {
             const email = document.getElementById('registerEmail').value;
             const nickname = document.getElementById('registerNickname').value;
             const password = document.getElementById('registerPassword').value;
             const confirmPassword = document.getElementById('registerConfirmPassword').value;
             
-            // Валидация
             if (!email || !nickname || !password || !confirmPassword) {
                 showMessage('registerMessage', 'Будь ласка, заповніть всі поля', 'error');
                 return;
@@ -399,28 +342,22 @@
             }
             
             try {
-                // Создаем пользователя в Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Генерируем уникальный ID для пользователя
-                const userId = user.uid;
-                
-                // Создаем запись в Firestore
-                await setDoc(doc(db, "users", userId), {
-                    id: userId,
+                await setDoc(doc(db, "users", user.uid), {
+                    id: user.uid,
                     email: email,
                     nickname: nickname,
                     role: 'user',
-                    status: 'pending', // Ожидает подтверждения админом
+                    status: 'pending',
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 });
                 
-                // Создаем уведомление для админа
                 await addDoc(collection(db, "notifications"), {
                     type: 'new_user',
-                    userId: userId,
+                    userId: user.uid,
                     userEmail: email,
                     userNickname: nickname,
                     message: `Нова заявка на реєстрацію від ${nickname} (${email})`,
@@ -429,17 +366,15 @@
                 });
                 
                 showMessage('registerMessage', 
-                    '✅ Реєстрація успішна! Очікуйте підтвердження адміністратора. Ви отримаєте доступ після підтвердження.', 
+                    '✅ Реєстрація успішна! Очікуйте підтвердження адміністратора.', 
                     'success'
                 );
                 
-                // Очищаем форму
                 document.getElementById('registerEmail').value = '';
                 document.getElementById('registerNickname').value = '';
                 document.getElementById('registerPassword').value = '';
                 document.getElementById('registerConfirmPassword').value = '';
                 
-                // Автоматически переключаем на форму входа через 3 секунды
                 setTimeout(() => {
                     showLoginForm();
                 }, 3000);
@@ -450,17 +385,12 @@
                 let errorMessage = 'Помилка реєстрації';
                 if (error.code === 'auth/email-already-in-use') {
                     errorMessage = 'Ця електронна пошта вже використовується';
-                } else if (error.code === 'auth/invalid-email') {
-                    errorMessage = 'Невірний формат електронної пошти';
-                } else if (error.code === 'auth/weak-password') {
-                    errorMessage = 'Пароль занадто слабкий';
                 }
                 
                 showMessage('registerMessage', errorMessage, 'error');
             }
         }
         
-        // Вход
         async function login() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
@@ -474,7 +404,6 @@
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
                 
-                // Проверяем статус пользователя в Firestore
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 
                 if (!userDoc.exists()) {
@@ -485,17 +414,15 @@
                 
                 const userData = userDoc.data();
                 
-                // Проверяем статус подтверждения
                 if (userData.status !== 'approved') {
                     showMessage('loginMessage', 
-                        '⏳ Ваш акаунт очікує підтвердження адміністратора. Спробуйте пізніше.', 
-                        'info'
+                        '⏳ Ваш акаунт очікує підтвердження адміністратора.', 
+                        'error'
                     );
                     await auth.signOut();
                     return;
                 }
                 
-                // Сохраняем данные пользователя в localStorage
                 localStorage.setItem('user_data', JSON.stringify({
                     id: user.uid,
                     email: userData.email,
@@ -505,35 +432,24 @@
                 }));
                 
                 localStorage.setItem('auth_time', Date.now().toString());
-                
-                // Перенаправляем на главную страницу
                 window.location.href = 'index.html';
                 
             } catch (error) {
                 console.error('Помилка входу:', error);
                 
-                let errorMessage = 'Помилка входу';
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMessage = 'Невірна електронна пошта або пароль';
-                } else if (error.code === 'auth/too-many-requests') {
-                    errorMessage = 'Забагато спроб входу. Спробуйте пізніше';
-                }
-                
+                let errorMessage = 'Невірна електронна пошта або пароль';
                 showMessage('loginMessage', errorMessage, 'error');
             }
         }
         
-        // Проверяем, есть ли уже активная сессия
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Проверяем статус пользователя
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
                     
                     if (userData.status === 'approved') {
-                        // Пользователь уже авторизован - перенаправляем
                         localStorage.setItem('user_data', JSON.stringify({
                             id: user.uid,
                             email: userData.email,
