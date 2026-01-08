@@ -19,7 +19,6 @@
         
         .telegram-widget {
             margin: 40px auto;
-            display: inline-block;
         }
         
         .info {
@@ -29,6 +28,7 @@
             max-width: 500px;
             margin: 40px auto;
             text-align: left;
+            border-radius: 0 8px 8px 0;
         }
     </style>
 </head>
@@ -37,10 +37,11 @@
     <p>Посібник модератора</p>
     
     <div class="telegram-widget">
+        <!-- Простой скрипт Telegram -->
         <script async src="https://telegram.org/js/telegram-widget.js?22" 
-                data-telegram-login="UGgtavBot" 
+                data-telegram-login="UGhtavBot" 
                 data-size="large" 
-                data-auth-url="auth-success.html"
+                data-auth-url="auth-check.html"
                 data-request-access="write"></script>
     </div>
     
@@ -49,18 +50,18 @@
         <ol style="margin-top: 10px; padding-left: 20px;">
             <li>Натисніть кнопку вище</li>
             <li>Увійдіть через свій Telegram</li>
-            <li>Адміністратор підтвердить ваш доступ</li>
-            <li>Готово! Можете користуватись посібником</li>
+            <li>Якщо ви адміністратор - одразу потрапите в посібник</li>
+            <li>Якщо ви новий модератор - адмін підтвердить ваш доступ</li>
         </ol>
     </div>
     
     <script>
-        // Функция, которую вызовет Telegram Widget
+        // Telegram вызывает эту функцию
         function onTelegramAuth(user) {
-            console.log('Користувач увійшов:', user);
+            console.log('Вхід:', user);
             
-            // Сохраняем в localStorage
-            localStorage.setItem('tg_user', JSON.stringify({
+            // Сохраняем данные
+            localStorage.setItem('telegram_user', JSON.stringify({
                 id: user.id,
                 first_name: user.first_name,
                 username: user.username || '',
@@ -68,11 +69,13 @@
                 auth_date: user.auth_date
             }));
             
-            // Переходим на обработчик
-            window.location.href = 'check-access.html';
+            // Сохраняем время входа
+            localStorage.setItem('auth_time', Date.now().toString());
+            
+            // Переходим на проверку
+            window.location.href = 'auth-check.html';
         }
         
-        // Делаем функцию глобальной
         window.onTelegramAuth = onTelegramAuth;
     </script>
 </body>
