@@ -2,17 +2,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebas
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDWj0igJMOw_Tvads6XANXrqw0v_zqfOjE",
-    authDomain: "manual-moderation-ukraine-gta5.firebaseapp.com",
-    projectId: "manual-moderation-ukraine-gta5",
-    storageBucket: "manual-moderation-ukraine-gta5.firebasestorage.app",
-    messagingSenderId: "28969074318",
-    appId: "1:28969074318:web:ad85a4163a0d811de4d3df"
+    apiKey: "AIzaSyAMVwxsB4p_3K3wQK_Thq7sOr7Oxl91eOo",
+    authDomain: "moderator-manual-5e90a.firebaseapp.com",
+    projectId: "moderator-manual-5e90a",
+    storageBucket: "moderator-manual-5e90a.firebasestorage.app",
+    messagingSenderId: "242155394117",
+    appId: "1:242155394117:web:6724769f402830c34894a7"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 export { db };
-export const ADMIN_ID = "5316593741";
-export const BOT_TOKEN = "8506586970:AAEEhVuyML6qBI5nG3U5HlgjaN2B0pR1xeA";
