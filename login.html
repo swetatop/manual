@@ -23,18 +23,30 @@
         
         h1 {
             margin-bottom: 10px;
+            color: #3B82F6;
         }
         
         p {
             color: #94A3B8;
             margin-bottom: 30px;
         }
+        
+        .note {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3B82F6;
+            padding: 15px;
+            margin-top: 30px;
+            text-align: left;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+            color: #94A3B8;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Ukraine GTA 5</h1>
-        <p>Вхід до посібника модераторів</p>
+        <p>Вхід до адмін-панелі модераторів</p>
         
         <!-- Telegram Widget -->
         <script async src="https://telegram.org/js/telegram-widget.js?22" 
@@ -42,28 +54,63 @@
                 data-size="large" 
                 data-auth-url="https://swetatop.github.io/manual/auth-handler.html"
                 data-request-access="write"></script>
+        
+        <div class="note">
+            <strong>Примітка:</strong> Якщо Telegram Widget не працює, перевірте:
+            <ul style="margin: 10px 0 0 20px;">
+                <li>Чи дозволені сторонні cookie</li>
+                <li>Чи увімкнено JavaScript</li>
+                <li>Спробуйте інший браузер</li>
+            </ul>
+        </div>
     </div>
     
     <script>
-        // Просто перенаправляем данные в auth-handler
+        // Функция обработки входа
         function onTelegramAuth(user) {
-            console.log('✅ Вхід:', user);
+            console.log('✅ Вхід через Telegram:', user);
             
             // Сохраняем в localStorage
-            localStorage.setItem('telegram_user', JSON.stringify(user));
+            const userData = {
+                id: user.id.toString(),
+                first_name: user.first_name || 'Користувач',
+                username: user.username || '',
+                auth_date: user.auth_date,
+                hash: user.hash
+            };
+            
+            localStorage.setItem('telegram_user', JSON.stringify(userData));
             localStorage.setItem('auth_time', Date.now().toString());
             
-            // Переходим в auth-handler с данными
+            // Переходим на auth-handler с данными
             const params = new URLSearchParams({
                 user_id: user.id,
-                user_name: encodeURIComponent(user.first_name),
+                user_name: encodeURIComponent(user.first_name || 'Користувач'),
+                user_login: user.username || '',
                 auth_date: user.auth_date
             });
             
             window.location.href = `auth-handler.html?${params.toString()}`;
         }
         
+        // Назначаем функцию глобально
         window.onTelegramAuth = onTelegramAuth;
+        
+        // Проверяем, если уже есть сессия
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedUser = localStorage.getItem('telegram_user');
+            const authTime = localStorage.getItem('auth_time');
+            
+            if (savedUser && authTime) {
+                const timeDiff = Date.now() - parseInt(authTime);
+                
+                // Если сессия активна (менее 24 часов)
+                if (timeDiff < 86400000) {
+                    console.log('ℹ️ Уже есть активная сессия');
+                    // Можно сразу перенаправить, но лучше пусть через виджет
+                }
+            }
+        });
     </script>
 </body>
 </html>
