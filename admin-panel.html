@@ -3,28 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <title>Адмін-панель</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
 </head>
 <body>
+  <header class="admin-header">
+    <h1>Адмін-панель</h1>
+    <a class="back-link" href="index.html">
+      <i class="fas fa-arrow-left"></i> Назад до посібника
+    </a>
+  </header>
 
-<h1>Адмін-панель</h1>
+  <main class="admin-content">
+    <section class="stats">
+      <div class="stat-card">
+        <span class="stat-label">Усього користувачів</span>
+        <span class="stat-value" id="totalUsers">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Очікують</span>
+        <span class="stat-value" id="pendingUsers">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Підтверджено</span>
+        <span class="stat-value" id="approvedUsers">0</span>
+      </div>
+    </section>
 
-<div id="message" class="message"></div>
+    <div id="message" class="message"></div>
 
-<table border="1" width="100%">
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Email</th>
-      <th>Нік</th>
-      <th>Статус</th>
-      <th>Дата</th>
-      <th>Дії</th>
-    </tr>
-  </thead>
-  <tbody id="usersTableBody"></tbody>
-</table>
+    <section class="table-card">
+      <div class="table-header">
+        <h2>Користувачі</h2>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Email</th>
+              <th>Нік</th>
+              <th>Статус</th>
+              <th>Дата</th>
+              <th>Дії</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
 
-<script type="module" src="/js/admin.js"></script>
+  <script type="module" src="js/admin.js"></script>
 </body>
 </html>
