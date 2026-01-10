@@ -1,132 +1,73 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Посібник | Ukraine GTA 5</title>
+  <meta charset="UTF-8">
+  <title>Посібник модератора | Ukraine GTA 5</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <script type="module" src="firebase-app.js"></script>
 </head>
 <body>
 
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
-  <button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<button class="menu-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
 
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2>Ukraine GTA 5</h2>
-      <p>Посібник модератора</p>
-    </div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header"><h2>Ukraine GTA 5</h2></div>
+  <div class="sidebar-nav">
+    <a href="index.html" class="nav-item active"><i class="fas fa-home"></i> Головна</a>
+    <a href="online.html" class="nav-item"><i class="fas fa-clock"></i> Онлайн</a>
+    <a href="statute.html" class="nav-item"><i class="fas fa-scroll"></i> Статут</a>
+    <a href="fractions.html" class="nav-item"><i class="fas fa-city"></i> Фракції</a>
+    <a href="commands.html" class="nav-item"><i class="fas fa-terminal"></i> Команди</a>
+    <a href="scripts.html" class="nav-item"><i class="fas fa-code"></i> Скрипти</a>
+    <a href="faq.html" class="nav-item"><i class="fas fa-question-circle"></i> FAQ</a>
+  </div>
+</div>
 
-    <div class="sidebar-nav">
-      <a href="index.html" class="nav-item active"><i class="fas fa-home"></i> Головна</a>
-      <a href="online.html" class="nav-item"><i class="fas fa-clock"></i> Онлайн зміна</a>
-      <a href="statute.html" class="nav-item"><i class="fas fa-scroll"></i> Статут</a>
-      <a href="penalties.html" class="nav-item"><i class="fas fa-gavel"></i> Стягнення</a>
-      <a href="inactive.html" class="nav-item"><i class="fas fa-calendar-times"></i> Неактив</a>
-      <a href="personnel.html" class="nav-item"><i class="fas fa-users"></i> Склад</a>
-      <a href="commands.html" class="nav-item"><i class="fas fa-terminal"></i> Команди</a>
-      <a href="fractions.html" class="nav-item"><i class="fas fa-city"></i> Фракції</a>
-      <a href="scripts.html" class="nav-item"><i class="fas fa-code"></i> Скрипти</a>
-      <a href="faq.html" class="nav-item"><i class="fas fa-question-circle"></i> FAQ</a>
-      <a href="admin-panel.html" class="nav-item"><i class="fas fa-crown"></i> Адмінка</a>
-    </div>
-
-    <div class="sidebar-footer">
-      Ukraine GTA 5 ©
+<div class="main-content">
+  <div class="user-header">
+    <div class="user-info">
+      <h1>Вітаємо, <span id="userName">Користувач</span>!</h1>
+      <p>Посібник для модераторів Ukraine GTA 5.</p>
     </div>
   </div>
 
-  <div class="main-content" id="mainContent">
-    <div class="user-header">
-      <div class="user-info">
-        <h1 id="userGreeting">Вітаємо, <span id="userName">Користувач</span>!</h1>
-        <p>Цей посібник створений, щоб допомогти модераторам швидко орієнтуватись у правилах, командах та робочих процесах.</p>
-      </div>
+  <div class="cards-grid">
+    <div class="home-card" onclick="location.href='statute.html'">
+      <div class="home-card-icon"><i class="fas fa-scroll"></i></div>
+      <h3>Статут</h3>
+      <p>Правила та обовʼязки модератора</p>
+      <a class="home-card-btn">Перейти</a>
     </div>
 
-    <div class="user-info-block" id="userInfoBlock">
-      <div class="user-info-content">
-        <div class="user-avatar"><i class="fas fa-user-shield"></i></div>
-
-        <div class="user-details">
-          <div class="user-name" id="userFullName">Користувач</div>
-          <div class="user-meta">
-            <div><i class="fas fa-id-card"></i> ID: <span id="userId">...</span></div>
-            <div><i class="fas fa-envelope"></i> Email: <span id="userEmail">...</span></div>
-            <div><i class="fas fa-shield-alt"></i> Роль: <span id="userRole">...</span></div>
-          </div>
-        </div>
-
-        <button class="home-card-btn" id="adminManageBtn" style="display:none;">
-          <i class="fas fa-cog"></i> Адмін-панель
-        </button>
-      </div>
+    <div class="home-card" onclick="location.href='online.html'">
+      <div class="home-card-icon"><i class="fas fa-clock"></i></div>
+      <h3>Онлайн</h3>
+      <p>Графік та вимоги змін</p>
+      <a class="home-card-btn">Перейти</a>
     </div>
 
-    <div class="capabilities">
-      <h2>Розділи</h2>
-
-      <div class="cards-grid">
-        <div class="home-card" onclick="location.href='statute.html'">
-          <div class="home-card-icon"><i class="fas fa-scroll"></i></div>
-          <h3>Статут</h3>
-          <p>Правила, обов’язки, заборони, етика спілкування.</p>
-          <a href="statute.html" class="home-card-btn">Відкрити <i class="fas fa-arrow-right"></i></a>
-        </div>
-
-        <div class="home-card" onclick="location.href='online.html'">
-          <div class="home-card-icon"><i class="fas fa-clock"></i></div>
-          <h3>Онлайн зміна</h3>
-          <p>Графік, вимоги, як вести онлайн-таблицю.</p>
-          <a href="online.html" class="home-card-btn">Відкрити <i class="fas fa-arrow-right"></i></a>
-        </div>
-
-        <div class="home-card" onclick="location.href='penalties.html'">
-          <div class="home-card-icon"><i class="fas fa-gavel"></i></div>
-          <h3>Система стягнень</h3>
-          <p>Попередження, покарання та порядок застосування.</p>
-          <a href="penalties.html" class="home-card-btn">Відкрити <i class="fas fa-arrow-right"></i></a>
-        </div>
-
-        <div class="home-card" onclick="location.href='faq.html'">
-          <div class="home-card-icon"><i class="fas fa-question-circle"></i></div>
-          <h3>FAQ</h3>
-          <p>Типові питання і швидкі відповіді.</p>
-          <a href="faq.html" class="home-card-btn">Відкрити <i class="fas fa-arrow-right"></i></a>
-        </div>
-      </div>
+    <div class="home-card" onclick="location.href='commands.html'">
+      <div class="home-card-icon"><i class="fas fa-terminal"></i></div>
+      <h3>Команди</h3>
+      <p>Список команд</p>
+      <a class="home-card-btn">Перейти</a>
     </div>
 
-    <div id="accessDenied" class="content-card" style="display:none;">
-      <h2>⏳ Доступ очікує підтвердження</h2>
-      <p class="content-text">Ваш акаунт ще не підтверджено адміністратором.</p>
-      <div class="warning-box"><strong>Порада:</strong> якщо вас уже підтвердили — оновіть сторінку.</div>
-      <button class="logout-btn" onclick="logout()" style="position:static; margin-top:10px;">Вийти</button>
+    <div class="home-card" onclick="location.href='faq.html'">
+      <div class="home-card-icon"><i class="fas fa-question-circle"></i></div>
+      <h3>FAQ</h3>
+      <p>Часті питання</p>
+      <a class="home-card-btn">Перейти</a>
     </div>
   </div>
+</div>
 
-  <footer class="footer">
-    <div class="footer-content">
-      <p><strong>Ukraine GTA 5 ©</strong> | Посібник модератора</p>
-    </div>
-  </footer>
+<button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Вийти</button>
 
-  <button class="tg-control-btn" id="adminControlBtn"><i class="fas fa-crown"></i> Адмін-панель</button>
-  <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Вийти</button>
-
-  <div class="logout-modal" id="logoutModal">
-    <div class="logout-modal-content">
-      <h3 style="font-family:'Montserrat',sans-serif;margin-bottom:10px;">Вихід</h3>
-      <p style="color:var(--text-gray);">Ви впевнені, що хочете вийти?</p>
-      <div class="modal-buttons">
-        <button class="modal-btn confirm" id="confirmLogout">Вийти</button>
-        <button class="modal-btn cancel" id="cancelLogout">Скасувати</button>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="./app.js"></script>
+<script src="js/ui.js"></script>
+<script type="module" src="js/auth.js"></script>
 </body>
 </html>
