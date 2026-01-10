@@ -4,11 +4,9 @@ import {
   signInWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-import {
-  doc, setDoc, getDoc
-} from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-// --- переключение форм (чтобы работала ссылка "Немає акаунта?") ---
+// --- переключение форм (чтобы работали кнопки) ---
 window.showRegisterForm = function () {
   const loginForm = document.getElementById("loginForm");
   const registerForm = document.getElementById("registerForm");
@@ -72,7 +70,7 @@ window.register = async function () {
       updated_at: new Date().toISOString()
     });
 
-    // выходим, чтобы pending не “держал” сессию
+    // чтобы pending-пользователь не оставался “внутри”
     await signOut(auth);
 
     showMessage("registerMessage", "✅ Реєстрація успішна! Очікуйте підтвердження адміністратора.", "success");
@@ -118,6 +116,15 @@ window.login = async function () {
       showMessage("loginMessage", "⏳ Ваш акаунт очікує підтвердження адміністратора.", "error");
       return;
     }
+
+    // можно хранить кешом
+    localStorage.setItem("user_data", JSON.stringify({
+      id: cred.user.uid,
+      email: u.email,
+      nickname: u.nickname,
+      role: u.role,
+      status: u.status
+    }));
 
     location.href = "index.html";
 
