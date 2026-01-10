@@ -2,129 +2,55 @@
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
+  <title>Вхід | Ukraine GTA 5</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Вхід | Система обліку онлайн-зміни GTA 5</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{
-      --bg-dark:#0C1016;--bg-card:#141A24;--primary:#3B82F6;--primary-dark:#2563EB;
-      --text-light:#F8FAFC;--text-gray:#94A3B8;--border:#2D3748;
-      --success:#10B981;--warning:#F59E0B;--danger:#EF4444;
-    }
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{
-      background:linear-gradient(135deg,#0C1016 0%,#1E293B 100%);
-      color:var(--text-light);min-height:100vh;font-family:'Montserrat',sans-serif;
-      display:flex;align-items:center;justify-content:center;padding:20px;
-    }
-    .container{display:flex;flex-direction:column;align-items:center;width:100%;max-width:500px}
-    .logo{text-align:center;margin-bottom:40px}
-    .logo h1{font-size:2.2rem;font-weight:800;background:linear-gradient(90deg,#3B82F6,#8B5CF6);
-      -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;letter-spacing:1px}
-    .logo p{color:var(--text-gray);font-size:1rem;letter-spacing:.5px}
-    .form-card{background:var(--bg-card);border-radius:16px;padding:40px;width:100%;
-      border:1px solid var(--border);box-shadow:0 20px 40px rgba(0,0,0,.3)}
-    .form-header{text-align:center;margin-bottom:30px}
-    .form-header h2{font-size:1.8rem;margin-bottom:10px;color:var(--text-light)}
-    .form-header p{color:var(--text-gray);font-size:.95rem}
-    .form-group{margin-bottom:25px}
-    .form-label{display:block;margin-bottom:8px;color:var(--text-light);font-weight:500;font-size:.95rem}
-    .form-input{
-      width:100%;padding:14px 16px;background:rgba(30,41,59,.5);border:1px solid var(--border);
-      border-radius:10px;color:var(--text-light);font-size:1rem;font-family:'Montserrat',sans-serif;
-      transition:all .3s ease
-    }
-    .form-input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
-    .btn{
-      width:100%;padding:16px;border:none;border-radius:10px;font-size:1rem;font-weight:600;
-      font-family:'Montserrat',sans-serif;cursor:pointer;transition:all .3s ease;
-      display:flex;align-items:center;justify-content:center;gap:10px
-    }
-    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;margin-bottom:15px}
-    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(59,130,246,.3)}
-    .form-switch{text-align:center;margin-top:25px;color:var(--text-gray);font-size:.95rem}
-    .form-switch a{color:var(--primary);text-decoration:none;font-weight:600;cursor:pointer}
-    .message{padding:15px;border-radius:10px;margin-bottom:20px;font-size:.95rem;display:none}
-    .message-success{background:rgba(16,185,129,.15);border:1px solid var(--success);color:var(--success)}
-    .message-error{background:rgba(239,68,68,.15);border:1px solid var(--danger);color:var(--danger)}
-    @media (max-width:576px){.form-card{padding:30px 20px}}
+    body { background:#0c1016; color:#fff; font-family:Arial; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .card { background:#141a24; padding:30px; border-radius:10px; width:100%; max-width:400px; }
+    input { width:100%; padding:10px; margin:8px 0; border-radius:6px; border:none; }
+    button { width:100%; padding:10px; background:#f59e0b; border:none; border-radius:6px; cursor:pointer; }
+    a { color:#f59e0b; cursor:pointer; }
+    .message { margin:10px 0; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">
-      <h1>Ukraine GTA 5</h1>
-      <p>Система обліку онлайн-зміни</p>
-    </div>
 
-    <div class="form-card">
-      <div id="loginForm">
-        <div class="form-header">
-          <h2>Вхід</h2>
-          <p>Увійдіть до системи обліку онлайн-змін</p>
-        </div>
+<div class="card">
 
-        <div class="message" id="loginMessage"></div>
+  <!-- LOGIN -->
+  <div id="loginForm">
+    <h2>Вхід</h2>
+    <div id="loginMessage" class="message"></div>
 
-        <div class="form-group">
-          <label class="form-label">Електронна пошта</label>
-          <input type="email" id="loginEmail" class="form-input" placeholder="Введіть email" required>
-        </div>
+    <input id="loginEmail" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Пароль">
 
-        <div class="form-group">
-          <label class="form-label">Пароль</label>
-          <input type="password" id="loginPassword" class="form-input" placeholder="Введіть пароль" required>
-        </div>
+    <label>
+      <input type="checkbox" id="rememberMe" checked>
+      Запамʼятати мене
+    </label>
 
-        <button class="btn btn-primary" onclick="login()">
-          <i class="fas fa-sign-in-alt"></i> Увійти
-        </button>
-
-        <div class="form-switch">
-          Немає акаунта? <a onclick="showRegisterForm()">Зареєструватися</a>
-        </div>
-      </div>
-
-      <div id="registerForm" style="display:none;">
-        <div class="form-header">
-          <h2>Реєстрація</h2>
-          <p>Створіть новий акаунт для доступу</p>
-        </div>
-
-        <div class="message" id="registerMessage"></div>
-
-        <div class="form-group">
-          <label class="form-label">Електронна пошта</label>
-          <input type="email" id="registerEmail" class="form-input" placeholder="Введіть email" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Нікнейм</label>
-          <input type="text" id="registerNickname" class="form-input" placeholder="Введіть нікнейм" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Пароль</label>
-          <input type="password" id="registerPassword" class="form-input" placeholder="Введіть пароль" minlength="6" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Підтвердження пароля</label>
-          <input type="password" id="registerConfirmPassword" class="form-input" placeholder="Підтвердіть пароль" required>
-        </div>
-
-        <button class="btn btn-primary" onclick="register()">
-          <i class="fas fa-user-plus"></i> Зареєструватися
-        </button>
-
-        <div class="form-switch">
-          Вже є акаунт? <a onclick="showLoginForm()">Увійти</a>
-        </div>
-      </div>
-    </div>
+    <button onclick="login()">Увійти</button>
+    <p>Немає акаунта? <a onclick="showRegisterForm()">Зареєструватися</a></p>
   </div>
 
-  <script type="module" src="./js/auth.js"></script>
+  <!-- REGISTER -->
+  <div id="registerForm" style="display:none;">
+    <h2>Реєстрація</h2>
+    <div id="registerMessage" class="message"></div>
+
+    <input id="registerEmail" placeholder="Email">
+    <input id="registerNickname" placeholder="Нікнейм">
+    <input id="registerPassword" type="password" placeholder="Пароль">
+    <input id="registerConfirmPassword" type="password" placeholder="Повторіть пароль">
+
+    <button onclick="register()">Зареєструватися</button>
+    <p>Вже є акаунт? <a onclick="showLoginForm()">Увійти</a></p>
+  </div>
+
+</div>
+
+<script type="module" src="./js/firebase.js"></script>
+<script type="module" src="./js/auth.js"></script>
 </body>
 </html>
