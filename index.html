@@ -1,12 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>Ukraine GTA 5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { background:#0c1016; color:#fff; font-family:Arial; padding:20px; }
+    a, button { color:#fff; background:#2563eb; padding:10px; border-radius:6px; text-decoration:none; border:none; cursor:pointer; }
+  </style>
+</head>
 <body>
+
 <h1>Ukraine GTA 5</h1>
 <p>Система обліку онлайн-зміни</p>
 
-<a href="admin-panel.html">Адмінка</a>
+<nav>
+  <a href="online.html">Онлайн</a>
+  <a href="statute.html">Статут</a>
+  <a href="admin-panel.html">Адмін-панель</a>
+</nav>
+
+<br>
 <button onclick="logout()">Вийти</button>
 
-<script type="module" src="js/guard.js"></script>
+<script type="module" src="./js/firebase.js"></script>
+<script type="module" src="./js/guard.js"></script>
 </body>
 </html>
